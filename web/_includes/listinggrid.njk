@@ -1,0 +1,14 @@
+
+{% for listing in listinggrid | reverse %}
+  {% set currentListing = listing.data.listing %}
+    <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border">
+        <div class="listing-preview"><a href="{{ listing.url | url }}">
+                <div><img class="listing-image-preview" src="{{ currentListing.imageUrl }}"></div>
+                <h2 class="text-start listing-title-preview">{{ currentListing.name }}<br></h2>
+            </a>
+            <h3 class="text-start listing-price">${{ currentListing.price }}</h3>
+        </div>
+    </div>
+{% endfor %}
+
+

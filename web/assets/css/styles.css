@@ -1,0 +1,283 @@
+body {
+  font-family: inherit;
+}
+
+#promo {
+  padding: 20px;
+  background-image: url("../../assets/img/coins.jpg");
+  background-size: cover;
+}
+
+#promo p {
+  font-size: 30px;
+}
+
+#promo-1 {
+  padding: 20px;
+  background: linear-gradient(0deg, rgba(30,58,99,1) 0%, rgba(88,125,179,1) 100%);
+}
+
+@media (min-width: 768px) {
+  #promo {
+    padding: 40px;
+  }
+}
+
+.jumbotron {
+  padding: 4rem 2rem;
+  margin-bottom: 2rem;
+  background-color: var(--bs-light);
+  border-radius: .3rem;
+}
+
+#promo .jumbotron {
+  border-radius: 20px;
+  padding: 20px;
+  background-color: rgba(255,255,255,0.75);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#promo-1 .jumbotron {
+  border-radius: 20px;
+  padding: 0px;
+  background-color: rgba(255,255,255,0);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  #promo .jumbotron {
+    padding: 40px;
+  }
+}
+
+.site-section {
+  text-align: center;
+  padding: 50px 0 60px;
+  padding-bottom: 70px;
+}
+
+.site-section h1 {
+  font-weight: normal;
+  margin-bottom: 30px;
+  margin-top: 60px;
+}
+
+#Welcome p {
+  max-width: 600px;
+  font-size: 20px;
+  margin: 0 auto;
+}
+
+#why .item svg {
+  font-size: 100px;
+  padding: 10px;
+  color: #1a2b6f;
+}
+
+#why .item {
+  margin-top: 42px;
+}
+
+#why .item h2 {
+  font-weight: normal;
+  margin-top: 13px;
+}
+
+#why p {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.dark-section {
+  background-color: #bcd2d5;
+}
+
+.navbar-light .navbar-nav .nav-link.active, .navbar-light .navbar-nav .show > .nav-link {
+  color: rgba(255,255,255,0.9);
+  background-color: #1d3961;
+}
+
+.gallery-image {
+  padding: 20px;
+}
+
+.btn {
+}
+
+.nav-link {
+  display: block;
+  color: #2196f3;
+  text-decoration: none;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out;
+  min-width: 140px;
+  text-align: center;
+}
+
+.btn-primary:active:hover, .btn-primary:hover {
+  background-color: #394ea4;
+}
+
+.btn-primary {
+  color: #fefefe;
+  background-color: #1a2b6f;
+  background-image: var(--bs-gradient);
+  border-color: #2196f3;
+}
+
+.navbar {
+  position: relative;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0px;
+  background-image: var(--bs-gradient);
+  padding-top: 0px;
+}
+
+#listing {
+  padding: 50px;
+}
+
+.listing-image-column {
+  padding: 20px 20px 20px 20px;
+}
+
+.listing-image-column h3 {
+  padding: 30px;
+}
+
+.listing-info {
+}
+
+.listing-title {
+  padding-top: 20px;
+  font-size: 50px;
+  color: #6289c1;
+  font-weight: 500;
+  font-family: 'Noto Serif Display';
+}
+
+.listing-title-preview {
+  padding-top: 10px;
+  font-size: 20px;
+  color: #6289c1;
+  font-weight: 800;
+  font-family: 'Noto Serif Display';
+}
+
+@media (min-width: 576px) {
+  .listing-title-preview {
+    font-size: 30px;
+  }
+}
+
+.listing-price {
+  font-family: 'Roboto';
+  font-weight: 700;
+  padding-top: 10px;
+  font-size: 35px;
+}
+
+.listing-info {
+  font-family: 'Roboto';
+  font-weight: 500;
+  padding-top: 20px;
+}
+
+.listing-info-data {
+  font-family: 'Roboto';
+  font-weight: 500;
+  padding-top: 20px;
+  color: #6289c1;
+}
+
+.listing-description {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.listing-main {
+  background-color: #f3f6f9;
+  border-radius: 20px;
+  border-style: solid;
+  padding-top: 20px;
+  border-color: #e0e5ea;
+}
+
+.listing-image {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  box-shadow: 5px 5px 5px gray;
+  border: 3px #1d3961;
+  border-style: solid;
+  border-radius: 20px;
+}
+
+.listing-image-preview {
+  object-fit: cover;
+  max-width: 100%;
+  box-shadow: 5px 5px 5px gray;
+  border: 3px #1d3961;
+  border-style: solid;
+  border-radius: 20px;
+}
+
+
+.listing-caption {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-size: 20px;
+}
+
+.listing-button-holder {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.listing-button {
+  font-family: 'Noto Serif Display';
+  font-size: 20px;
+}
+
+.listing-preview {
+  padding: 20px 20px 20px 20px;
+  background-color: #f3f6f9;
+  border-radius: 20px;
+  border-style: solid;
+  border-color: #e0e5ea;
+  margin-top: 20px;
+}
+
+.listing-preview h3 {
+  font-size: 25px;
+}
+
+.preview-grid {
+  padding: 0px;
+}
+
+.listing-preview a{
+  font-style: normal;
+}
+
+.listing-preview-border {
+  border-color: white;
+}
+
+.listing-image-preview-holder {
+  width: 80%;
+  padding-bottom: 80%;
+  margin: 1em auto;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+

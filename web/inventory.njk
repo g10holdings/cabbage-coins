@@ -1,0 +1,23 @@
+---
+layout: layouts/base.njk
+tags:
+  - nav
+navtitle: Inventory
+---
+
+
+<div class="container site-section preview-grid" id="listing">
+    <div class="row preview-grid">
+        {% set listinggrid = collections.myListings%}
+        {% include "listinggrid.njk" %}
+                {% set listinggrid = collections.myListings%}
+        {% include "listinggrid.njk" %}
+                {% set listinggrid = collections.myListings%}
+        {% include "listinggrid.njk" %}
+                {% set listinggrid = collections.myListings%}
+        {% include "listinggrid.njk" %}
+                {% set listinggrid = collections.myListings%}
+        {% include "listinggrid.njk" %}
+    </div>
+</div>
+

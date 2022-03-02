@@ -1,0 +1,13 @@
+---
+layout: layouts/listing.njk
+tags:
+  - myListings
+pagination:
+  alias: listing
+  data: listings
+  size: 1
+  addAllPagesToCollections: true
+permalink: posts/{{ listing.slug.current | slug }}/index.html
+---
+
+

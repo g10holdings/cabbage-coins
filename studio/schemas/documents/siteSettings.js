@@ -31,6 +31,12 @@ export default {
       description: 'Publish an author and set a reference to them here.',
       title: 'Author',
       to: [{type: 'author'}]
+    },
+    {
+      name: 'frontpagemessage',
+      type: 'text',
+      description: 'Message in the top section of the homepage.',
+      title: 'Front Page Message'
     }
   ]
 }

@@ -6,51 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="Description" content="{{ renderData.description or description or metadata.description }}">
     <title>{{ renderData.title or title or metadata.title }}</title>
-
-      <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cookie">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif+Display&amp;display=swap">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab&amp;display=swap">
-      <link rel="stylesheet" href="/assets/fonts/font-awesome.min.css">
-      <link rel="stylesheet" href="/assets/css/Contact-Form-Clean.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
-      <link rel="stylesheet" href="/assets/css/Pretty-Footer.css">
-      <link rel="stylesheet" href="/assets/css/styles.css">
-
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cookie">
+    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/Contact-Form-Clean.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+    <link rel="stylesheet" href="assets/css/Pretty-Footer.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    {% set css %}
+        {% include "style.css" %}
+    {% endset %}
     <style>
-
+      {{ css | cssmin | safe }}
     </style>
 </head>
 
 <body>
     <div id="promo-1">
         <div class="text-center jumbotron">
-            <h1 style="margin: 0px 0px 0px;"><img src="/assets/img/Cabbage%20Coins_White.png" width="100%" style="max-width: 500px;padding: 10px;"></h1>
+            <h1 style="margin: 0px 0px 0px;"><img src="assets/img/Cabbage%20Coins_White.png" width="100%" style="max-width: 500px;padding: 10px;"></h1>
         </div>
     </div>
     <nav class="navbar navbar-light navbar-expand-md bg-secondary">
         <div class="container"><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link active" href="{{ '/' | url }}">HOME</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/inventory/index.html">INVENTORY</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://www.instagram.com/cabbage_coins/">INVENTORY</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">ABOUT US</a></li>
                     <li class="nav-item"><a class="nav-link" href="Contact.html">CONTACT</a></li>
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="site-section" style="padding-top: 0px;padding-bottom: 0px" >
-    <main{% if templateClass %} class="{{ templateClass }}"{% endif %}>
-      {{ content | safe }}
-    </main>
+    <div class="container site-section" id="Welcome">
+        <h1>Cabbage Coins</h1>
+        <p><br>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br><br></p>
     </div>
+    <div class="dark-section"></div>
     <footer>
         <div class="container">
             <div class="row">
                 <div class="col-sm-6 col-md-4 footer-navigation">
-                    <h3></h3><img src="/assets/img/Cabbage%20Coins_footer.png">
+                    <h3></h3><img src="assets/img/Cabbage%20Coins_footer.png">
                     <p class="links"><a href="#">Home</a><strong> · </strong><a href="#">Inventory</a><strong> · </strong><a href="#">Contact</a><strong>&nbsp;</strong></p>
                     <p class="company-name">Cabbage Coins © 2022</p>
                 </div>
@@ -73,7 +72,7 @@
             </div>
         </div>
     </footer>
-    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox-plus-jquery.min.js"></script>
 </body>
 

@@ -1,0 +1,8 @@
+<ol reversed class="listinglist" style="counter-reset: start-from {{ listinglist.length + 1 }}">
+{% for listing in listinglist | reverse %}
+  {% set currentListing = listing.data.listing %}
+  <h3 class="listinglist-item{% if listing.url == url %} listinglist-item-active{% endif %}">
+    <a href="{{ listing.url | url }}" class="listinglist-link">{% if currentListing.name %}{{ currentListing.name }}{% else %}<code>{{ listing.url }}</code>{% endif %}</a>
+  </h3>
+{% endfor %}
+</ol>
