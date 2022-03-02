@@ -1,7 +1,6 @@
 const { DateTime } = require("luxon");
 const util = require('util')
 const CleanCSS = require("clean-css");
-import {toHTML} from '@portabletext/to-html';
 
 module.exports = function(eleventyConfig) {
   
