@@ -1,10 +1,11 @@
 ---
 layout: layouts/base.njk
 templateClass: tmpl-listing
+parent: Inventory
 ---
    <div class="container site-section" id="listing">
         <div class="row listing-main">
-            <div class="col-sm-12 col-md-12 col-lg-6 listing-image-column"><img class="listing-image" data-lightbox="coins" src="{{ listing.imageUrl }}">
+            <div class="col-sm-12 col-md-12 col-lg-6 listing-image-column"><a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins"><img class="listing-image"  src="{{ listing.imageUrl }}"></a>
                 <h3 class="listing-caption">"{{ listing.image.caption }}"</h3>
             </div>
             <div class="col listing-info">
@@ -23,7 +24,7 @@ templateClass: tmpl-listing
                         <h4 class="text-start listing-info">Grade:</h4>
                     </div>
                     <div class="col">
-                        <h4 class="text-end listing-info-data">{{ listing. grade }}</h4>
+                        <h4 class="text-end listing-info-data">{{ listing.grade }}</h4>
                     </div>
                 </div>
                 <div class="row">
@@ -35,13 +36,23 @@ templateClass: tmpl-listing
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col text-center text-sm-center text-md-center text-lg-start listing-button-holder"><button class="btn btn-primary listing-button" type="button">INquire</button></div>
+                    <div class="col text-center text-sm-center text-md-center text-lg-start listing-button-holder"><button class="btn btn-primary listing-button" id="lightbox-form-button" type="button">Inquire</button></div>
                 </div>
-                <h4 class="text-start listing-description">{{ listing.description}}<br></h4>
+                <h4 class="text-start listing-description">{{ listing.description }}<br></h4>
             </div>
         </div>
         <div class="row">
             <div class="col"></div>
         </div>
+    <div id="lightbox-form">
+        <div class='inquiry-form'>
+                <form action="https://formspree.io/f/mzbogwbb" method="post">
+                    <h2 class="text-center">Inquire</h2>
+                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
+                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
+                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013; I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }} &#013;My preferred payment method is: (Zelle, Venmo, Cashapp, Paypal, Check)&#013;Please contact me at your earliest convenience to discuss this purchase.(add your phone number if communication via phone is preferred)&#013; Thank you!</textarea></div>
+                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
+                </form>
+            <form></form>
+        </div>
     </div>
-

@@ -1,8 +1,11 @@
 const { DateTime } = require("luxon");
 const util = require('util')
 const CleanCSS = require("clean-css");
+const eleventyNavigationPlugin = require("@11ty/eleventy-navigation");
 
 module.exports = function(eleventyConfig) {
+
+  eleventyConfig.addPlugin(eleventyNavigationPlugin)
   
   eleventyConfig.addPassthroughCopy('assets')
 

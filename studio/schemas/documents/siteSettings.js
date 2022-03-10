@@ -37,6 +37,24 @@ export default {
       type: 'text',
       description: 'Message in the top section of the homepage.',
       title: 'Front Page Message'
+    },
+    {
+      name: 'aboutustext',
+      type: 'text',
+      description: 'Text for the About Cabbage Coins page',
+      title: 'About Cabbage Coins Text'
+    },
+    {
+      name: 'aboutusbio',
+      type: 'text',
+      description: 'Bio for the About Cabbage Coins page',
+      title: 'About Cabbage Coins Bio'
+    },
+    {
+      name: 'aboutusbioimage',
+      type: 'image',
+      description: 'Image for the About Us Bio',
+      title: 'About Us Bio Image'
     }
   ]
 }

@@ -34,7 +34,7 @@ async function getListings () {
       }
     },
   }`
-  const order = `| order(publishedAt asc)`
+  const order = `| order(price asc)`
   const query = [filter, projection, order].join(' ')
   const docs = await client.fetch(query).catch(err => console.error(err))
   const reducedDocs = overlayDrafts(hasToken, docs)
