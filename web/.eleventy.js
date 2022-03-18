@@ -27,6 +27,48 @@ module.exports = function(eleventyConfig) {
     return DateTime.fromJSDate(dateObj, {zone: 'utc'}).toFormat('yyyy-LL-dd');
   });
 
+  eleventyConfig.addCollection("listingsByPrice", (collection) => {
+    const allItems = collection.getAll()[0].data.listings_price;
+  
+    // Filter or use another method to select the items you want
+    // for the collection
+    return allItems
+  });
+
+  eleventyConfig.addCollection("listingsByDate", (collection) => {
+    const allItems = collection.getAll()[0].data.listings_date;
+    // Filter or use another method to select the items you want
+    // for the collection
+    return allItems
+  });
+
+  eleventyConfig.addCollection("listingsByName", (collection) => {
+    const allItems = collection.getAll()[0].data.listings_alpha;
+    // Filter or use another method to select the items you want
+    // for the collection
+    return allItems
+  });
+
+  eleventyConfig.addCollection("listingsNewest", (collection) => {
+    const allItems = collection.getAll()[0].data.listings_newest;
+  
+    // Filter or use another method to select the items you want
+    // for the collection
+    return allItems
+  });
+
+  const slugify = require("slugify");
+  eleventyConfig.addFilter("slug", (input) => {
+    const options = {
+      replacement: "-",
+      remove: /[&,+()$~%.'":*?<>{}]/g,
+      lower: true
+    };
+    var inputNoPeriods = input.replace(".","-")
+    var slugInput = slugify(inputNoPeriods, options);
+    var finalSlug = slugInput.replace("dollar", "usd");
+    return finalSlug;
+  });
 
   let markdownIt = require("markdown-it");
   let markdownItAnchor = require("markdown-it-anchor");

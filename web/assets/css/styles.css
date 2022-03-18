@@ -3,9 +3,9 @@ body {
 }
 
 #promo {
-  padding: 20px;
+  /*padding: 20px;
   background-image: url("../../assets/img/Coins_Far.jpg");
-  background-size: cover;
+  background-size: cover;*/
 }
 
 #promo p {
@@ -19,7 +19,7 @@ body {
 
 @media (min-width: 768px) {
   #promo {
-    padding: 40px;
+    padding: 0px;
   }
 }
 
@@ -31,9 +31,8 @@ body {
 
 #promo .jumbotron {
   border-radius: 20px;
-  padding: 15px 15px 15px 15px !important;
+  padding: 0px 0px 0px 0px !important;
   background-color: rgba(255,255,255,0.75);
-  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -198,7 +197,7 @@ body {
   padding-top: 0px;
 }
 
-#listing {
+.listing {
   padding: 50px;
   margin:auto;
 }
@@ -382,12 +381,13 @@ body {
 }
 
 .custom-carousel {
-  min-height: 200px;
-  max-height: 200px;
+
+  max-height: 100%;
   background-size: cover;
   background-position: center;
-  border-radius: 20px;
+  /*border-radius: 20px;*/
 }
+
 
 #Slide04 {
   background-image: url("../../assets/img/Coins_BG_2.jpg");
@@ -467,3 +467,125 @@ margin-top: 20px;
   max-width: 800px;
   margin: auto;
 }
+
+.nav-item{
+  font-family: 'Noto Serif Display';
+  font-weight: 900;
+}
+
+#sort {
+  display: flex;
+  font-family: 'Noto Serif Display';
+  font-weight: 800;
+  min-width: 200px;
+  padding: 10px 10px 10px 10px;
+  margin-left: auto;
+  margin-right: 0px;
+  align-items:flex-end;
+}
+
+#listing-grid-container {
+  padding: 50px;
+  margin:auto;
+}
+
+#listings-date{
+  display:none;
+}
+
+#listings-date.active{
+  display:flex;
+}
+
+#listings-alpha{
+  display:none;
+}
+
+#listings-alpha.active{
+  display:flex;
+}
+
+#listings-price{
+  display:none;
+}
+
+#listings-price.active{
+  display:flex;
+}
+
+#listings-latest{
+  display:none;
+}
+
+#listings-latest.active{
+  display:flex;
+}
+
+.sold-listing{
+  display:none;
+}
+
+.sold-listing.active{
+  display:flex;
+}
+
+.listings-container{
+}
+
+.fade-in{
+  animation: fadeIn 1s;
+}
+
+@keyframes fadeIn{
+from {
+  opacity: 0;
+}
+to{
+  opacity: 1;
+}
+}
+
+.soldtext{
+  font-family: 'Noto Serif Display';
+  font-weight: 800;
+  color: #c16262;
+  margin-bottom: 30px;
+  margin-top: 60px;
+}
+
+#show-sold-check{
+  width:20px;
+  height:20px;
+}
+
+#sold-checkbox-container{
+  margin-left:auto;
+  margin-right: 0px;
+  width:200px;
+  padding-top:10px;
+}
+
+.main-site{
+  max-width: 1200px;
+  margin:auto;
+  box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.15);
+  border-style: solid;
+  border-color: #868686;
+  border-right-width: 1px;
+  border-left-width: 1px;
+  border-top: 0px;
+  border-bottom: 0px;
+}
+
+#footer-main{
+  max-width:1200px;
+}
+
+.navbar-shadow{
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.185);
+
+}
+
+.main-section{
+  padding:40px 40px 40px 40px;
+}  

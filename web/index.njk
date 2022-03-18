@@ -14,7 +14,7 @@ title: Home
 {% set postslist = collections.myPosts %}
 {% include "postslist.njk" %}
 -->
-<div id="promo">
+<div id="promo" class="carousel-holder">
         <div class="text-center jumbotron">
             <div class="carousel slide" data-bs-ride="carousel" id="carousel-1">
                 <div class="carousel-inner">
@@ -41,8 +41,8 @@ title: Home
             </div>
         </div>
     </div> 
-<div class="container site-section preview-grid" id="listing">
-    <h4>New Purchases:</h4>
+<div class="container site-section preview-grid" style="padding:35px 20px 40px 40px;margin:auto;" id="listing">
+    <h2>New Purchases:</h2>
     <div class="row preview-grid listing-row">
         {% set listinglist = collections.myListings%}
         {% include "listinglist.njk" %}

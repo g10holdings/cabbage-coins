@@ -29,9 +29,9 @@ export default {
         title: 'Date',
       },
       {
-          name: 'onhold',
+          name: 'sold',
           type: 'boolean',
-          title: "On Hold"
+          title: "Sold"
       },
       {
         name: 'grade',

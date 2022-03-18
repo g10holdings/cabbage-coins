@@ -3,14 +3,21 @@ layout: layouts/base.njk
 templateClass: tmpl-listing
 parent: Inventory
 ---
-   <div class="container site-section" id="listing">
+   <div class="container site-section main-section" id="listing">
         <div class="row listing-main">
             <div class="col-sm-12 col-md-12 col-lg-6 listing-image-column"><a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins"><img class="listing-image"  src="{{ listing.imageUrl }}"></a>
                 <h3 class="listing-caption">"{{ listing.image.caption }}"</h3>
             </div>
             <div class="col listing-info">
                 <h2 class="text-start listing-title">{{ listing.name }}<br></h2>
-                <h3 class="text-start listing-price">${{ listing.price }}</h3>
+                <h3 class="text-start listing-price">
+                    {% if listing.sold %}
+                    <strike>${{ listing.price }}</strike><h2>SOLD</h2>
+                    {% else %}
+                    ${{ listing.price }}
+                    {% endif %}
+                    
+                    </h3>
                 <div class="row">
                     <div class="col">
                         <h4 class="text-start listing-info">Date:</h4>
@@ -36,7 +43,10 @@ parent: Inventory
                     </div>
                 </div>
                 <div class="row">
+                    {% if listing.sold %}
+                    {% else %}
                     <div class="col text-center text-sm-center text-md-center text-lg-start listing-button-holder"><button class="btn btn-primary listing-button" id="lightbox-form-button" type="button">Inquire</button></div>
+                    {% endif %}
                 </div>
                 <h4 class="text-start listing-description">{{ listing.description }}<br></h4>
             </div>

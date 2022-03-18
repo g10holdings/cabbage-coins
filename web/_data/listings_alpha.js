@@ -22,7 +22,7 @@ async function getListings () {
     name,
     slug,
     date,
-    onhold,
+    sold,
     "imageUrl": image.asset->url,
     grade,
     pcgsnumber,
@@ -34,7 +34,7 @@ async function getListings () {
       }
     },
   }`
-  const order = `| order(price asc)`
+  const order = `| order(name asc)`
   const query = [filter, projection, order].join(' ')
   const docs = await client.fetch(query).catch(err => console.error(err))
   const reducedDocs = overlayDrafts(hasToken, docs)

@@ -29,7 +29,7 @@
             <h1 style="margin: 0px 0px 0px;"><img src="/assets/img/Cabbage%20Coins_White.png" width="100%" style="max-width: 500px;padding: 10px;"></h1>
         </div>
     </div>
-    <nav class="navbar navbar-light navbar-expand-md bg-secondary">
+    <nav class="navbar navbar-light navbar-expand-md bg-secondary navbar-shadow">
         <div class="container"><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
@@ -40,13 +40,15 @@
             </div>
         </div>
     </nav>
+<div class="main-site">
     <div class="site-section" style="padding-top: 0px;padding-bottom: 0px" >
     <main{% if templateClass %} class="{{ templateClass }}"{% endif %}>
       {{ content | safe }}
     </main>
     </div>
+</div>
     <footer>
-        <div class="container">
+        <div class="container" id="footer-main">
             <div class="row">
                 <div class="col-sm-6 col-md-4 footer-navigation">
                     <h3></h3><img src="/assets/img/Cabbage%20Coins_footer.png">

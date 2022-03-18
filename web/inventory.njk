@@ -8,14 +8,45 @@ tags:
 navtitle: Inventory
 title: Inventory
 ---
-
-
-<div class="container site-section preview-grid" id="listing">
+<div class="container site-section preview-grid" id="listing-grid-container">
 <h2 style="text-align: right; font-size:25px;">{{ listings.length }} Products</h2>
+<select name="sort" id="sort">
+  <option value="newest">Newest</option>
+  <option value="price">Price</option>
+  <option value="date">Mint Date</option>
+  <option value="alphabetical">Alphabetical</option>
+</select>
+<div id="sold-checkbox-container">
+<label for="showsold"><h2>Show Sold</h2></label>
+<input type="checkbox" checked id="show-sold-check" name="showsold">
+</div>
+
+<div class="listings-container">
+<div class="container site-section preview-grid listing fade-in" id="listings-latest">
     <div class="row preview-grid listing-row">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid.njk" %}
 
     </div>
+</div>
+<div class="container site-section preview-grid listing fade-in" id="listings-price">
+    <div class="row preview-grid listing-row">
+        {% set listinggrid = collections.myListings%}
+        {% include "listinggrid_price.njk" %}
+
+    </div>
+</div>
+<div class="container site-section preview-grid listing fade-in" id="listings-date">
+    <div class="row preview-grid listing-row">
+        {% set listinggrid = collections.myListings%}
+        {% include "listinggrid_date.njk" %} 
+    </div>
+</div>
+<div class="container site-section preview-grid listing fade-in" id="listings-alpha">
+    <div class="row preview-grid listing-row">
+        {% set listinggrid = collections.myListings%}
+        {% include "listinggrid_alpha.njk" %} 
+    </div>
+</div>
 </div>
 
