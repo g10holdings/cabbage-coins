@@ -7,18 +7,20 @@ const lightbox = document.getElementById('lightbox-form');
 const formbutton = document.getElementById('lightbox-form-button');
 
 const listingsLatest = document.getElementById('listings-latest');
-const listingsPrice = document.getElementById('listings-price');
-const listingsDate = document.getElementById('listings-date');
-const listingsAlpha = document.getElementById('listings-alpha');
+const listingsPriceAsc = document.getElementById('listings-priceasc');
+const listingsPriceDsc = document.getElementById('listings-pricedsc');
+const listingsDateAsc = document.getElementById('listings-dateasc');
+const listingsDateDsc = document.getElementById('listings-datedsc');
 const sortingDropdown = document.getElementById('sort');
 const soldCheckbox = document.getElementById('show-sold-check')
 
 var soldListings = document.getElementsByClassName('sold-listing');
 
 if (listingsLatest){
-    hide(listingsLatest);
-    hide(listingsPrice);
-    hide(listingsDate);
+    hide(listingsDateAsc);
+    hide(listingsDateDsc);
+    hide(listingsPriceAsc);
+    hide(listingsPriceDsc);
     getSelectValue();
     showSold();
 }
@@ -55,33 +57,45 @@ function getSelectValue(){
     var selectedValue = sortingDropdown.value;
     console.log(selectedValue);
     switch (selectedValue){
-        case 'price':
-            hide(listingsAlpha);
+        case 'priceasc':
             hide(listingsLatest);
-            hide(listingsDate);
-            show(listingsPrice);
+            hide(listingsDateAsc);
+            hide(listingsDateDsc);
+            show(listingsPriceAsc);
+            hide(listingsPriceDsc);
             console.log("price selected, arranging by price");
             break;
-        case 'date':
-            hide(listingsAlpha);
+        case 'pricedsc':
             hide(listingsLatest);
-            hide(listingsPrice);
-            show(listingsDate)
+            hide(listingsDateAsc);
+            hide(listingsDateDsc);
+            hide(listingsPriceAsc);
+            show(listingsPriceDsc);
+            console.log("price selected, arranging by price");
+            break;
+        case 'dateasc':
+            hide(listingsLatest);
+            show(listingsDateAsc);
+            hide(listingsDateDsc);
+            hide(listingsPriceAsc);
+            hide(listingsPriceDsc);
+            console.log("date selected, arranging by mint date");
+            break;
+        case 'datedsc':
+            hide(listingsLatest);
+            hide(listingsDateAsc);
+            show(listingsDateDsc);
+            hide(listingsPriceAsc);
+            hide(listingsPriceDsc);
             console.log("date selected, arranging by mint date");
             break;
         case 'newest':
-            hide(listingsAlpha);
-            hide(listingsDate);
-            hide(listingsPrice);
             show(listingsLatest);
+            hide(listingsDateAsc);
+            hide(listingsDateDsc);
+            hide(listingsPriceAsc);
+            hide(listingsPriceDsc);
             console.log("newest selected, arranging by newest");
-            break;
-        case 'alphabetical':
-            hide(listingsDate);
-            hide(listingsPrice);
-            hide(listingsLatest);
-            show(listingsAlpha);
-            console.log("alphabetical selected, arranging by name");
             break;
         default:
             break;

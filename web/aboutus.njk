@@ -1,26 +1,48 @@
 ---
-eleventyNavigation:
-  key: About Cabbage Coinss
-  order: 5
 layout: layouts/base.njk
+date: 2022-01-05
 tags:
   - nav
 navtitle: About Cabbage Coins
 title: About Cabbage Coins
+eleventyNavigation:
+  key: About Cabbage Coins
+  order: 100
 ---
-
+ 
 <div class="container text-start site-section main-section">
-        <h1 class="text-start">About Cabbage Coins</h1><img id="about-us-image" src="/assets/img/lancaster_wide.jpg" width="100%">
+        <h1 class="text-start">About Cabbage Coins</h1><img id="about-us-image" src="/assets/img/LancasterCounty_Wide.jpg" width="100%">
         <div class="about-us-text">
             <h2 class="text-start">Who We Are</h2>
-            <p class="text-start">Cabbage Coins is a Buyer and Seller of Rare Coins, Gold, and Silver bars located right in the heart of beautiful Lancaster County Pennsylvania {{ metadata.aboutustext }}</p>
+            <p class="text-start">Cabbage Coins is a Buyer and Seller of Rare Coins, Gold, and Silver Bars located right in the heart of beautiful Lancaster County Pennsylvania. A few facts about Cabbage Coins:<!--{{ metadata.aboutustext }}--></p>
+            <ul>
+                <li>We want to be your coin dealer. We buy rare coin collections and offer free appraisals. Give us a call to discuss the collection and we'll help answer questions and give an idea around value. </li>
+                <li>Our bread and butter are nice, encapsulated, better date coins for the astute collector. Visit our "Inventory" page to see the current collection for purchase.</li>
+                <li>Lancaster County, PA is our home, but we're happy to travel across the mid-Atlantic to check out coin collections and scope out local coin shows for new buying opportunities</li>
+                <li>We visit most of the major national and local coin shows - if you ever see us set up with a dealer table - please come by, check out our coins and say 'hello!'</li>
+                <li>Visit our Instagram page <a href="https://www.instagram.com/cabbage_coins/">(@cabbage_coins)</a> where we post the latest purchases and make other content for the rare coin, gold, silver ingot and currency collector</li>
+            </ul>
             <div class="about-us-bio">
                 <div class="row">
                     <div class="col-auto offset-0"><img id="about-us-portrait" src="/assets/img/blank-profile-picture-g01fcfad62_640.png" width="100px"></div>
-                    <div class="col">
-                        <p class="text-start">{{ metadata.aboutusbio }}</p>
+                    <div class="col"><p class="text-start">Owned and operated since 2020 by Tony Gryckiewicz - Professional Numismatist<br>ANA Member #3183550</p>
+                        <!--<p class="text-start">{{ metadata.aboutusbio }}</p>-->
                     </div>
                 </div>
             </div>
+        </div>
+                    <h1> </h1>
+            <button class="btn btn-primary" type="button" style="display:flex !important;margins:auto !important;"id="lightbox-form-button">contact</button>
+    </div>
+        <div id="lightbox-form">
+        <div class='inquiry-form'>
+                <form action="https://formspree.io/f/mzbogwbb" method="post">
+                    <h2 class="text-center">Inquire</h2>
+                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
+                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
+                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I had a question that wasn't covered by your FAQ page.</textarea></div>
+                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
+                </form>
+            <form></form>
         </div>
     </div>

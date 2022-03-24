@@ -24,6 +24,16 @@ export default {
         title: 'Image'
       },
       {
+        name: 'imagesGallery',
+        title: 'Images gallery',
+        type: 'array',
+        of: [
+          { 
+            type: 'image' 
+          }
+          ]
+       },
+      {
         name: 'date',
         type: 'string',
         title: 'Date',

@@ -18,11 +18,14 @@ async function getListings () {
   const projection = groq`{
     _id,
     publishedAt,
+    createdAt,
     image,
     name,
     slug,
     date,
     sold,
+    imagesGallery,
+    "galleryImageUrl": imagesGallery[].asset->url,
     "imageUrl": image.asset->url,
     grade,
     pcgsnumber,
@@ -34,7 +37,7 @@ async function getListings () {
       }
     },
   }`
-  const order = `| order(publishedAt asc)`
+  const order = `| order(createdAt asc)`
   const query = [filter, projection, order].join(' ')
   const docs = await client.fetch(query).catch(err => console.error(err))
   const reducedDocs = overlayDrafts(hasToken, docs)

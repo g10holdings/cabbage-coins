@@ -32,8 +32,8 @@
     <nav class="navbar navbar-light navbar-expand-md bg-secondary navbar-shadow">
         <div class="container"><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
-                <ul class="navbar-nav mx-auto">
-                    {% for nav in collections.nav | sort %}
+                <ul class="navbar-nav mx-auto"> 
+                    {% for nav in collections.nav %}
                         <li class="nav-item"><a  class="nav-link {% if page.url == nav.url %}active{% endif %}" href="{{ nav.url }}">{{ nav.data.navtitle }}</a></li> 
                     {% endfor %}
                 </ul>

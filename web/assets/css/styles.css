@@ -52,7 +52,7 @@ body {
 
 .site-section {
   text-align: center;
-  padding: 50px 0 60px;
+  padding: 20px 0 60px;
   padding-bottom: 70px;
 }
 
@@ -100,10 +100,18 @@ body {
 #why p {
   padding-left: 20px;
   padding-right: 20px;
+  font-family: 'Noto Serif Display';
+  font-weight: 800;
+  line-height: 150%;
+  color: #1a2b6f;
 }
 
 .dark-section {
-  background-color: #bcd2d5;
+  background-color: #ffffff;
+}
+.sell-to-us{
+  padding-left:100px;
+  padding-right:100px;
 }
 
 .navbar-light .navbar-nav .nav-link.active, .navbar-light .navbar-nav .show > .nav-link {
@@ -369,40 +377,69 @@ body {
 .centered {
   color: white;
   text-shadow: 3px 2px black;
-  margin-top: 10%;
 }
 
 .centered-2 {
   color: white;
   text-shadow: 3px 2px black;
-  margin-top: 5%;
-  padding-left: 30px;
-  padding-right: 30px;
+  font-size: 50px;
+}
+
+.slide-spacer{
+  color: white;
+  border: 3px solid green;
+}
+
+.slide{
+display: flex;
+align-items: center;
+}
+
+.slide-text{
+  padding-left:30px;
+  padding-right:30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .custom-carousel {
-
   max-height: 100%;
   background-size: cover;
   background-position: center;
-  /*border-radius: 20px;*/
 }
 
+@media (min-width: 768px) {
+  .centered-2 {
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}
+
+#Slide05 {
+  background-image: url("../../assets/img/InstagramBanner3.png");
+  height:300px;
+}
 
 #Slide04 {
   background-image: url("../../assets/img/Coins_BG_2.jpg");
+  height:300px;
 }
 
 #Slide03 {
-  background-image: url("../../assets/img/Lancaster.jpg");
+  background-image: url("../../assets/img/Coins_BG_2.jpg");
+  height:300px;
 }
 
 #Slide02 {
   background-image: url("../../assets/img/flagbg.jpg");
+  height:300px;
 }
 
 #Slide01 {
   background-image: url("../../assets/img/Lancaster.jpg");
+  height:300px;
 }
 
 .we-buy{
@@ -441,6 +478,10 @@ padding:20px;
 }
 
 .about-us-text p{
+  font-family: 'Roboto';
+  font-size: 16px;
+}
+.about-us-text li{
   font-family: 'Roboto';
   font-size: 16px;
 }
@@ -489,27 +530,35 @@ margin-top: 20px;
   margin:auto;
 }
 
-#listings-date{
+#listings-dateasc{
   display:none;
 }
 
-#listings-date.active{
+#listings-dateasc.active{
   display:flex;
 }
 
-#listings-alpha{
+#listings-datedsc{
   display:none;
 }
 
-#listings-alpha.active{
+#listings-datedsc.active{
   display:flex;
 }
 
-#listings-price{
+#listings-priceasc{
   display:none;
 }
 
-#listings-price.active{
+#listings-priceasc.active{
+  display:flex;
+}
+
+#listings-pricedsc{
+  display:none;
+}
+
+#listings-pricedsc.active{
   display:flex;
 }
 
