@@ -14,7 +14,7 @@ parent: Inventory
                         <a href="{{ image }}" target="_blank" data-lightbox="coins">
                             <div class="image-dummy-small" style="background-image: url({{ image }})"></div>
                         </a>
-                        </div>  
+                        </div> 
                     {% endfor %}
                 </div>
             </div>
@@ -26,7 +26,6 @@ parent: Inventory
                     {% else %}
                     ${{ listing.price }}
                     {% endif %}
-                    
                     </h3>
                 <div class="row">
                     <div class="col">
@@ -50,6 +49,14 @@ parent: Inventory
                     </div>
                     <div class="col">
                         <h4 class="text-end listing-info-data"> {{ listing.pcgsnumber }}<br></h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        {% if listing.cac %}
+                            <img src="/assets/img/caccoin.png" class="cac-coin"></img>
+                        {% else %}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row">
