@@ -27,11 +27,24 @@ export default {
         name: 'imagesGallery',
         title: 'Images gallery',
         type: 'array',
+        type: 'array',
         of: [
-          { 
-            type: 'image' 
+          {
+            type: 'image'
+          },
+          {
+            title: 'URL',
+            name: 'urlObject',
+            type: 'object',
+            fields: [
+              {
+                title: 'URL',
+                name: 'urlField',
+                type: 'url'
+              }
+            ]
           }
-          ]
+        ]
        },
       {
         name: 'date',

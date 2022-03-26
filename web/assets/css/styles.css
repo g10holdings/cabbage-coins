@@ -296,6 +296,15 @@ body {
   border-style: solid;
   border-radius: 20px;
 }
+.listing-image-small {
+  max-width: 50%;
+  max-height: 400px;
+  object-fit: cover;
+  box-shadow: 5px 5px 5px gray;
+  border: 3px #1d3961;
+  border-style: solid;
+  border-radius: 20px;
+}
 
 .listing-image-preview {
   object-fit: cover;
@@ -320,6 +329,33 @@ body {
   content: "";
   display: block;
   padding-bottom: 100%;
+}
+
+.image-dummy-small{
+  width:100%;
+  background-position: center;
+  background-size:cover;
+  box-shadow: 5px 5px 5px gray;
+  border: 3px #1d3961;
+  border-style: solid;
+  border-radius: 20px;
+  margin:auto;
+}
+.image-dummy-small:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+.preview-images{
+  padding-left:20px;
+  padding-right:20px;
+}
+@media (min-width: 768px) {
+  .preview {
+    padding-left:45px;
+    padding-right:45px;
+  }
 }
 
 .listing-caption {
