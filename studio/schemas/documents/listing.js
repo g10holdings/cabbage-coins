@@ -57,6 +57,11 @@ export default {
           title: "Sold"
       },
       {
+        name: 'cac',
+        type: 'boolean',
+        title: "CAC"
+      },
+      {
         name: 'grade',
         type: 'string',
         title: 'Grade',

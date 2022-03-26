@@ -674,3 +674,9 @@ to{
 .main-section{
   padding:40px 40px 40px 40px;
 }  
+
+.cac-coin{
+max-height:50px;
+display:flex;
+margin: 10px 0px 10px 0px;
+}

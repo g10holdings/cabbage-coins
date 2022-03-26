@@ -23,6 +23,7 @@ async function getListings () {
     slug,
     date,
     sold,
+    cac,
     imagesGallery,
     "imageUrl": image.asset->url,
     "imageGalleryUrl": imagesGallery.image.asset->url,
