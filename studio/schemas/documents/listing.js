@@ -52,6 +52,11 @@ export default {
         title: 'Date',
       },
       {
+        name: 'dateshown',
+        type: 'string',
+        title: 'Date Shown',
+      },
+      {
           name: 'sold',
           type: 'boolean',
           title: "Sold"
@@ -67,9 +72,9 @@ export default {
         title: 'Grade',
       },
       {
-        name: 'pcgsnumber',
+        name: 'gradenumber',
         type: 'string',
-        title: 'PCGS#',
+        title: 'Grade Number',
       },
       {
         name: 'price',
