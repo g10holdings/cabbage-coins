@@ -36,7 +36,7 @@ export default {
         data: [
           {
             title: 'GitHub repo',
-            value: 'https://github.com/beatrixdrake/cabbage-coins',
+            value: 'https://github.com/btxdrake/cabbage-coins',
             category: 'Code'
           },
           {title: 'Frontend', value: 'https://cabbage-coins.netlify.app', category: 'apps'}
