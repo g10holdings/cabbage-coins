@@ -34,16 +34,48 @@
     <nav class="navbar navbar-light navbar-expand-md bg-secondary navbar-shadow">
         <div class="container"><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="navbar-nav mx-auto"> 
+                    {% for nav in collections.nav %}
+                        <li class="nav-item"><a  class="nav-link {% if page.url == nav.url %}active{% endif %}" href="{{ nav.url }}">{{ nav.data.navtitle }}</a></li> 
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </nav>
-<div >
+<div class="main-site">
     <div class="site-section" style="padding-top: 0px;padding-bottom: 0px" >
     <main{% if templateClass %} class="{{ templateClass }}"{% endif %}>
-      <h1>Under Construction</h1>
+      {{ content | safe }}
     </main>
     </div>
 </div>
+    <footer>
+        <div class="container" id="footer-main">
+            <div class="row">
+                <div class="col-sm-6 col-md-4 footer-navigation">
+                    <h3></h3><img src="/assets/img/Cabbage%20Coins_footer.png">
+                    <p class="links" style="padding-top:20px;"><a href="/">Home</a><strong> · </strong><a href="/inventory/">Inventory</a><strong> · </strong><a href="/aboutus/">Contact</a><strong>&nbsp;</strong></p>
+                    <p class="company-name">Cabbage Coins © 2022</p>
+                </div>
+                <div class="col-sm-6 col-md-4 footer-contacts">
+                    <div><span class="fa fa-map-marker footer-contacts-icon"> </span>
+                        <p><span class="new-line-span">Address</span> P.O. Box 10575<br>Lancaster, PA 17605</p>
+                    </div>
+                    <div><i class="fa fa-phone footer-contacts-icon"></i>
+                        <p class="footer-center-info email text-start"> <a class="link-in-footer" href="tel:17032989789">+1 703-298-9789</a></p>
+                    </div>
+                    <div><i class="fa fa-envelope footer-contacts-icon "></i>
+                        <p> <a href="mailto:info@cabbage-coins.com" target="_blank" class="link-in-footer" >info@cabbage-coins.com</a></p>
+                    </div>
+                </div>
+                <div class="col-md-4 footer-about">
+                    <h4>About the company</h4>
+                    <p>"Owned and operated since 2020 by Tony Gryckiewicz - Professional Numismatist"<br>ANA Member #3183550<br></p>
+                    <div class="social-links social-icons"><a href="https://www.instagram.com/cabbage_coins/"><i class="fa fa-instagram"></i></a></div>
+                </div>
+            </div>
+        </div>
+    </footer>
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox-plus-jquery.min.js"></script>
 </body>
