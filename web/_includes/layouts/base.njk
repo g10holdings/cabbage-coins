@@ -37,10 +37,10 @@
             </div>
         </div>
     </nav>
-<div >
+<div class="main-site">
     <div class="site-section" style="padding-top: 0px;padding-bottom: 0px" >
     <main{% if templateClass %} class="{{ templateClass }}"{% endif %}>
-      <h1>Under Construction</h1>
+      {{ content | safe }}
     </main>
     </div>
 </div>
