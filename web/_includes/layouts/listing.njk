@@ -22,7 +22,7 @@ parent: Inventory
                 <h2 class="text-start listing-title">{{ listing.name }}<br></h2>
                 <h3 class="text-start listing-price">
                     {% if listing.sold %}
-                    <strike>${{ listing.price }}</strike><h2>SOLD</h2>
+                    <strike>${{ listing.price }}</strike><h2 style="color: #c16262;">SOLD</h2>
                     {% else %}
                     ${{ listing.price }}
                     {% endif %}
