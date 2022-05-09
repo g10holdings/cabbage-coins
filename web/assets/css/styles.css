@@ -709,3 +709,17 @@ margin: 10px 0px 10px 0px;
   max-width: 25%;
   min-height:100px;
 }
+
+.privacy-policy{
+  max-width: 800px;
+  margin:auto;
+  padding: 20px 0 60px;
+  padding-bottom: 70px;
+  font-family: 'Noto Serif Display' !important;
+}
+
+.privacy-policy ul{
+  text-align: left;
+  text-justify:none;
+  margin: auto;
+}
