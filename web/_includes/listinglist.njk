@@ -1,4 +1,4 @@
-{% for listing in collections.listingsNewest %}
+{% for listing in collections.listingsNewest | reverse %}
 {% if (loop.index <= 4) %}
   {% set currentListing = listing.data.listing %}
         {% if listing.sold %}
@@ -10,7 +10,7 @@
                     <div class="image-dummy" style="background-image: url({{ listing.imageUrl }})"></div>
                     <h2 class="text-start listing-title-preview">{{ listing.name }}<br></h2>
                 </a> 
-<div class="row">
+                <div class="row">
                     <div class="col">
                         <h3 class="text-start listing-price">
                             {% if listing.sold %}

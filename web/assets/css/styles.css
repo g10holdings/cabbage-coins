@@ -389,8 +389,8 @@ body {
   padding: 20px 20px 20px 20px;
   border-radius: 20px;
   border-color: #e0e5ea;
-  margin-top: 20px;
-  padding-bottom:20px;
+  margin-top: 0px;
+  padding-bottom: 0px;
   height:100%;
   width:100%;
 }
@@ -406,7 +406,7 @@ body {
 
 .listing-preview-border {
   border-color: white;
-  padding: 0px 20px 20px 0px;
+  padding: 0px 20px 0px 0px;
 }
 
 .listing-image-preview-holder {
@@ -735,7 +735,7 @@ margin: 10px 0px 10px 0px;
 
 .contact-bg{
   text-align: center;
-  padding: 50px 0 60px;
+  padding: 40px 0 60px;
   padding-bottom: 70px;
   background-color: #e3ebf7;
 }

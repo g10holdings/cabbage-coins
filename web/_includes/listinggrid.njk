@@ -1,4 +1,4 @@
-{% for listing in collections.listingsNewest %}
+{% for listing in collections.listingsNewest | reverse%}
     {% set currentListing = listing.data.listing %}
         {% if listing.sold %}
         <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border sold-listing">
