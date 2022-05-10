@@ -241,7 +241,7 @@ body {
   color: #6289c1;
   font-weight: 800;
   font-family: 'Noto Serif Display';
-  min-height: 0px;
+  height: 100px;
 }
 
 
