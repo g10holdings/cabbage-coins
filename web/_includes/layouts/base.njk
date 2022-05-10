@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta property="og:title" content="{{ renderData.title or title or metadata.title }}" />
     <meta property="og:image" content="{{ listing.imageUrl }}"/>
-    <meta name="Description" content="{{ listing.description or renderData.description or description or metadata.description }}">
+    <meta property="og:type" content="text/html"/>
+    <meta property="og:url" content="https://www.cabbage-coins.com/{{ page.url }}"/>
+    <meta property="og:description" content="{{ listing.description or renderData.description or description or metadata.description }}"/>
+    <meta name="Description" content="{{ listing.description or renderData.description or description or metadata.description }}"/>
     <meta name="google-site-verification" content="a6Lk9GbkXvVBcDQMy2Pha1TX7Uv13KVK0vmcL-myzUA" />
     <title>{{ renderData.title or title or metadata.title }}</title>
       <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
@@ -20,6 +23,7 @@
       <link rel="stylesheet" href="/assets/css/Pretty-Footer.css">
       <link rel="stylesheet" href="/assets/css/styles.css">
       <link rel="icon" type="image/x-icon" href="/assets/img/ccfav.ico">
+      <link rel='canonical' href='https://www.cabbage-coins.com/{{ page.url }}'/>
     <style>
     </style>
     <script defer src="/assets/lightbox.js"></script>
