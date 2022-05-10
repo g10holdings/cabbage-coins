@@ -78,6 +78,8 @@ parent: Inventory
                     <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
                     <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
                     <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013; I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }} &#013;My preferred payment method is: (Zelle, Venmo, Cashapp, Paypal, Check)&#013;Please contact me at your earliest convenience to discuss this purchase.(add your phone number if communication via phone is preferred)&#013; Thank you!</textarea></div>
+                    <div><input type="checkbox" name="privacypolicy" required></input>
+                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
                     <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
                 </form>
             <form></form>

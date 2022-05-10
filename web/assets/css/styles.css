@@ -723,3 +723,19 @@ margin: 10px 0px 10px 0px;
   text-justify:none;
   margin: auto;
 }
+
+.contact-us{
+  margin: auto;
+  max-width: 70%;
+  background-color: white;
+  padding: 40px 40px 40px 40px;
+  border-style: solid;
+  border-color:rgb(204, 204, 204);
+}
+
+.contact-bg{
+  text-align: center;
+  padding: 50px 0 60px;
+  padding-bottom: 70px;
+  background-color: #e3ebf7;
+}

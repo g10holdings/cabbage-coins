@@ -1,0 +1,20 @@
+---
+layout: layouts/base.njk
+date: 2022-01-05
+title: Cabbage Coins | Contact Us
+---
+
+<div class="contact-bg">
+    <div class="contact-us">
+        <div>
+                <form action="https://formspree.io/f/mzbogwbb" method="post">
+                    <h2 class="text-center">Contact Us</h2>
+                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
+                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
+                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14"></textarea></div>
+                    <div><input type="checkbox" name="privacypolicy" required></input>
+                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
+                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
+                </form>
+        </div>
+</div>
