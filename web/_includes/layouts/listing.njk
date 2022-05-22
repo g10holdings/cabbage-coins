@@ -26,13 +26,21 @@ parent: Inventory
                     {% else %}
                     ${{ listing.price }}
                     {% endif %}
-                    </h3>
+                </h3>
                 <div class="row">
                     <div class="col">
                         <h4 class="text-start listing-info">Issue:</h4>
                     </div>
                     <div class="col">
                         <h4 class="text-end listing-info-data">{{ listing.dateshown }}</h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4 class="text-start listing-info">Denomination:</h4>
+                    </div>
+                    <div class="col">
+                        <h4 class="text-end listing-info-data">{{ listing.denomination }}</h4>
                     </div>
                 </div>
                 <div class="row">
@@ -77,7 +85,8 @@ parent: Inventory
                     <h2 class="text-center">Inquire</h2>
                     <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
                     <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013; I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }} &#013;My preferred payment method is: (Zelle, Venmo, Cashapp, Paypal, Check)&#013;Please contact me at your earliest convenience to discuss this purchase.(add your phone number if communication via phone is preferred)&#013; Thank you!</textarea></div>
+                    <p style="text-align: left;font-size:20px;font-weight: bold;">Please feel free to edit the message below to suit your inquiry:</p>
+                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }}. &#013;My preferred payment method is: (Zelle, Venmo, Cashapp, Paypal, Check)&#013;Please contact me at your earliest convenience to discuss this purchase.&#013;[please add your phone number here]&#013;Thank you!</textarea></div>
                     <div><input type="checkbox" name="privacypolicy" required></input>
                     <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
                     <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>

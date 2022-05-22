@@ -454,6 +454,10 @@ align-items: center;
   background-position: center;
 }
 
+.custom-carousel a:link{
+  text-decoration: none!important;
+}
+
 @media (min-width: 768px) {
   .centered-2 {
     padding-left: 100px;

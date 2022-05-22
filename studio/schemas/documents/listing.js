@@ -57,6 +57,11 @@ export default {
         title: 'Date Shown',
       },
       {
+        name: 'denomination',
+        type: 'string',
+        title: 'Denomination',
+      },
+      {
           name: 'sold',
           type: 'boolean',
           title: "Sold"

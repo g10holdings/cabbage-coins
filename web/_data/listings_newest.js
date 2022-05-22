@@ -25,6 +25,7 @@ async function getListings () {
     slug,
     date,
     dateshown,
+    denomination,
     sold,
     cac,
     imagesGallery,
