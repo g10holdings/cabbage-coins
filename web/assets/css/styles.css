@@ -465,6 +465,11 @@ align-items: center;
   }
 }
 
+#Slide06 {
+  background-image: url("../../assets/img/Coins_BG_4.png");
+  height:300px;
+}
+
 #Slide05 {
   background-image: url("../../assets/img/InstagramBanner3.png");
   height:300px;

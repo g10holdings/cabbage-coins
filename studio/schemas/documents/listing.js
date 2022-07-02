@@ -62,6 +62,11 @@ export default {
         title: 'Denomination',
       },
       {
+        name: 'featured',
+        type: 'boolean',
+        title: "Featured"
+      },
+      {
           name: 'sold',
           type: 'boolean',
           title: "Sold"
