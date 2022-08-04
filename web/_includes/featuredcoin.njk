@@ -1,14 +1,21 @@
 {% for listing in collections.listingsNewest | reverse%}
     {% set currentListing = listing.data.listing %}
         {% if listing.featured %}
-            <div class="listing-preview"><a class="listing-title-link" href="/listings/{{ listing.slug.current | slug }}/">
-                    <div class="image-dummy" style="background-image: url({{ listing.imageUrl }})"></div>
-                    <h2 class="text-start listing-title-preview">{{ listing.name }}<br></h2>
-                </a>
-
-            </div>
-        </div>
+            <div class="featured-coin">
+                <div class="row">
+                    <div class="col">
+                <h2 class="text-start listing-title-preview" style="display:flex;">{{ listing.name }}</h2><br>
+                </div>
+                <div class="row">
+                {% for image in listing.galleryImageUrl %}
+                    {% if (loop.index >= 2) %}
+                        <div class="featured-coin-img" style="background-image: url({{ image }}?h=300)"></div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+                </div>
+                
+                
         {% else %}
-        <div></div>
         {% endif %}
 {% endfor %} 
