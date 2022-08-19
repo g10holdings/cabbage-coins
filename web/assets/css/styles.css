@@ -657,6 +657,23 @@ margin-top: 20px;
   display:none;
 }
 
+#product-count-sold{
+  display:none;
+}
+
+#product-count-sold.active{
+  display:block;
+}
+
+#product-count-all{
+  display:none;
+}
+
+#product-count-all.active{
+  display:block;
+}
+
+
 #listings-latest.active{
   display:flex;
 }

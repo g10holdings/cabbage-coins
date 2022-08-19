@@ -57,6 +57,14 @@ module.exports = function(eleventyConfig) {
     return allItems
   });
 
+  eleventyConfig.addCollection("listingsNotsold", (collection) => {
+    const allItems = collection.getAll()[0].data.listings_notsold;
+  
+    // Filter or use another method to select the items you want
+    // for the collection
+    return allItems
+  });
+
   const slugify = require("slugify");
   eleventyConfig.addFilter("slug", (input) => {
     const options = {

@@ -13,6 +13,8 @@ const listingsDateAsc = document.getElementById('listings-dateasc');
 const listingsDateDsc = document.getElementById('listings-datedsc');
 const sortingDropdown = document.getElementById('sort');
 const soldCheckbox = document.getElementById('show-sold-check')
+const productCountAll = document.getElementById('product-count-all')
+const productCountSold = document.getElementById('product-count-sold')
 
 var soldListings = document.getElementsByClassName('sold-listing');
 
@@ -42,9 +44,15 @@ if(soldCheckbox){
 soldCheckbox.addEventListener('change', function(){
     if (this.checked){
         showSold();
+        hide(productCountSold);
+        show(productCountAll);
+        console.log("Attempted to hide sold count");
     }
     else{
         hideSold();
+        hide(productCountAll);
+        show(productCountSold);
+        console.log("Attempted to hide all count");
     }
 })
 }
