@@ -1,4 +1,4 @@
-export default {
+export default /* {
   widgets: [
     {
       name: 'sanity-tutorials',
@@ -51,3 +51,4 @@ export default {
     }
   ]
 }
+*/
