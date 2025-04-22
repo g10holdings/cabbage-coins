@@ -1,4 +1,4 @@
-export default /* {
+export default {
   widgets: [
     {
       name: 'sanity-tutorials',
@@ -18,16 +18,16 @@ export default /* {
                 'NOTE: Because these sites are static builds, they need to be re-deployed to see the changes when documents are published.',
               sites: [
                 {
-                  buildHookId: '621d6a0edf2ed4699c4c9b57',
+                  buildHookId: '6806eb500ee8a89c51bbb9d0',
                   title: 'Sanity Studio',
-                  name: 'cabbage-coins-studio',
-                  apiId: '767a8cb3-d0e2-4487-b026-99be758350e4'
+                  name: 'sanitystudio2',
+                  apiId: '792d8212-5128-4c3f-9df4-582c73b8860e'
                 },
                 {
-                  buildHookId: '621d6a0efc88a2691c3ec9f6',
+                  buildHookId: '6806e68d445f3c8169b5d7d9',
                   title: 'Blog Website',
-                  name: 'cabbage-coins',
-                  apiId: '7601c2c9-2348-44a0-832f-242580b1ee40'
+                  name: 'cabbage-coins2',
+                  apiId: 'cb6571b6-a8a7-4db5-b71c-687c4f9117db'
                 }
               ]
             }
@@ -36,10 +36,10 @@ export default /* {
         data: [
           {
             title: 'GitHub repo',
-            value: 'https://github.com/btxdrake/cabbage-coins',
+            value: 'https://github.com/g10holdings/cabbage-coins',
             category: 'Code'
           },
-          {title: 'Frontend', value: 'https://cabbage-coins.netlify.app', category: 'apps'}
+          {title: 'Frontend', value: 'https://cabbage-coins2.netlify.app', category: 'apps'}
         ]
       }
     },
@@ -51,4 +51,3 @@ export default /* {
     }
   ]
 }
-*/
