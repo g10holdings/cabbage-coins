@@ -32,6 +32,9 @@ async function getListings () {
     grade,
     gradenumber,
     price,
+    gradingCompany,
+    pcgsCatalogNumber,
+    metalType,
     description[]{
       ...,
       children[]{
