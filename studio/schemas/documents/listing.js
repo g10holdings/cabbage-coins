@@ -95,7 +95,39 @@ export default {
         name: 'description',
         type: 'bodyPortableText',
         title: 'Description'
-      }
+      },
+      {
+  name: 'gradingCompany',
+  type: 'string',
+  title: 'Grading Company',
+  options: {
+    list: [
+      {title: 'PCGS', value: 'PCGS'},
+      {title: 'NGC', value: 'NGC'},
+      {title: 'CACG', value: 'CACG'},
+      {title: 'Ungraded', value: 'Ungraded'}
+    ]
+  }
+},
+{
+  name: 'pcgsCatalogNumber',
+  type: 'string',
+  title: 'PCGS Catalog Number'
+},
+{
+  name: 'metalType',
+  type: 'string',
+  title: 'Metal Type',
+  options: {
+    list: [
+      {title: 'Silver', value: 'Silver'},
+      {title: 'Gold', value: 'Gold'},
+      {title: 'Copper', value: 'Copper'},
+      {title: 'Nickel', value: 'Nickel'},
+      {title: 'Other', value: 'Other'}
+    ]
+  }
+}
     ],
     orderings: [
       {
