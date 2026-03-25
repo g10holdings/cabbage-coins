@@ -6,17 +6,24 @@ parent: Inventory
    <div class="container site-section main-section" id="listing">
         <div class="row listing-main">
             <div class="col-sm-12 col-md-12 col-lg-6 listing-image-column">
-                <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins"><img class="listing-image"  src="{{ listing.imageUrl }}?h=1020"></a>
-                <h3 class="listing-caption">"{{ listing.image.caption }}"</h3>
-                <div class="row preview-images">
-                    {% for image in listing.galleryImageUrl %}
-                        <div class="col">
-                        <a href="{{ image }}" target="_blank" data-lightbox="coins">
-                            <div class="image-dummy-small" style="background-image: url({{ image }}?h=150)"></div>
-                        </a>
-                        </div> 
-                    {% endfor %}
-                </div>
+                <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins"><img class="listing-image" src="{{ listing.imageUrl }}?h=1020"></a>
+{% if listing.galleryImageUrl[0] %}
+<a href="{{ listing.galleryImageUrl[0] }}" target="_blank" data-lightbox="coins">
+    <img class="listing-image" src="{{ listing.galleryImageUrl[0] }}?h=1020" style="margin-top:8px;">
+</a>
+{% endif %}
+<h3 class="listing-caption">"{{ listing.image.caption }}"</h3>
+<div class="row preview-images" style="margin-top:12px;">
+    {% for image in listing.galleryImageUrl %}
+        {% if not loop.first %}
+        <div class="col">
+        <a href="{{ image }}" target="_blank" data-lightbox="coins">
+            <div class="image-dummy-small" style="background-image: url({{ image }}?h=150)"></div>
+        </a>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
             </div>
             <div class="col listing-info">
                 <h2 class="text-start listing-title">{{ listing.name }}<br></h2>

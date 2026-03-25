@@ -184,7 +184,8 @@ body {
   color: #2196f3;
   text-decoration: none;
   transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out;
-  min-width: 140px;
+  min-width: 160px;
+  font-size: 18px;
   text-align: center;
 }
 
@@ -236,18 +237,23 @@ body {
 }
 
 .listing-title-preview {
-  padding-top: 10px;
-  font-size: 20px !important;
+  padding-top: 12px;
+  font-size: 18px !important;
   color: #6289c1;
   font-weight: 800;
   font-family: 'Noto Serif Display';
-  height: 100px;
+  height: 80px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 @media (min-width: 768px) {
   .listing-title-preview {
-    font-size: 20px !important;
+    font-size: 18px !important;
     min-height: 60px;
+    height: auto;
   }
 }
 
@@ -260,8 +266,9 @@ body {
 .listing-price {
   font-family: 'Roboto';
   font-weight: 700;
-  padding-top: 10px;
-  font-size: 35px;
+  padding-top: 4px;
+  font-size: 40px;
+  margin-top: auto;
 }
 
 .listing-info {
@@ -394,17 +401,19 @@ body {
 }
 
 .listing-preview {
-  padding: 20px 20px 20px 20px;
-  border-radius: 20px;
+  padding: 6px;
+  border-radius: 12px;
   border-color: #e0e5ea;
   margin-top: 0px;
-  padding-bottom: 0px;
-  height:100%;
-  width:100%;
+  margin-bottom: 0px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .listing-preview h3 {
-  font-size: 25px;
+  font-size: 20px;
 }
 
 .preview-grid {
@@ -414,13 +423,13 @@ body {
 
 .listing-preview-border {
   border-color: white;
-  padding: 0px 20px 0px 0px;
+  padding: 0px 4px 0px 4px;
 }
 
 .listing-image-preview-holder {
-  width: 80%;
-  padding-bottom: 80%;
-  margin: 1em auto;
+  width: 100%;
+  padding-bottom: 130%;
+  margin: 0.2em auto;
   overflow: hidden;
   position: relative;
   background: #000;
@@ -503,32 +512,32 @@ align-items: center;
 
 #Slide06 {
   background-image: url("../../assets/img/Coins_BG_4.png");
-  height:300px;
+  height:350px;
 }
 
 #Slide05 {
   background-image: url("../../assets/img/InstagramBanner3.png");
-  height:300px;
+  height:350px;
 }
 
 #Slide04 {
   background-image: url("../../assets/img/Coins_BG_4.png");
-  height:300px;
+  height:350px;
 }
 
 #Slide03 {
   background-image: url("../../assets/img/Coins_BG_2.jpg");
-  height:300px;
+  height:350px;
 }
 
 #Slide02 {
   background-image: url("../../assets/img/flagbg.jpg");
-  height:300px;
+  height:350px;
 }
 
 #Slide01 {
   background-image: url("../../assets/img/Lancaster.jpg");
-  height:300px;
+  height:350px;
 }
 
 .we-buy{
@@ -611,14 +620,20 @@ margin-top: 20px;
   font-weight: 800;
   min-width: 200px;
   padding: 10px 10px 10px 10px;
+  font-size: 18px;
   margin-left: auto;
   margin-right: 0px;
   align-items:flex-end;
 }
 
 #listing-grid-container {
-  padding: 50px;
+  padding: 50px 20px 0px 20px;
   margin:auto;
+}
+
+#listing-grid-container .row {
+  margin-bottom: 0px;
+  --bs-gutter-y: 0;
 }
 
 #listings-dateasc{
@@ -723,7 +738,7 @@ to{
 }
 
 .main-site{
-  max-width: 1200px;
+  max-width: 100%;
   margin:auto;
   box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.15);
   border-style: solid;
@@ -760,7 +775,7 @@ margin: 10px 0px 10px 0px;
 }
 
 .cac-coin-preview{
-  max-height:30px;
+  max-height:20px;
   display:flex;
   margin: 10px 0px 10px 0px;
   }
@@ -769,7 +784,7 @@ margin: 10px 0px 10px 0px;
   display:flex;
   justify-content: end;
   max-width: 25%;
-  min-height:100px;
+  min-height:40px;
 }
 
 .privacy-policy{
@@ -800,4 +815,12 @@ margin: 10px 0px 10px 0px;
   padding: 40px 0 60px;
   padding-bottom: 70px;
   background-color: #e3ebf7;
+}
+
+#product-count-sold, #product-count-all {
+  font-size: 20px;
+}
+
+#sold-checkbox-container {
+  font-size: 18px;
 }
