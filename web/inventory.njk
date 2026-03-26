@@ -50,4 +50,17 @@ title: Cabbage Coins | Inventory
     </div>
 </div>
 </div>
+<script>
+document.querySelectorAll('.image-dummy[data-img-back]').forEach(function(el) {
+    const front = el.dataset.imgFront;
+    const back = el.dataset.imgBack;
+    if (!back || back === 'undefined?h=900') return;
+    el.addEventListener('mouseenter', function() {
+        el.style.backgroundImage = 'url(' + back + ')';
+    });
+    el.addEventListener('mouseleave', function() {
+        el.style.backgroundImage = 'url(' + front + ')';
+    });
+});
+</script>
 
