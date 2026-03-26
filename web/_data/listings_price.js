@@ -28,6 +28,7 @@ async function getListings () {
     sold,
     cac,
     imagesGallery,
+    "galleryImageUrl": imagesGallery[].asset->url,
     "imageUrl": image.asset->url,
     grade,
     gradenumber,
