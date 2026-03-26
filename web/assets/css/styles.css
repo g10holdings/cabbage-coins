@@ -704,6 +704,14 @@ margin-top: 20px;
   display:flex;
 }
 
+#listings-catalog{
+  display:none;
+}
+
+#listings-catalog.active{
+  display:flex;
+}
+
 .listings-container{
 }
 

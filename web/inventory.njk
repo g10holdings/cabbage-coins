@@ -13,18 +13,22 @@ title: Cabbage Coins | Inventory
 <h2 id="product-count-all" class="active" style="text-align: right; font-size:30px;">{{ collections.listingsNewest.length }} Products</h2>
 <h2 id="product-count-sold" style="text-align: right; font-size:25px;">{{ collections.listingsNewest.length - collections.listingsNotsold.length }} Products</h2>
 <select name="sort" id="sort">
+  <option value="catalog">Catalog # (Red Book Order)</option>
   <option value="newest">Newest</option>
   <option value="priceasc">Price (low to high)</option>
   <option value="pricedsc">Price (high to low)</option>
-  <option value="dateasc">Mint Date (old to new)</option>
-  <option value="datedsc">Mint Date (new to old)</option>
 </select>
 <div id="sold-checkbox-container" style="display:block;padding-right:0px;text-align: right;">
 <label for="showsold"><h2 style="font-size:25px;">Show Sold</h2></label>
 <input type="checkbox" checked id="show-sold-check" name="showsold">
 </div>
-
 <div class="listings-container">
+<div class="container site-section preview-grid listing fade-in" id="listings-catalog">
+    <div class="row preview-grid listing-row">
+        {% set listinggrid = collections.myListings%}
+        {% include "listinggrid_catalog.njk" %} 
+    </div>
+</div>
 <div class="container site-section preview-grid listing fade-in" id="listings-latest">
     <div class="row preview-grid listing-row">
         {% set listinggrid = collections.myListings%}
@@ -43,18 +47,6 @@ title: Cabbage Coins | Inventory
     <div class="row preview-grid listing-row">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid_pricedsc.njk" %} 
-    </div>
-</div>
-<div class="container site-section preview-grid listing fade-in" id="listings-dateasc">
-    <div class="row preview-grid listing-row">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid_dateasc.njk" %} 
-    </div>
-</div>
-<div class="container site-section preview-grid listing fade-in" id="listings-datedsc">
-    <div class="row preview-grid listing-row">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid_datedsc.njk" %} 
     </div>
 </div>
 </div>

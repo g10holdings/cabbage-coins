@@ -111,7 +111,7 @@ export default {
 },
 {
   name: 'pcgsCatalogNumber',
-  type: 'string',
+  type: 'number',
   title: 'PCGS Catalog Number'
 },
 {

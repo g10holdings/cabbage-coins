@@ -57,6 +57,11 @@ module.exports = function(eleventyConfig) {
     return allItems
   });
 
+  eleventyConfig.addCollection("listingsByCatalog", (collection) => {
+  const allItems = collection.getAll()[0].data.listings_catalog;
+  return allItems
+});
+
   eleventyConfig.addCollection("listingsNotsold", (collection) => {
     const allItems = collection.getAll()[0].data.listings_notsold;
   
