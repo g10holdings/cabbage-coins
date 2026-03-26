@@ -47,9 +47,14 @@ async function getListings () {
   const order = `| order(pcgsCatalogNumber asc)`
   const query = [filter, projection, order].join(' ')
   const docs = await client.fetch(query).catch(err => console.error(err))
-  const reducedDocs = overlayDrafts(hasToken, docs)
-  const prepareListings = reducedDocs.map(generateListing)
-  return prepareListings
+const reducedDocs = overlayDrafts(hasToken, docs)
+const prepareListings = reducedDocs.map(generateListing)
+prepareListings.sort((a, b) => {
+  const numA = parseFloat(a.pcgsCatalogNumber) || 999999;
+  const numB = parseFloat(b.pcgsCatalogNumber) || 999999;
+  return numA - numB;
+});
+return prepareListings
 }
 
 module.exports = getListings
