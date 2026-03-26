@@ -35,19 +35,6 @@ module.exports = function(eleventyConfig) {
     return allItems
   });
 
-  eleventyConfig.addCollection("listingsByDate", (collection) => {
-    const allItems = collection.getAll()[0].data.listings_date;
-    // Filter or use another method to select the items you want
-    // for the collection
-    return allItems
-  });
-
-  eleventyConfig.addCollection("listingsByName", (collection) => {
-    const allItems = collection.getAll()[0].data.listings_alpha;
-    // Filter or use another method to select the items you want
-    // for the collection
-    return allItems
-  });
 
   eleventyConfig.addCollection("listingsNewest", (collection) => {
     const allItems = collection.getAll()[0].data.listings_newest;
