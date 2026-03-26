@@ -35,7 +35,6 @@ module.exports = function(eleventyConfig) {
     return allItems
   });
 
-
   eleventyConfig.addCollection("listingsNewest", (collection) => {
     const allItems = collection.getAll()[0].data.listings_newest;
   

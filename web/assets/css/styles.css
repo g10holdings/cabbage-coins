@@ -835,3 +835,28 @@ margin: 10px 0px 10px 0px;
 #sold-checkbox-container {
   font-size: 18px;
 }
+
+.image-dummy {
+    transition: background-image 0.1s ease-in-out;
+}
+
+.podcast-episodes {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.podcast-episode h3 {
+    margin-top: 15px;
+    color: #6289c1;
+    font-family: 'Noto Serif Display';
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.podcast-meta {
+    color: #555;
+    font-size: 16px;
+}
