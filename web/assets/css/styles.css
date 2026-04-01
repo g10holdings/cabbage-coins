@@ -934,3 +934,85 @@ margin: 10px 0px 10px 0px;
     padding: 12px !important;
     border-radius: 8px !important;
 }
+
+.home-card {
+    background: white;
+    border-radius: 16px;
+    padding: 36px 28px;
+    border: 1px solid #d0daea;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.home-card-dark {
+    background: #1d3961;
+    border-color: #152d50;
+}
+
+.home-card-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.home-card-title {
+    color: #1d3961;
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.home-card-text {
+    font-family: 'Roboto';
+    color: #444;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    flex-grow: 1;
+}
+
+.home-card-input {
+    margin-bottom: 10px;
+    padding: 10px 14px !important;
+    font-size: 15px !important;
+    border-radius: 8px !important;
+}
+
+.home-card-btn {
+    background: #1d3961;
+    color: white;
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 15px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    width: 100%;
+}
+
+.home-card-btn:hover {
+    background: #2a4f8a;
+    color: white;
+}
+
+.home-card-btn-light {
+    background: white;
+    color: #1d3961;
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 15px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+}
+
+.home-card-btn-light:hover {
+    background: #e8f0fb;
+    color: #1d3961;
+}
