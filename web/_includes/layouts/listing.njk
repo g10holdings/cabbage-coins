@@ -94,18 +94,59 @@ parent: Inventory
         <div class="row">
             <div class="col"></div>
         </div>
-    <div id="lightbox-form">
-        <div class='inquiry-form'>
-                <form action="https://formspree.io/f/xpqorvdg" method="POST">
-                    <h2 class="text-center">Inquire</h2>
-                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
-                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <p style="text-align: left;font-size:20px;font-weight: bold;">Please feel free to edit the message below to suit your inquiry:</p>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }}. &#013;My preferred payment method is: (Zelle, Venmo, Cashapp, Paypal, Check)&#013;Please contact me at your earliest convenience to discuss this purchase.&#013;[please add your phone number here]&#013;Thank you!</textarea></div>
-                    <div><input type="checkbox" name="privacypolicy" required></input>
-                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
-                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
-                </form>
-            <form></form>
+<div id="lightbox-form">
+    <div class="inquiry-form">
+        <div style="display:flex; align-items:center; margin-bottom:20px; border-bottom:2px solid #e0e5ea; padding-bottom:16px;">
+            <div style="background:#1d3961; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin-right:14px; flex-shrink:0;">
+                <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='white' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2zm3.708 6.208L1 11.105V5.383l4.708 2.825zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2z'/></svg>
+            </div>
+            <div>
+                <h2 style="margin:0; color:#1d3961; font-family:'Noto Serif Display'; font-weight:800; font-size:24px;">Inquire About This Coin</h2>
+                <p style="margin:0; color:#6289c1; font-family:'Roboto'; font-size:14px;">{{ listing.name }}</p>
+            </div>
         </div>
+
+        <form action="https://formspree.io/f/xpqorvdg" method="POST">
+            <input type="hidden" name="listing" value="{{ listing.name }}">
+            <input type="hidden" name="price" value="${{ listing.price }}">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+                <div>
+                    <label class="sell-label">Your Name</label>
+                    <input class="form-control sell-input" type="text" name="name" placeholder="John Smith" required>
+                </div>
+                <div>
+                    <label class="sell-label">Your Email</label>
+                    <input class="form-control sell-input" type="email" name="email" placeholder="john@email.com" required>
+                </div>
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label class="sell-label">Phone Number (optional)</label>
+                <input class="form-control sell-input" type="tel" name="phone" placeholder="(717) 555-1234">
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label class="sell-label">Message</label>
+                <textarea class="form-control sell-input" name="message" rows="6">Hello Tony,
+I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }}.
+My preferred payment method is: (Zelle, Venmo, Paypal FF, Check)
+Please contact me at your earliest convenience to discuss this purchase.
+[please add your phone number here]
+Thank you!</textarea>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <input type="checkbox" id="privacypolicy" name="privacypolicy" required>
+                <label for="privacypolicy" style="margin-left:8px; font-family:'Roboto'; font-size:14px; color:#444;">
+                    I agree to the <a href="/privacypolicy/" target="_blank" style="color:#6289c1;">privacy policy</a>.
+                </label>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button class="btn btn-primary" type="submit" style="font-size:16px; padding:10px 28px; flex:1;">Send Inquiry</button>
+                <button type="button" onclick="document.getElementById('lightbox-form').classList.remove('active')" style="font-size:16px; padding:10px 20px; background:none; border:1px solid #ccc; border-radius:6px; cursor:pointer; color:#666;">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
