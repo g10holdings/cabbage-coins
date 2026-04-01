@@ -426,7 +426,9 @@ body {
 
 .listing-preview-border {
   border-color: white;
-  padding: 0px 4px 0px 4px;
+  padding: 0px 4px 8px 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e0e5ea;
 }
 
 .listing-image-preview-holder {
@@ -859,4 +861,28 @@ margin: 10px 0px 10px 0px;
 .podcast-meta {
     color: #555;
     font-size: 16px;
+}
+
+@media (max-width: 767px) {
+    .listing-title-preview {
+        height: auto;
+        min-height: 0;
+        -webkit-line-clamp: unset;
+    }
+
+    .listing-price {
+        font-size: 30px;
+        margin-bottom: 8px;
+    }
+
+    .listing-preview-border {
+        margin-bottom: 24px;
+        border-bottom: 1px solid #e0e5ea;
+        padding-bottom: 8px;
+    }
+
+    .sell-to-us {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 }
