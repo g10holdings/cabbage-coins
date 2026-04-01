@@ -886,3 +886,48 @@ margin: 10px 0px 10px 0px;
         padding-right: 20px;
     }
 }
+
+.sell-form-wrapper {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.sell-form-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("/assets/img/Coins_BG_3b.jpg");
+    background-size: cover;
+    background-position: center;
+    opacity: 0.35;
+    border-radius: 20px;
+}
+
+.sell-form-overlay {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255,255,255,0.75);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid #e0e5ea;
+}
+
+.sell-label {
+    font-family: 'Roboto';
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1d3961;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.sell-input {
+    font-size: 16px !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+}

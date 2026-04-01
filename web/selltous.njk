@@ -11,40 +11,73 @@ title: Cabbage Coins | Sell To Us
 ---
 
 <div class="container text-start site-section main-section">
-        <h1 class="text-start">Sell To Us</h1><img class="sell-to-us-image" src="/assets/img/Coins_BG_3b.jpg" width="100%">
-        <div class="row row-cols-3">
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
-                <div class="we-buy">
-                    <h2>Rare Coins</h2>
-                    <p>We make the strongest offers on rare coin collections in Central PA! Just give us a call <a href="tel:17177239505">+1 (717) 723-9505</a> or use the contact link below to reach out and tell us about the collection. We may be able to give you an estimate on value right over the phone or can arrange to come take a look at the collection in a safe, public place. Our offers will be strong, convenient and quick to pay in a format that suits you most.</p>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder"> 
-                <div class="we-buy">
-                    <h2>Gold</h2>
-                    <p>In need of cash and looking to sell some old gold bars or coins? Let us make an offer so you can get the most for your metal. We buy American Eagles, Canadian Maple Leafs and all sort of generic or old US coin gold. We will test the gold for purity and can make an offer on the spot. Use the contact button below to reach out and we'll arrange a place to meet and look at your collection.</p>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
-                <div class="we-buy">
-                    <h2>Silver</h2>
-                    <p>Do you have any old silver bars lying around? Any poured silver or something vintage from the 1980s or earlier? We'd love to take a look at your silver stack and make a cash offer. We buy sizes ranging from 1oz to 10oz and all the way up to 100oz bars! Click that contact button below and we'll figure out the most convenient way to give you an appraisal today. &nbsp;<br><br></p>
-                </div>
+    <h1 class="text-start">Sell To Us</h1>
+
+    <div class="row row-cols-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
+            <div class="we-buy">
+                <h2>Rare Coins</h2>
+                <p>We make the strongest offers on rare coin collections in Central PA. Our deep knowledge of the market means you get a fair, expert appraisal — not a lowball offer.</p>
             </div>
         </div>
-        <div class="text-center" style="padding-top:20px;"><button class="btn btn-primary" id="lightbox-form-button" type="button">Contact us</button></div>
-    </div>
-        <div id="lightbox-form">
-        <div class='inquiry-form'>
-                <form action="https://formspree.io/f/mzbogwbb" method="post">
-                    <h2 class="text-center">Contact Us</h2>
-                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
-                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I'm looking to sell. Here is the info:</textarea></div>
-                    <div><input type="checkbox" name="privacypolicy" required></input>
-                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
-                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
-                </form>
-            <form></form>
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
+            <div class="we-buy">
+                <h2>Gold & Silver</h2>
+                <p>Selling gold or silver bars and coins? We test for purity on the spot and make competitive cash offers. We buy everything from American Eagles to vintage poured silver bars.</p>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
+            <div class="we-buy">
+                <h2>Quick & Easy</h2>
+                <p>No lengthy process. Tell us what you have, and we'll give you an estimate — sometimes right over the phone. We pay quickly in the format that suits you best.</p>
+            </div>
         </div>
     </div>
+
+    <div class="sell-form-wrapper">
+        <div class="sell-form-overlay">
+            <h2 style="color:#1d3961; font-family:'Noto Serif Display'; font-weight:800; margin-bottom:8px;">Tell Us About Your Collection</h2>
+            <p style="color:#444; margin-bottom:24px;">Fill out the form below and Tony will get back to you promptly. Include as much detail as you can about each coin — grading service, grade, year, and any special attributes help us give you the most accurate offer.</p>
+
+            <form action="https://formspree.io/f/xpqorvdg" method="POST">
+                <input type="hidden" name="_cc" value="tony@cabbagecoins.com">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="sell-label">Your Name</label>
+                        <input class="form-control sell-input" type="text" name="name" placeholder="John Smith" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="sell-label">Your Email</label>
+                        <input class="form-control sell-input" type="email" name="email" placeholder="john@email.com" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="sell-label">Phone Number (optional)</label>
+                        <input class="form-control sell-input" type="tel" name="phone" placeholder="(717) 555-1234">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="sell-label">Best Time to Reach You</label>
+                        <input class="form-control sell-input" type="text" name="best_time" placeholder="e.g. Weekday mornings">
+                    </div>
+                    <div class="col-12">
+                        <label class="sell-label">Coin & Collection Details</label>
+                        <textarea class="form-control sell-input" name="message" rows="10" placeholder="Please describe what you have. For each coin, include:
+- Year, denomination, and mint mark (e.g. 1881-S $1 Morgan Dollar)
+- Grading service and grade (e.g. PCGS MS64, NGC AU58)
+- Certification number if available
+- Any special attributes (CAC sticker, toning, varieties)
+- Approximate quantity if selling a large collection
+
+The more detail you provide, the faster we can get you an offer!" required></textarea>
+                    </div>
+                    <div class="col-12">
+                        <input type="checkbox" name="privacypolicy" id="privacypolicy" required>
+                        <label for="privacypolicy" style="margin-left:8px; font-family:'Roboto'; font-size:14px;">I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" type="submit" style="font-size:18px; padding:12px 30px;">Send Inquiry</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
