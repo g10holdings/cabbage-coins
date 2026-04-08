@@ -36,7 +36,7 @@ async function getListings () {
     price,
     gradingCompany,
     pcgsCatalogNumber,
-    metalType,
+    category,
     description[]{
       ...,
       children[]{
