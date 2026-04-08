@@ -150,3 +150,18 @@ Thank you!</textarea>
         </form>
     </div>
 </div>
+<script>
+            (function() {
+                var form = document.querySelector('#lightbox-form form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        var email = form.querySelector('input[name="email"]').value;
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = '_replyto';
+                        input.value = email;
+                        form.appendChild(input);
+                    });
+                }
+            })();
+            </script>

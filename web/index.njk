@@ -121,7 +121,7 @@ title: Cabbage Coins | Home
             </div>
         </div>
         <form action="https://formspree.io/f/xjgprnzv" method="POST">
-            <input type="hidden" name="_subject" value="New Newsletter & Wishlist Signup - Cabbage Coins">
+            <input type="hidden" name="_subject" value="Newsletter Signup - Cabbage Coins">
             <input type="hidden" name="form_type" value="Newsletter & Wishlist Signup">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                 <div>
@@ -167,4 +167,19 @@ document.querySelectorAll('.image-dummy[data-img-back]').forEach(function(el) {
     });
 });
 </script>
+<script>
+            (function() {
+                var form = document.querySelector('#newsletter-popup form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        var email = form.querySelector('input[name="email"]').value;
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = '_replyto';
+                        input.value = email;
+                        form.appendChild(input);
+                    });
+                }
+            })();
+            </script>
 
