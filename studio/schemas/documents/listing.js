@@ -115,15 +115,17 @@ export default {
   title: 'PCGS Catalog Number'
 },
 {
-  name: 'metalType',
+  name: 'category',
   type: 'string',
-  title: 'Metal Type',
+  title: 'Category',
   options: {
     list: [
+      {title: 'Copper/Bronze', value: 'Copper/Bronze'},
       {title: 'Silver', value: 'Silver'},
       {title: 'Gold', value: 'Gold'},
-      {title: 'Copper', value: 'Copper'},
-      {title: 'Nickel', value: 'Nickel'},
+      {title: 'Vintage Ingot', value: 'Vintage Ingot'},
+      {title: 'Paper Currency', value: 'Paper Currency'},
+      {title: 'Foreign', value: 'Foreign'},
       {title: 'Other', value: 'Other'}
     ]
   }
