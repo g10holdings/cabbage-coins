@@ -1,10 +1,10 @@
 {% for listing in collections.listingsByCatalog %}
     {% set currentListing = listing.data.listing %}
-        {% if listing.sold %}
-        <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border sold-listing">
-        {% else %}
-        <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border">
-        {% endif %}
+            {% if listing.sold %}
+            <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border sold-listing" data-category="{{ listing.category }}" data-cac="{{ listing.cac }}">
+            {% else %}
+            <div class="col-12 col-sm-12 col-md-6 col-lg-3 listing-preview-border" data-category="{{ listing.category }}" data-cac="{{ listing.cac }}">
+            {% endif %}
             <div class="listing-preview"><a class="listing-title-link" href="/listings/{{ listing.slug.current | slug }}/">
                     <div class="image-dummy" 
                         style="background-image: url({{ listing.imageUrl }}?h=900)"

@@ -45,11 +45,15 @@ if(soldCheckbox){
             hide(productCountAll);
             show(productCountSold);
         }
+        applyFilters();
     })
 }
 
 if(sortingDropdown){
-    sortingDropdown.addEventListener("change", getSelectValue);
+    sortingDropdown.addEventListener("change", function() {
+        getSelectValue();
+        applyFilters();
+    });
 }
 
 function getSelectValue(){
@@ -108,4 +112,63 @@ function showSold(){
         show(listing)
     }
     getSelectValue();
+}
+// Category filter buttons
+var filterButtons = document.querySelectorAll('.filter-btn');
+var cacFilterCheck = document.getElementById('cac-filter-check');
+var activeCategory = 'all';
+var cacOnly = false;
+
+function applyFilters() {
+    var activeGrid = document.querySelector('.listings-container > div.active');
+    if (!activeGrid) return;
+
+    var cards = activeGrid.querySelectorAll('.listing-preview-border');
+    var visibleCount = 0;
+    var showSold = soldCheckbox && soldCheckbox.checked;
+
+    cards.forEach(function(card) {
+        var category = card.dataset.category || '';
+        var cac = card.dataset.cac === 'true';
+        var isSold = card.classList.contains('sold-listing');
+
+        // Skip sold listings if show sold is off
+        if (isSold && !showSold) {
+            card.style.display = 'none';
+            return;
+        }
+
+        var categoryMatch = activeCategory === 'all' || category === activeCategory;
+        var cacMatch = !cacOnly || cac;
+
+        if (categoryMatch && cacMatch) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    var activeCountEl = document.querySelector('#product-count-all.active, #product-count-sold.active');
+    if (activeCountEl) activeCountEl.textContent = visibleCount + ' Products';
+}
+
+if (filterButtons) {
+    filterButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(function(b) {
+                b.classList.remove('active-filter');
+            });
+            btn.classList.add('active-filter');
+            activeCategory = btn.dataset.filter;
+            applyFilters();
+        });
+    });
+}
+
+if (cacFilterCheck) {
+    cacFilterCheck.addEventListener('change', function() {
+        cacOnly = cacFilterCheck.checked;
+        applyFilters();
+    });
 }

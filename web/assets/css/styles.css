@@ -623,15 +623,16 @@ margin-top: 20px;
 }
 
 #sort {
-  display: flex;
   font-family: 'Noto Serif Display';
   font-weight: 800;
   min-width: 200px;
-  padding: 10px 10px 10px 10px;
-  font-size: 18px;
-  margin-left: auto;
-  margin-right: 0px;
-  align-items:flex-end;
+  padding: 6px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 #listing-grid-container {
@@ -833,8 +834,8 @@ margin: 10px 0px 10px 0px;
   background-color: #e3ebf7;
 }
 
-#product-count-sold, #product-count-all {
-  font-size: 20px;
+#sold-checkbox-container {
+  font-size: 18px;
 }
 
 #sold-checkbox-container {
@@ -1015,4 +1016,77 @@ margin: 10px 0px 10px 0px;
 .home-card-btn-light:hover {
     background: #e8f0fb;
     color: #1d3961;
+}
+
+#inventory-controls {
+    padding: 16px 0 20px 0;
+    border-bottom: 1px solid #e0e5ea;
+    margin-bottom: 20px;
+}
+
+.inventory-filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.inventory-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.filter-label {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+.filter-btn {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 14px;
+    padding: 5px 14px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.filter-btn:hover {
+    border-color: #1d3961;
+    color: #1d3961;
+}
+
+.filter-btn.active-filter {
+    border-color: #1d3961;
+    background: #1d3961;
+    color: white;
+}
+
+@media (max-width: 767px) {
+    .inventory-filter-buttons {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    #sort {
+        font-size: 13px !important;
+        min-width: 120px !important;
+        padding: 6px 8px !important;
+    }
 }
