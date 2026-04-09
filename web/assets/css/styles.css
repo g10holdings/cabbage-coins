@@ -1090,3 +1090,50 @@ margin: 10px 0px 10px 0px;
         padding: 6px 8px !important;
     }
 }
+.review-card {
+    min-width: 320px;
+    max-width: 320px;
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid #e0e5ea;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+}
+
+.review-stars {
+    color: #f5a623;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.review-text {
+    font-family: 'Roboto';
+    font-size: 15px;
+    color: #444;
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+
+.review-name {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    color: #1d3961;
+    font-size: 15px;
+}
+
+.rdot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.rdot.active-dot {
+    background: #1d3961;
+}
