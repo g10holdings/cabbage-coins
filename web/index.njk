@@ -282,6 +282,12 @@ title: Cabbage Coins | Home
     </div>
 </div>
 <script>
+// Auto-open newsletter popup if URL contains #newsletter
+if (window.location.hash === '#newsletter') {
+    document.getElementById('newsletter-popup').style.display = 'flex';
+}
+</script>
+<script>
 document.querySelectorAll('.image-dummy[data-img-back]').forEach(function(el) {
     const front = el.dataset.imgFront;
     const back = el.dataset.imgBack;
