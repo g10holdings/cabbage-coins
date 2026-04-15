@@ -1202,5 +1202,26 @@ margin: 10px 0px 10px 0px;
     .show-card {
         flex-wrap: wrap;
         gap: 12px;
+        padding: 14px 16px;
+    }
+    .show-date-badge {
+        width: 56px;
+        min-width: 56px;
+    }
+    .show-day {
+        font-size: 18px;
+    }
+    .show-name {
+        font-size: 16px !important;
+    }
+    .show-location {
+        font-size: 13px !important;
+    }
+    .show-meta {
+        font-size: 13px !important;
+    }
+    .show-badge-status {
+        margin-left: auto;
+        align-self: flex-start;
     }
 }
