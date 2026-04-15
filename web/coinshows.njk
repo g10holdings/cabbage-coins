@@ -1,0 +1,137 @@
+---
+date: 2026-04-15
+eleventyNavigation:
+  key: Coin Shows
+  parent: About Cabbage Coins
+  order: 2
+layout: layouts/base.njk
+navtitle: Coin Shows
+title: Cabbage Coins | Coin Show Schedule
+---
+
+<div class="container site-section main-section" style="text-align:center;">
+    <h1 style="text-align:center;">Coin Show Schedule</h1>
+    <p style="font-family:'Roboto'; font-size:18px; color:#444; max-width:700px; margin:0 auto 40px auto;">Come find us at these upcoming shows! Stop by the table to browse inventory, talk coins, or sell your collection in person.</p>
+
+    <!-- April 2026 -->
+    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
+        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">April 2026</h2>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+            <div class="show-card" data-end="2026-04-19">
+                <div class="show-date-badge">
+                    <div class="show-month-short">APR</div>
+                    <div class="show-day">18–19</div>
+                </div>
+                <div class="show-details">
+                    <a href="https://viennacoinshow.com/" target="_blank" class="show-name-link">
+                        <h3 class="show-name">Vienna VA Coin Show</h3>
+                    </a>
+                    <div class="show-location">📍 Vienna, VA</div>
+                    <div class="show-meta">Table: TBD</div>
+                </div>
+                <div class="show-badge-status"></div>
+            </div>
+
+            <div class="show-card" data-end="2026-04-25">
+                <div class="show-date-badge">
+                    <div class="show-month-short">APR</div>
+                    <div class="show-day">23–25</div>
+                </div>
+                <div class="show-details">
+                    <a href="https://www.csns.org/" target="_blank" class="show-name-link">
+                        <h3 class="show-name">Central States Numismatic Society</h3>
+                    </a>
+                    <div class="show-location">📍 Schaumburg, IL</div>
+                    <div class="show-meta">Table: 1717</div>
+                </div>
+                <div class="show-badge-status"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- May 2026 -->
+    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
+        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">May 2026</h2>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+            <div class="show-card" data-end="2026-05-30">
+                <div class="show-date-badge">
+                    <div class="show-month-short">MAY</div>
+                    <div class="show-day">28–30</div>
+                </div>
+                <div class="show-details">
+                    <a href="https://pancoins.org/" target="_blank" class="show-name-link">
+                        <h3 class="show-name">PAN Show</h3>
+                    </a>
+                    <div class="show-location">📍 Monroeville, PA</div>
+                    <div class="show-meta">Table: 420</div>
+                </div>
+                <div class="show-badge-status"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- July 2026 -->
+    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
+        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">July 2026</h2>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+            <div class="show-card" data-end="2026-07-11">
+                <div class="show-date-badge">
+                    <div class="show-month-short">JUL</div>
+                    <div class="show-day">9–11</div>
+                </div>
+                <div class="show-details">
+                    <a href="http://www.funtopics.com/summer-fun.html" target="_blank" class="show-name-link">
+                        <h3 class="show-name">FUN Show</h3>
+                    </a>
+                    <div class="show-location">📍 Orlando, FL</div>
+                    <div class="show-meta">Table: TBD</div>
+                </div>
+                <div class="show-badge-status"></div>
+            </div>
+
+            <div class="show-card" data-end="2026-07-25">
+                <div class="show-date-badge">
+                    <div class="show-month-short">JUL</div>
+                    <div class="show-day">23–25</div>
+                </div>
+                <div class="show-details">
+                    <a href="https://www.baystatecoinshow.com/" target="_blank" class="show-name-link">
+                        <h3 class="show-name">Bay State Coin Show</h3>
+                    </a>
+                    <div class="show-location">📍 Marlborough, MA</div>
+                </div>
+                <div class="show-badge-status"></div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function() {
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    document.querySelectorAll('.show-card').forEach(function(card) {
+        var endDate = new Date(card.dataset.end);
+        var isPast = endDate < today;
+        var badge = card.querySelector('.show-badge-status');
+        var dateBadge = card.querySelector('.show-date-badge');
+        if (isPast) {
+            card.style.opacity = '0.6';
+            card.style.background = '#f9f9f9';
+            dateBadge.style.background = '#888';
+            badge.textContent = 'Past';
+            badge.style.cssText = 'font-family:Roboto; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; background:#f0f0f0; color:#888; white-space:nowrap;';
+        } else {
+            badge.textContent = 'Upcoming';
+            badge.style.cssText = 'font-family:Roboto; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; background:#e8f0fb; color:#1d3961; white-space:nowrap;';
+        }
+    });
+})();
+</script>

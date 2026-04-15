@@ -50,11 +50,12 @@
                     {% for nav in collections.nav %}
                         {% if nav.data.eleventyNavigation.key == "About Cabbage Coins" %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {% if page.url == nav.url %}active{% endif %}" href="{{ nav.url }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ nav.data.navtitle }}</a>
+                            <a class="nav-link dropdown-toggle {% if page.url == nav.url or page.url == '/coinshows/' or page.url == '/podcast/' %}active{% endif %}" href="{{ nav.url }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ nav.data.navtitle }}</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ nav.url }}">About Cabbage Coins</a></li>
-                                <li><a class="dropdown-item" href="/podcast/">The Podcast</a></li>
-                            </ul>
+                            <li><a class="dropdown-item" href="{{ nav.url }}">About Cabbage Coins</a></li>
+                            <li><a class="dropdown-item" href="/podcast/">The Podcast</a></li>
+                            <li><a class="dropdown-item" href="/coinshows/">Coin Show Schedule</a></li>
+                </ul>
                         </li>
                         {% elif nav.data.eleventyNavigation.parent %}
                         {% else %}

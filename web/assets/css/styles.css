@@ -1137,3 +1137,70 @@ margin: 10px 0px 10px 0px;
 .rdot.active-dot {
     background: #1d3961;
 }
+.show-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    border: 1px solid #e0e5ea;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.show-date-badge {
+    background: #1d3961;
+    color: white;
+    border-radius: 10px;
+    width: 64px;
+    min-width: 64px;
+    text-align: center;
+    padding: 10px 0;
+}
+.show-month-short {
+    font-family: 'Roboto';
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+.show-day {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+}
+.show-details {
+    flex: 1;
+    text-align: left;
+}
+.show-name {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    color: #1d3961;
+    font-size: 20px;
+    margin: 0 0 4px 0;
+}
+.show-name-link {
+    text-decoration: none;
+}
+.show-name-link:hover .show-name {
+    text-decoration: underline;
+    color: #6289c1;
+}
+.show-location {
+    font-family: 'Roboto';
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 4px;
+}
+.show-meta {
+    font-family: 'Roboto';
+    font-size: 14px;
+    color: #888;
+}
+@media (max-width: 767px) {
+    .show-card {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}
