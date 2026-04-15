@@ -57,4 +57,31 @@ eleventyNavigation:
                 </form>
             <form></form>
         </div>
-    </div>
+<script>
+(function() {
+    var img = document.querySelector('.about-us-bio img');
+    if (!img) return;
+    var front = '/assets/img/tonyPic1.JPEG';
+    var back = '/assets/img/tonyPic3.JPEG';
+    var preload = new Image();
+    preload.src = back;
+    img.style.transition = 'opacity 0.2s ease';
+    img.addEventListener('mouseenter', function() {
+        img.style.opacity = '0';
+        setTimeout(function() {
+            img.src = back;
+            img.style.objectPosition = 'center 25%';
+            img.style.opacity = '1';
+        }, 200);
+    });
+    img.addEventListener('mouseleave', function() {
+        img.style.opacity = '0';
+        setTimeout(function() {
+            img.src = front;
+            img.style.objectPosition = 'center 25%';
+            img.style.opacity = '1';
+        }, 200);
+    });
+})();
+</script>
+</div>
