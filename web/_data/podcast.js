@@ -1,23 +1,45 @@
-const Parser = require('rss-parser');
+const https = require('https')
 
-async function getPodcastEpisodes() {
-  const parser = new Parser();
-  const playlistId = 'PLlr-GEyMjkcbnDLipOKqe2p5MT9MKNy3L';
-  const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`;
-  
-  try {
-    const feed = await parser.parseURL(feedUrl);
-    return feed.items.slice(0, 5).map(item => ({
-      title: item.title,
-      videoId: item.link.split('v=')[1],
-      publishedAt: new Date(item.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      views: item['media:group']?.['media:community']?.[0]?.['media:statistics']?.[0]?.$?.views || null
-    }));
-  } catch (err) {
-    console.error('Podcast RSS fetch error:', err);
-    return [];
-  }
+const API_KEY = 'AIzaSyCehTOSYjal6lcMESn-uKj5Xrr39fNbDGM'
+const CHANNEL_ID = 'UCRx-Dzt15Jwr6QBCTO3JXLg'
+
+function fetchJSON(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = ''
+            res.on('data', chunk => data += chunk)
+            res.on('end', () => resolve(JSON.parse(data)))
+        }).on('error', reject)
+    })
 }
 
-module.exports = getPodcastEpisodes;
+async function getPodcastEpisodes() {
+    try {
+        // Get latest videos from channel
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet&order=date&maxResults=10&type=video`
+        const data = await fetchJSON(searchUrl)
 
+        if (!data.items || data.items.length === 0) {
+            console.error('No podcast episodes found')
+            return []
+        }
+
+        return data.items.map(item => ({
+            title: item.snippet.title,
+            videoId: item.id.videoId,
+            publishedAt: new Date(item.snippet.publishedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }),
+            thumbnail: item.snippet.thumbnails.maxres
+                ? item.snippet.thumbnails.maxres.url
+                : item.snippet.thumbnails.high.url
+        }))
+    } catch (err) {
+        console.error('YouTube API fetch error:', err)
+        return []
+    }
+}
+
+module.exports = getPodcastEpisodes
