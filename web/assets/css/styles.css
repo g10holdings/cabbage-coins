@@ -529,8 +529,10 @@ align-items: center;
 }
 
 #Slide04 {
-  background-image: url("../../assets/img/Coins_BG_4.png");
-  height:350px;
+    background-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url("/assets/img/coinshow.jpg");
+    background-size: cover;
+    background-position: center;
+    height:350px;
 }
 
 #Slide03 {
