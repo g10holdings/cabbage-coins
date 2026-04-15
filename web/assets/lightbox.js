@@ -11,6 +11,8 @@ const productCountAll = document.getElementById('product-count-all')
 const productCountSold = document.getElementById('product-count-sold')
 
 var soldListings = document.getElementsByClassName('sold-listing');
+var certButtons = document.querySelectorAll('.cert-btn');
+var activeCert = 'all';
 
 if (listingsCatalog){
     hide(listingsLatest);
@@ -140,8 +142,10 @@ function applyFilters() {
 
         var categoryMatch = activeCategory === 'all' || category === activeCategory;
         var cacMatch = !cacOnly || cac;
+        var grading = card.dataset.grading || '';
+        var certMatch = activeCert === 'all' || grading === activeCert;
 
-        if (categoryMatch && cacMatch) {
+        if (categoryMatch && cacMatch && certMatch) {
             card.style.display = '';
             visibleCount++;
         } else {
@@ -161,6 +165,19 @@ if (filterButtons) {
             });
             btn.classList.add('active-filter');
             activeCategory = btn.dataset.filter;
+            applyFilters();
+        });
+    });
+}
+
+if (certButtons) {
+    certButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            certButtons.forEach(function(b) {
+                b.classList.remove('active-cert');
+            });
+            btn.classList.add('active-cert');
+            activeCert = btn.dataset.cert;
             applyFilters();
         });
     });

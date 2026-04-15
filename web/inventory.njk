@@ -48,30 +48,40 @@ title: Cabbage Coins | Inventory
             <option value="pricedsc">Price (high to low)</option>
         </select>
     </div>
+    <div class="inventory-filter-row" style="margin-top:10px;">
+        <div class="inventory-filter-buttons">
+            <span class="filter-label">Certification</span>
+            <button class="cert-btn active-cert" data-cert="all">All</button>
+            <button class="cert-btn" data-cert="PCGS">PCGS</button>
+            <button class="cert-btn" data-cert="NGC">NGC</button>
+            <button class="cert-btn" data-cert="CACG">CACG</button>
+            <button class="cert-btn" data-cert="Ungraded">Ungraded</button>
+        </div>
+    </div>
 </div>
 <div class="listings-container">
 <div class="container site-section preview-grid listing fade-in" id="listings-catalog">
-    <div class="row preview-grid listing-row">
+    <div class="row preview-grid listing-row justify-content-start">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid_catalog.njk" %} 
     </div>
 </div>
 <div class="container site-section preview-grid listing fade-in" id="listings-latest">
-    <div class="row preview-grid listing-row">
+    <div class="row preview-grid listing-row justify-content-start">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid.njk" %} 
 
     </div>
 </div>
 <div class="container site-section preview-grid listing fade-in" id="listings-priceasc">
-    <div class="row preview-grid listing-row">
+    <div class="row preview-grid listing-row justify-content-start">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid_priceasc.njk" %}
 
     </div>
 </div>
 <div class="container site-section preview-grid listing fade-in" id="listings-pricedsc">
-    <div class="row preview-grid listing-row">
+    <div class="row preview-grid listing-row justify-content-start">
         {% set listinggrid = collections.myListings%}
         {% include "listinggrid_pricedsc.njk" %} 
     </div>

@@ -432,6 +432,8 @@ body {
   padding: 0px 4px 8px 4px;
   margin-bottom: 16px;
   border-bottom: 1px solid #e0e5ea;
+  flex-grow: 0 !important;
+  min-width: 220px;
 }
 
 .listing-image-preview-holder {
@@ -1226,4 +1228,29 @@ margin: 10px 0px 10px 0px;
         margin-left: auto;
         align-self: flex-start;
     }
+}
+.cert-btn {
+    font-family: 'Noto Serif Display';
+    font-weight: 800;
+    font-size: 14px;
+    padding: 5px 14px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #444;
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.cert-btn:hover {
+    border-color: #1d3961;
+    color: #1d3961;
+}
+
+.cert-btn.active-cert {
+    border-color: #1d3961;
+    background: #1d3961;
+    color: white;
 }
