@@ -16,7 +16,7 @@ function fetchJSON(url) {
 async function getPodcastEpisodes() {
     try {
         // Get latest videos from channel
-        const searchUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet&order=date&maxResults=10&type=video`
+        const searchUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=PLlr-GEyMjkcbnDLipOKqe2p5MT9MKNy3L&part=snippet&maxResults=10`
         const data = await fetchJSON(searchUrl)
 
         if (!data.items || data.items.length === 0) {
@@ -26,7 +26,7 @@ async function getPodcastEpisodes() {
 
         return data.items.map(item => ({
             title: item.snippet.title,
-            videoId: item.id.videoId,
+            videoId: item.snippet.resourceId.videoId,
             publishedAt: new Date(item.snippet.publishedAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
