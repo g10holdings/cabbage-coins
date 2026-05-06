@@ -1,7 +1,7 @@
 const https = require('https')
 
 const API_KEY = 'AIzaSyCehTOSYjal6lcMESn-uKj5Xrr39fNbDGM'
-const CHANNEL_ID = 'UCRx-Dzt15Jwr6QBCTO3JXLg'
+const PLAYLIST_ID = 'PLlr-GEyMjkcbnDLipOKqe2p5MT9MKNy3L'
 
 function fetchJSON(url) {
     return new Promise((resolve, reject) => {
@@ -15,8 +15,7 @@ function fetchJSON(url) {
 
 async function getPodcastEpisodes() {
     try {
-        // Get latest videos from channel
-        const searchUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=PLlr-GEyMjkcbnDLipOKqe2p5MT9MKNy3L&part=snippet&maxResults=10`
+        const searchUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=${PLAYLIST_ID}&part=snippet&maxResults=10`
         const data = await fetchJSON(searchUrl)
 
         if (!data.items || data.items.length === 0) {
@@ -24,7 +23,9 @@ async function getPodcastEpisodes() {
             return []
         }
 
-        return data.items.map(item => ({
+        return data.items
+            .filter(item => item.snippet.title !== 'Private video' && item.snippet.thumbnails.high)
+            .map(item => ({
             title: item.snippet.title,
             videoId: item.snippet.resourceId.videoId,
             publishedAt: new Date(item.snippet.publishedAt).toLocaleDateString('en-US', {
