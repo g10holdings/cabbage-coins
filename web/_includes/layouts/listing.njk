@@ -4,95 +4,74 @@ templateClass: tmpl-listing
 parent: Inventory
 ---
    <div class="container site-section main-section" id="listing">
-        <div class="row listing-main">
-            <div class="col-sm-12 col-md-12 col-lg-6 listing-image-column">
-                <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins"><img class="listing-image" src="{{ listing.imageUrl }}?h=1020"></a>
+        <div class="cc-listing">
+            <div class="cc-listing-grid">
+                <!-- IMAGES -->
+                <div class="cc-img-col">
+                    <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins">
+                        <img class="cc-coin" src="{{ listing.imageUrl }}?h=1020" alt="{{ listing.name }} obverse">
+                    </a>
 {% if listing.galleryImageUrl[0] %}
-<a href="{{ listing.galleryImageUrl[0] }}" target="_blank" data-lightbox="coins">
-    <img class="listing-image" src="{{ listing.galleryImageUrl[0] }}?h=1020" style="margin-top:8px;">
-</a>
+                    <a href="{{ listing.galleryImageUrl[0] }}" target="_blank" data-lightbox="coins">
+                        <img class="cc-coin" src="{{ listing.galleryImageUrl[0] }}?h=1020" alt="{{ listing.name }} reverse">
+                    </a>
 {% endif %}
-<h3 class="listing-caption">"{{ listing.image.caption }}"</h3>
-<div class="row preview-images" style="margin-top:12px;">
-    {% for image in listing.galleryImageUrl %}
-        {% if not loop.first %}
-        <div class="col">
-        <a href="{{ image }}" target="_blank" data-lightbox="coins">
-            <div class="image-dummy-small" style="background-image: url({{ image }}?h=150)"></div>
-        </a>
-        </div>
-        {% endif %}
-    {% endfor %}
-</div>
-            </div>
-            <div class="col listing-info">
-                <h2 class="text-start listing-title">{{ listing.name }}<br></h2>
-                <h3 class="text-start listing-price">
-                    {% if listing.sold %}
-                    <strike>${{ listing.price }}</strike><h2 style="color: #c16262;">SOLD</h2>
-                    {% else %}
-                    ${{ listing.price }}
-                    {% endif %}
-                </h3>
-                <div class="row">
-    <div class="col">
-        <h4 class="text-start listing-info">Issue:</h4>
-    </div>
-    <div class="col">
-        <h4 class="text-end listing-info-data">{{ listing.dateshown }}</h4>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        <h4 class="text-start listing-info">Grading Company:</h4>
-    </div>
-    <div class="col">
-        <h4 class="text-end listing-info-data">{{ listing.gradingCompany }}</h4>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        <h4 class="text-start listing-info">Certification #:</h4>
-    </div>
-    <div class="col">
-        <h4 class="text-end listing-info-data">{{ listing.gradenumber }}</h4>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        <h4 class="text-start listing-info">Grade:</h4>
-    </div>
-    <div class="col">
-        <h4 class="text-end listing-info-data">{{ listing.grade }}</h4>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        <h4 class="text-start listing-info">PCGS Catalog #:</h4>
-    </div>
-    <div class="col">
-        <h4 class="text-end listing-info-data">{{ listing.pcgsCatalogNumber }}</h4>
-    </div>
-</div>
-                <div class="row">
-                    <div class="col">
-                        {% if listing.cac %}
-                            <img src="/assets/img/caccoin.png" class="cac-coin"></img>
-                        {% else %}
+{% if listing.image.caption %}
+                    <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
+{% endif %}
+                    <div class="cc-thumb-row">
+                    {% for image in listing.galleryImageUrl %}
+                        {% if not loop.first %}
+                        <a href="{{ image }}" target="_blank" data-lightbox="coins">
+                            <div class="cc-thumb" style="background-image: url({{ image }}?h=200)"></div>
+                        </a>
                         {% endif %}
+                    {% endfor %}
                     </div>
                 </div>
-                <div class="row">
-                    {% if listing.sold %}
-                    {% else %}
-                    <div class="col text-center text-sm-center text-md-center text-lg-start listing-button-holder"><button class="btn btn-primary listing-button" id="lightbox-form-button" type="button">Inquire</button></div>
+
+                <!-- INFO -->
+                <div class="cc-info-col">
+                    <h1 class="cc-title">{{ listing.name }}</h1>
+                    <div class="cc-price-row">
+                        {% if listing.sold %}
+                        <span class="cc-price"><strike>${{ listing.price }}</strike></span>
+                        <span class="cc-status cc-status-sold">Sold</span>
+                        {% else %}
+                        <span class="cc-price">${{ listing.price }}</span>
+                        <span class="cc-status">Available</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="cc-spec"><span class="cc-spec-label">Issue</span><span class="cc-spec-value">{{ listing.dateshown }}</span></div>
+                    <div class="cc-spec"><span class="cc-spec-label">Grading Company</span><span class="cc-spec-value">{{ listing.gradingCompany }}</span></div>
+                    <div class="cc-spec"><span class="cc-spec-label">Certification #</span><span class="cc-spec-value">{{ listing.gradenumber }}</span></div>
+                    <div class="cc-spec"><span class="cc-spec-label">Grade</span><span class="cc-spec-value">{{ listing.grade }}</span></div>
+                    <div class="cc-spec"><span class="cc-spec-label">PCGS Catalog #</span><span class="cc-spec-value">{{ listing.pcgsCatalogNumber }}</span></div>
+
+                    {% if listing.cac %}
+                    <div class="cc-badge-row">
+                        <img class="cc-cac-badge" src="/assets/img/caccoin.png" alt="CAC verified">
+                        <span class="cc-cac-text">CAC verified &mdash; green sticker</span>
+                    </div>
+                    {% endif %}
+
+                    {% if not listing.sold %}
+                    <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
+                    {% endif %}
+
+                    {% if listing.description %}
+                    <div class="cc-tony-says">
+                        <div class="cc-tony-head">
+                            <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
+                            <h3 class="cc-tony-title">Tony Says</h3>
+                            <span class="cc-tony-rule"></span>
+                        </div>
+                        <p class="cc-tony-body">{{ listing.description }}</p>
+                    </div>
                     {% endif %}
                 </div>
-                <h4 class="text-start listing-description">{{ listing.description }}<br></h4>
             </div>
-        </div>
-        <div class="row">
-            <div class="col"></div>
         </div>
 <div id="lightbox-form">
     <div class="inquiry-form">
