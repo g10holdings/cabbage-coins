@@ -13,18 +13,18 @@ title: Cabbage Coins | Inventory
 <div id="inventory-controls">
     <!-- Row 1: Product count far left -->
     <div style="margin-bottom:8px; text-align:left;">
-        <h2 id="product-count-all" class="active" style="font-size:24px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length }} Products</h2>
-        <h2 id="product-count-sold" style="font-size:24px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length - collections.listingsNotsold.length }} Products</h2>
+        <h2 id="product-count-all" class="active" style="font-size:26px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length }} Products</h2>
+        <h2 id="product-count-sold" style="font-size:26px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length - collections.listingsNotsold.length }} Products</h2>
     </div>
 
     <!-- Row 2: Show Sold left, CAC Only right -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:15px; color:#6289c1; cursor:pointer;">
-            <input type="checkbox" checked id="show-sold-check" name="showsold" style="width:16px; height:16px; cursor:pointer;">
+        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:16px; color:#6289c1; cursor:pointer;">
+            <input type="checkbox" checked id="show-sold-check" name="showsold" style="width:18px; height:18px; cursor:pointer;">
             Show Sold
         </label>
-        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:15px; color:#4a9e6b; cursor:pointer;">
-            <input type="checkbox" id="cac-filter-check" style="width:16px; height:16px; cursor:pointer; accent-color:#4a9e6b;">
+        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:16px; color:#4a9e6b; cursor:pointer;">
+            <input type="checkbox" id="cac-filter-check" style="width:18px; height:18px; cursor:pointer; accent-color:#4a9e6b;">
             <img src="/assets/img/caccoin.png" style="height:24px;">
             Only
         </label>
@@ -57,7 +57,7 @@ title: Cabbage Coins | Inventory
             <button class="cert-btn" data-cert="CACG">CACG</button>
             <button class="cert-btn" data-cert="Ungraded">Ungraded</button>
         </div>
-        <div style="font-family:'Roboto'; font-size:13px; color:#8a8a8a; white-space:nowrap; align-self:center;">Last Updated: {{ buildInfo.lastUpdated }}</div>
+        <div style="font-family:'Roboto'; font-size:14px; color:#5f6b7a; white-space:nowrap; align-self:center;">Last Updated: {{ buildInfo.lastUpdated }}</div>
     </div>
 </div>
 <div class="listings-container">

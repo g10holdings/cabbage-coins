@@ -241,11 +241,11 @@ body {
 
 .listing-title-preview {
   padding-top: 12px;
-  font-size: 18px !important;
+  font-size: 20px !important;
   color: #6289c1;
   font-weight: 800;
   font-family: 'Noto Serif Display';
-  height: 80px;
+  height: 84px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -254,8 +254,8 @@ body {
 
 @media (min-width: 768px) {
   .listing-title-preview {
-    font-size: 18px !important;
-    height: 80px;
+    font-size: 20px !important;
+    height: 84px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -823,8 +823,8 @@ margin-top: 20px;
   font-family: 'Noto Serif Display';
   font-weight: 800;
   min-width: 200px;
-  padding: 6px 12px;
-  font-size: 15px;
+  padding: 7px 13px;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
   color: #333;
@@ -1241,8 +1241,8 @@ margin: 10px 0px 10px 0px;
 .filter-label {
     font-family: 'Noto Serif Display';
     font-weight: 800;
-    font-size: 12px;
-    color: #999;
+    font-size: 13px;
+    color: #5a5a5a;
     text-transform: uppercase;
     letter-spacing: 1px;
     flex-shrink: 0;
@@ -1252,8 +1252,8 @@ margin: 10px 0px 10px 0px;
 .filter-btn {
     font-family: 'Noto Serif Display';
     font-weight: 800;
-    font-size: 14px;
-    padding: 5px 14px;
+    font-size: 16px;
+    padding: 6px 15px;
     border: 1px solid #ddd;
     background: white;
     color: #444;
@@ -1282,9 +1282,9 @@ margin: 10px 0px 10px 0px;
     }
 
     #sort {
-        font-size: 13px !important;
-        min-width: 120px !important;
-        padding: 6px 8px !important;
+        font-size: 15px !important;
+        min-width: 130px !important;
+        padding: 7px 9px !important;
     }
 }
 .review-card {
@@ -1425,8 +1425,8 @@ margin: 10px 0px 10px 0px;
 .cert-btn {
     font-family: 'Noto Serif Display';
     font-weight: 800;
-    font-size: 14px;
-    padding: 5px 14px;
+    font-size: 16px;
+    padding: 6px 15px;
     border: 1px solid #ddd;
     background: white;
     color: #444;
