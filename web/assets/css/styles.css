@@ -443,22 +443,22 @@ body {
 
 /* ---- Tony Says ---- */
 .cc-tony-says {
-  margin: 22px 0 0;
-  padding: 16px 20px;
+  margin: 28px 0 0;
+  padding: 20px 25px;
   background: #f5f8fb;
   border: 1px solid #e6ebf1;
-  border-left: 4px solid #1d3961;
+  border-left: 5px solid #1d3961;
   border-radius: 12px;
 }
 .cc-tony-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 9px;
+  gap: 12px;
+  margin-bottom: 11px;
 }
 .cc-tony-emblem {
-  height: 30px;
-  width: 30px;
+  height: 38px;
+  width: 38px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -466,14 +466,14 @@ body {
   font-family: 'Noto Serif Display', Georgia, serif;
   font-weight: 800;
   color: #1d3961;
-  font-size: 19px;
+  font-size: 24px;
   margin: 0;
   letter-spacing: .01em;
 }
 .cc-tony-body {
   font-family: 'Roboto', sans-serif;
   font-weight: 400;
-  font-size: 15px;
+  font-size: 19px;
   line-height: 1.6;
   color: #2c3a4d;
   margin: 0;
