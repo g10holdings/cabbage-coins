@@ -353,13 +353,14 @@ body {
 /* ---- info ---- */
 .cc-info-col { padding: 36px 38px; }
 
-.cc-title {
+.cc-info-col .cc-title {
   font-family: 'Noto Serif Display', Georgia, serif;
   font-weight: 800;
   color: #1d3961;
-  font-size: 30px;
-  line-height: 1.2;
-  margin: 0 0 14px;
+  font-size: 38px;
+  line-height: 1.18;
+  margin: 0 0 16px;   /* overrides .site-section h1's 60px top margin */
+  text-wrap: balance;
 }
 .cc-price-row {
   display: flex;
@@ -372,11 +373,11 @@ body {
 .cc-price {
   font-family: 'Roboto', sans-serif;
   font-weight: 700;
-  font-size: 32px;
+  font-size: 40px;
   color: #2c3a4d;
 }
 .cc-status {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -394,20 +395,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 13px 2px;
+  padding: 15px 2px;
   border-bottom: 1px solid #e6ebf1;
 }
 .cc-spec-label {
   font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: .07em;
   text-transform: uppercase;
-  color: #7c8aa0;
+  color: #5f6b7a;
 }
 .cc-spec-value {
   font-family: 'Roboto', sans-serif;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 700;
   color: #1d3961;
   text-align: right;
@@ -419,8 +420,8 @@ body {
   gap: 14px;
   margin: 20px 0 24px;
 }
-.cc-cac-badge { height: 46px; }
-.cc-cac-text { font-size: 13px; color: #7c8aa0; }
+.cc-cac-badge { height: 52px; }
+.cc-cac-text { font-size: 16px; color: #5f6b7a; }
 
 .cc-inquire-btn {
   display: inline-flex;
@@ -429,11 +430,11 @@ body {
   background: #1d3961;
   color: #fff;
   font-family: 'Noto Serif Display', Georgia, serif;
-  font-size: 18px;
+  font-size: 20px;
   letter-spacing: .04em;
   border: none;
   border-radius: 10px;
-  padding: 14px 34px;
+  padding: 16px 38px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(29, 57, 97, 0.28);
   transition: background .15s ease, transform .15s ease;
@@ -442,22 +443,22 @@ body {
 
 /* ---- Tony Says ---- */
 .cc-tony-says {
-  margin: 28px 0 0;
-  padding: 24px 26px;
+  margin: 22px 0 0;
+  padding: 16px 20px;
   background: #f5f8fb;
   border: 1px solid #e6ebf1;
-  border-left: 5px solid #1d3961;
+  border-left: 4px solid #1d3961;
   border-radius: 12px;
 }
 .cc-tony-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 9px;
 }
 .cc-tony-emblem {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -465,21 +466,15 @@ body {
   font-family: 'Noto Serif Display', Georgia, serif;
   font-weight: 800;
   color: #1d3961;
-  font-size: 23px;
+  font-size: 19px;
   margin: 0;
   letter-spacing: .01em;
-}
-.cc-tony-rule {
-  flex: 1;
-  height: 2px;
-  background: linear-gradient(90deg, #e6ebf1, transparent);
-  border-radius: 2px;
 }
 .cc-tony-body {
   font-family: 'Roboto', sans-serif;
   font-weight: 400;
-  font-size: 17px;
-  line-height: 1.72;
+  font-size: 15px;
+  line-height: 1.6;
   color: #2c3a4d;
   margin: 0;
 }
@@ -487,7 +482,7 @@ body {
 @media (max-width: 820px) {
   .cc-listing-grid { grid-template-columns: 1fr; }
   .cc-img-col { border-right: none; border-bottom: 1px solid #e6ebf1; }
-  .cc-title { font-size: 26px; }
+  .cc-info-col .cc-title { font-size: 32px; }
   .cc-info-col { padding: 28px 24px; }
 }
 
