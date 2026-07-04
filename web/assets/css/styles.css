@@ -364,7 +364,7 @@ body {
 }
 .cc-price-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   padding-bottom: 18px;
   border-bottom: 1px solid #e6ebf1;
