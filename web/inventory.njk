@@ -42,8 +42,8 @@ title: Cabbage Coins | Inventory
             <button class="filter-btn" data-filter="Foreign">Foreign</button>
         </div>
         <select name="sort" id="sort">
+            <option value="newest" selected>Newest Items</option>
             <option value="catalogasc">PCGS Catalog #</option>
-            <option value="newest">Newest Items</option>
             <option value="priceasc">Price (low to high)</option>
             <option value="pricedsc">Price (high to low)</option>
         </select>
@@ -57,6 +57,7 @@ title: Cabbage Coins | Inventory
             <button class="cert-btn" data-cert="CACG">CACG</button>
             <button class="cert-btn" data-cert="Ungraded">Ungraded</button>
         </div>
+        <div style="font-family:'Roboto'; font-size:13px; color:#8a8a8a; white-space:nowrap; align-self:center;">Last Updated: {{ buildInfo.lastUpdated }}</div>
     </div>
 </div>
 <div class="listings-container">
