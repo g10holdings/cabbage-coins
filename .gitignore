@@ -2,7 +2,13 @@
 .DS_Store
 
 # Dependency directories
-/node_modules
+node_modules/
 
 # lerna files
 /lerna-debug.log
+
+# Secrets / local env files
+.env
+.env.*
+!.env.example
+!.env.development.template

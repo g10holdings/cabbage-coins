@@ -1,0 +1,16 @@
+{
+  "name": "cabbage-coins-import",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bulk-create draft coin listings in Sanity from a CSV.",
+  "scripts": {
+    "import": "node import-listings.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "@sanity/client": "^7.20.0",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.5"
+  }
+}
