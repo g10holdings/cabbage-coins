@@ -4,7 +4,12 @@ templateClass: tmpl-listing
 parent: Inventory
 ---
    <div class="container site-section main-section" id="listing">
-        <div class="cc-listing">
+        {% set isFeatured = featured and listing.slug.current == featured.slug.current %}
+        {% if isFeatured %}<div class="cc-featured-frame">{% endif %}
+        <div class="cc-listing{% if isFeatured %} cc-listing--featured{% endif %}">
+            {% if isFeatured %}
+            <div class="cc-feature-banner"><span class="cc-fb-star">&#9733;</span><h2 class="cc-fb-title">Featured Listing</h2><span class="cc-fb-star">&#9733;</span></div>
+            {% endif %}
             <div class="cc-listing-grid">
                 <!-- IMAGES -->
                 <div class="cc-img-col">
@@ -60,7 +65,7 @@ parent: Inventory
                     <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
                     {% endif %}
 
-                    {% if listing.description %}
+                    {% if listing.description and not isFeatured %}
                     <div class="cc-tony-says">
                         <div class="cc-tony-head">
                             <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
@@ -70,8 +75,18 @@ parent: Inventory
                     </div>
                     {% endif %}
                 </div>
+                {% if listing.description and isFeatured %}
+                <div class="cc-tony-says--featured">
+                    <div class="cc-tony-head">
+                        <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
+                        <h3 class="cc-tony-title">Tony says ...</h3>
+                    </div>
+                    <p class="cc-tony-body">{{ listing.description }}</p>
+                </div>
+                {% endif %}
             </div>
         </div>
+        {% if isFeatured %}</div>{% endif %}
 <div id="lightbox-form">
     <div class="inquiry-form">
         <div style="display:flex; align-items:center; margin-bottom:20px; border-bottom:2px solid #e0e5ea; padding-bottom:16px;">

@@ -14,7 +14,28 @@ title: Cabbage Coins | Home
         <div class="text-center jumbotron">
             <div class="carousel slide" data-bs-ride="carousel" id="carousel-1">
                 <div class="carousel-inner">
-                    <div class="carousel-item active custom-carousel" id="Slide02" style="background-image: url('https://img.youtube.com/vi/{{ podcast[0].videoId }}/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                    {% if featured %}
+                    <div class="carousel-item active custom-carousel featured-slide" id="SlideFeatured">
+                        <a class="featured-slide-link" href="/listings/{{ featured.slug.current | slug }}/">
+                            <span class="featured-ribbon">★ Featured this week</span>
+                            <div class="featured-inner">
+                                <div class="featured-slabs">
+                                    {% if featured.slabFront %}<span class="featured-slab" style="background-image: url('{{ featured.slabFront }}?w=760&q=85');"></span>{% endif %}
+                                    {% if featured.slabBack %}<span class="featured-slab" style="background-image: url('{{ featured.slabBack }}?w=760&q=85');"></span>{% endif %}
+                                </div>
+                                <div class="featured-copy">
+                                    <span class="featured-eyebrow">Featured Listing</span>
+                                    <h3 class="featured-title">{{ featured.name }}</h3>
+                                    <div class="featured-cta-row">
+                                        <span class="featured-cta">View this coin →</span>
+                                        {% if featured.cac %}<img class="featured-cac-logo" src="/assets/img/caccoin.png" alt="CAC approved">{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div class="carousel-item{% if not featured %} active{% endif %} custom-carousel" id="Slide02" style="background-image: url('https://img.youtube.com/vi/{{ podcast[0].videoId }}/maxresdefault.jpg'); background-size: cover; background-position: center;">
                         <div class="slide-text" style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px;">
                             <a href="/podcast/" style="text-decoration:none;">
                                 <h3 class="centered-2" style="color: white;">🎙️ The Cabbage Coins Podcast</h3>
@@ -53,12 +74,14 @@ title: Cabbage Coins | Home
                     </div>
                 </div>
                 <div><a class="carousel-control-prev" href="#carousel-1" role="button" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span><span class="visually-hidden">Previous</span></a><a class="carousel-control-next" href="#carousel-1" role="button" data-bs-slide="next"><span class="carousel-control-next-icon"></span><span class="visually-hidden">Next</span></a></div>
+                {% set off = 1 if featured else 0 %}
                 <ol class="carousel-indicators">
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="0" class="active"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="1"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="2"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="3"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="4"></li>
+                    {% if featured %}<li data-bs-target="#carousel-1" data-bs-slide-to="0" class="active"></li>{% endif %}
+                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off }}"{% if not featured %} class="active"{% endif %}></li>
+                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 1 }}"></li>
+                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 2 }}"></li>
+                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 3 }}"></li>
+                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 4 }}"></li>
                 </ol>
             </div>
         </div>
