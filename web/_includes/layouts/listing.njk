@@ -3,8 +3,11 @@ layout: layouts/base.njk
 templateClass: tmpl-listing
 parent: Inventory
 ---
-   <div class="container site-section main-section" id="listing">
+   <div class="container-fluid site-section main-section" id="listing">
         {% set isFeatured = featured and listing.slug.current == featured.slug.current %}
+        <nav class="cc-crumbs" aria-label="Breadcrumb">
+            <a href="/">Home</a><span class="cc-crumbs-sep">/</span><a href="/inventory/">Inventory</a><span class="cc-crumbs-sep">/</span><span class="cc-crumbs-current">{{ listing.name }}</span>
+        </nav>
         {% if isFeatured %}<div class="cc-featured-frame">{% endif %}
         <div class="cc-listing{% if isFeatured %} cc-listing--featured{% endif %}">
             {% if isFeatured %}
@@ -12,26 +15,35 @@ parent: Inventory
             {% endif %}
             <div class="cc-listing-grid">
                 <!-- IMAGES -->
+                {# All shots render at full column width. Every one stays wrapped in a
+                   data-lightbox="coins" anchor, so clicking any of them still opens the
+                   full-size file in the lightbox gallery ("Image 1 of 4", arrows to page
+                   through) exactly as before. #}
                 <div class="cc-img-col">
-                    <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins">
-                        <img class="cc-coin" src="{{ listing.imageUrl }}?h=1020" alt="{{ listing.name }} obverse">
-                    </a>
-{% if listing.galleryImageUrl[0] %}
-                    <a href="{{ listing.galleryImageUrl[0] }}" target="_blank" data-lightbox="coins">
-                        <img class="cc-coin" src="{{ listing.galleryImageUrl[0] }}?h=1020" alt="{{ listing.name }} reverse">
-                    </a>
-{% endif %}
+                    <div class="cc-img-track" data-carousel-track>
+                        <div class="cc-slide">
+                            <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins">
+                                <img class="cc-coin" src="{{ listing.imageUrl }}?w=1044&amp;q=90&amp;auto=format&amp;fit=max" alt="{{ listing.name }} obverse">
+                            </a>
 {% if listing.image.caption %}
-                    <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
+                            <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
 {% endif %}
-                    <div class="cc-thumb-row">
-                    {% for image in listing.galleryImageUrl %}
-                        {% if not loop.first %}
-                        <a href="{{ image }}" target="_blank" data-lightbox="coins">
-                            <div class="cc-thumb" style="background-image: url({{ image }}?h=200)"></div>
-                        </a>
-                        {% endif %}
-                    {% endfor %}
+                        </div>
+{% for image in listing.galleryImageUrl %}
+                        <div class="cc-slide">
+                            <a href="{{ image }}" target="_blank" data-lightbox="coins">
+                                <img class="cc-coin" src="{{ image }}?w=1044&amp;q=90&amp;auto=format&amp;fit=max" alt="{{ listing.name }}{% if loop.first %} reverse{% else %} in holder, view {{ loop.index0 }}{% endif %}">
+                            </a>
+                        </div>
+{% endfor %}
+                    </div>
+                    {# Only rendered/visible below the 900px breakpoint, where the stack
+                       becomes a swipeable + click-through carousel so the page does not
+                       run to five screens on a phone. #}
+                    <div class="cc-carousel-nav" data-carousel-nav>
+                        <button class="cc-cn-btn" type="button" data-carousel="prev" aria-label="Previous photo">&#10094;</button>
+                        <span class="cc-cn-count"><span class="cc-cn-idx">1</span> of <span class="cc-cn-total">1</span></span>
+                        <button class="cc-cn-btn" type="button" data-carousel="next" aria-label="Next photo">&#10095;</button>
                     </div>
                 </div>
 
@@ -65,8 +77,11 @@ parent: Inventory
                     <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
                     {% endif %}
 
-                    {% if listing.description and not isFeatured %}
-                    <div class="cc-tony-says">
+                    {# Stays in the right-hand info column for featured and non-featured
+                       alike; it only drops below the photos when the grid collapses to a
+                       single column under 900px. #}
+                    {% if listing.description %}
+                    <div class="cc-tony-says{% if isFeatured %} cc-tony-says--gold{% endif %}">
                         <div class="cc-tony-head">
                             <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
                             <h3 class="cc-tony-title">Tony says ...</h3>
@@ -75,15 +90,6 @@ parent: Inventory
                     </div>
                     {% endif %}
                 </div>
-                {% if listing.description and isFeatured %}
-                <div class="cc-tony-says--featured">
-                    <div class="cc-tony-head">
-                        <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
-                        <h3 class="cc-tony-title">Tony says ...</h3>
-                    </div>
-                    <div class="cc-tony-body">{{ listing.description | markdownify | safe }}</div>
-                </div>
-                {% endif %}
             </div>
         </div>
         {% if isFeatured %}</div>{% endif %}
@@ -159,3 +165,51 @@ Thank you!</textarea>
                 }
             })();
             </script>
+<script>
+/* Photo carousel — only does anything below the 900px breakpoint, where the CSS
+   turns .cc-img-track into a horizontal scroll-snap strip. Above that the track
+   is a plain vertical stack and the nav is hidden, so this is inert. */
+(function () {
+    var track = document.querySelector('[data-carousel-track]');
+    var nav = document.querySelector('[data-carousel-nav]');
+    if (!track || !nav) return;
+
+    var slides = track.querySelectorAll('.cc-slide');
+    var idxEl = nav.querySelector('.cc-cn-idx');
+    var prevBtn = nav.querySelector('[data-carousel="prev"]');
+    var nextBtn = nav.querySelector('[data-carousel="next"]');
+    nav.querySelector('.cc-cn-total').textContent = slides.length;
+    if (slides.length < 2) { nav.style.display = 'none'; return; }
+
+    function step() {
+        var gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+        return slides[0].getBoundingClientRect().width + gap;
+    }
+    function current() {
+        var s = step();
+        return s ? Math.round(track.scrollLeft / s) : 0;
+    }
+    function sync() {
+        var i = Math.min(slides.length - 1, Math.max(0, current()));
+        idxEl.textContent = i + 1;
+        prevBtn.disabled = i === 0;
+        nextBtn.disabled = i === slides.length - 1;
+    }
+    function go(delta) {
+        var i = Math.min(slides.length - 1, Math.max(0, current() + delta));
+        // scrollTo rather than scrollIntoView so the page never jumps vertically
+        track.scrollTo({ left: i * step(), behavior: 'smooth' });
+    }
+
+    prevBtn.addEventListener('click', function () { go(-1); });
+    nextBtn.addEventListener('click', function () { go(1); });
+
+    var raf;
+    track.addEventListener('scroll', function () {
+        if (raf) return;
+        raf = requestAnimationFrame(function () { raf = null; sync(); });
+    });
+    window.addEventListener('resize', sync);
+    sync();
+})();
+</script>
