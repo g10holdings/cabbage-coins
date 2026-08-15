@@ -1685,3 +1685,123 @@ margin: 10px 0px 10px 0px;
     background: #1d3961;
     color: white;
 }
+/* =========================================================
+   Away / vacation notice  (see _data/awaynotice.json)
+   ========================================================= */
+.cc-away[hidden] { display: none; }
+.cc-away {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.cc-away__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 24, 43, 0.72);
+  backdrop-filter: blur(3px);
+}
+.cc-away__card {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  text-align: center;
+  padding: 42px 48px 38px;
+  background: #fff;
+  border-radius: 18px;
+  border-top: 7px solid #c99b45;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
+  animation: cc-away-in .28s ease-out both;
+}
+@keyframes cc-away-in {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-away__card { animation: none; }
+}
+.cc-away__x {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: none;
+  background: none;
+  font-size: 30px;
+  line-height: 1;
+  color: #9aa7b8;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.cc-away__x:hover { color: #1d3961; }
+.cc-away__emblem { height: 62px; width: 62px; object-fit: contain; margin-bottom: 14px; }
+.cc-away__eyebrow {
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #c99b45;
+  margin: 0 0 8px;
+}
+.cc-away__heading {
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-weight: 800;
+  font-size: 34px;
+  line-height: 1.2;
+  color: #1d3961;
+  margin: 0 0 10px;
+}
+.cc-away__dateline {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3a4d;
+  margin: 0 0 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e6ebf1;
+}
+.cc-away__body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  line-height: 1.65;
+  color: #2c3a4d;
+  margin: 0 0 18px;
+  text-align: left;
+}
+.cc-away__signoff {
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  color: #5f6b7a;
+  font-style: italic;
+  margin: 0 0 26px;
+  text-align: left;
+}
+.cc-away__actions { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.cc-away__btn {
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-size: 19px;
+  letter-spacing: .04em;
+  color: #fff;
+  background: #1d3961;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 40px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(29, 57, 97, 0.28);
+  transition: background .15s ease, transform .15s ease;
+}
+.cc-away__btn:hover { background: #15294a; transform: translateY(-1px); }
+.cc-away__link { font-family: 'Roboto', sans-serif; font-size: 16px; color: #6289c1; }
+
+@media (max-width: 600px) {
+  .cc-away { padding: 14px; }
+  .cc-away__card { padding: 34px 24px 30px; }
+  .cc-away__heading { font-size: 27px; }
+  .cc-away__body, .cc-away__signoff { font-size: 16px; }
+}

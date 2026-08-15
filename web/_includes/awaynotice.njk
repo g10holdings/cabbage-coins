@@ -1,0 +1,75 @@
+{#
+  Away / vacation notice.
+  Rendered only on the homepage and the inventory page, and only when
+  _data/awaynotice.json has "enabled": true. The date window and the
+  once-per-visit rule are enforced in the browser so the notice can be
+  switched on ahead of time and schedule itself.
+#}
+{% if awaynotice.enabled %}
+<div class="cc-away" id="cc-away" role="dialog" aria-modal="true" aria-labelledby="cc-away-heading" hidden>
+  <div class="cc-away__backdrop" data-away-close></div>
+  <div class="cc-away__card">
+    <button class="cc-away__x" type="button" data-away-close aria-label="Close this notice">&times;</button>
+
+    <img class="cc-away__emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
+
+    {% if awaynotice.eyebrow %}<p class="cc-away__eyebrow">{{ awaynotice.eyebrow }}</p>{% endif %}
+    <h2 class="cc-away__heading" id="cc-away-heading">{{ awaynotice.heading }}</h2>
+    {% if awaynotice.dateline %}<p class="cc-away__dateline">{{ awaynotice.dateline }}</p>{% endif %}
+
+    <p class="cc-away__body">{{ awaynotice.body }}</p>
+    {% if awaynotice.signoff %}<p class="cc-away__signoff">{{ awaynotice.signoff | safe }}</p>{% endif %}
+
+    <div class="cc-away__actions">
+      <button class="cc-away__btn" type="button" data-away-close>{{ awaynotice.buttonText or "Continue" }}</button>
+      {% if awaynotice.secondaryText %}
+      <a class="cc-away__link" href="{{ awaynotice.secondaryHref or '/aboutus/' }}">{{ awaynotice.secondaryText }}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var el = document.getElementById('cc-away');
+  if (!el) return;
+
+  var FROM  = "{{ awaynotice.showFrom }}";
+  var UNTIL = "{{ awaynotice.showUntil }}";
+  var HOURS = {{ awaynotice.showAgainAfterHours or 24 }};
+  var KEY   = 'ccAwayDismissed';
+
+  // Compare on calendar date only, in the visitor's local time.
+  var today = new Date();
+  var ymd = today.getFullYear() + '-'
+          + String(today.getMonth() + 1).padStart(2, '0') + '-'
+          + String(today.getDate()).padStart(2, '0');
+  if (FROM  && ymd <  FROM)  return;   // not started yet
+  if (UNTIL && ymd >  UNTIL) return;   // already over
+
+  // Once per visit (or per N hours) — falls through to showing it if
+  // storage is unavailable, which is the safe direction for a notice.
+  try {
+    var last = window.localStorage.getItem(KEY);
+    if (last && (Date.now() - Number(last)) < HOURS * 3600 * 1000) return;
+  } catch (e) {}
+
+  function dismiss() {
+    el.hidden = true;
+    document.body.style.overflow = '';
+    try { window.localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e) { if (e.key === 'Escape') dismiss(); }
+
+  el.hidden = false;
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', onKey);
+  Array.prototype.forEach.call(el.querySelectorAll('[data-away-close]'), function (b) {
+    b.addEventListener('click', dismiss);
+  });
+  var btn = el.querySelector('.cc-away__btn');
+  if (btn) btn.focus();
+})();
+</script>
+{% endif %}
