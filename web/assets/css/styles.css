@@ -515,9 +515,9 @@ body {
   .cc-crumbs { font-size: 11px; }
 
   /* ---- photo carousel ----
-     Below this width the four shots become one horizontal scroll-snap strip:
-     swipe on touch, or use the arrows. Keeps a phone listing about one screen
-     of photos instead of four. */
+     Below this width the shots become one horizontal scroll-snap strip: swipe,
+     or tap a thumbnail. Keeps a phone listing about one screen of photos
+     instead of four. */
   .cc-img-track {
     flex-direction: row;
     gap: 12px;
@@ -534,39 +534,99 @@ body {
     scroll-snap-align: center;
   }
 
-  .cc-carousel-nav {
+  .cc-carousel-nav { display: block; margin-top: 12px; }
+
+  .cc-cn-dots {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
-    margin-top: 14px;
+    gap: 9px;
   }
-  .cc-cn-btn {
-    width: 44px;
-    height: 44px;
+  .cc-cn-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
     border-radius: 50%;
-    border: 1px solid #d5dfea;
-    background: #fff;
-    color: #1d3961;
-    font-size: 17px;
-    line-height: 1;
+    background: #c3cedb;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(29, 57, 97, 0.14);
-    transition: background .15s ease, opacity .15s ease;
+    transition: background .15s ease, transform .15s ease;
   }
-  .cc-cn-btn:hover:not(:disabled) { background: #eef4fb; }
-  .cc-cn-btn:disabled { opacity: .35; cursor: default; }
-  .cc-cn-count {
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    color: #5f6b7a;
-    font-variant-numeric: tabular-nums;
-    min-width: 66px;
-    text-align: center;
+  .cc-cn-dot.is-active { background: #1d3961; transform: scale(1.25); }
+
+  .cc-cn-thumbs {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 8px;
+    margin-top: 12px;
   }
+  .cc-cn-thumb {
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-color: #0b0b0b;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    opacity: .55;
+    transition: opacity .15s ease, border-color .15s ease;
+  }
+  .cc-cn-thumb.is-active { opacity: 1; border-color: #1d3961; }
+}
+
+/* =========================================================
+   Phone tuning for the listing page.
+   The desktop type scale and padding are far too large here: five nested
+   paddings (main-section 40 + container 12 + gold frame 9 + img-col 20 +
+   border 3) were eating ~43% of a 390pt screen before the coin even started.
+   ========================================================= */
+@media (max-width: 600px) {
+  /* scoped to #listing so the other .main-section pages are untouched */
+  #listing.main-section { padding: 14px 4px 30px; }
+  #listing.container-fluid { --bs-gutter-x: 0.5rem; }
+
+  .cc-crumbs { margin-bottom: 10px; padding: 0 6px; letter-spacing: .06em; }
+
+  .cc-featured-frame { padding: 5px; border-radius: 18px; }
+  .cc-listing { border-radius: 14px; }
+  .cc-featured-frame > .cc-listing { border-radius: 12px; }
+
+  .cc-feature-banner { padding: 10px 14px; }
+  .cc-fb-title { font-size: 12px; letter-spacing: .2em; }
+
+  .cc-img-col { padding: 8px; }
+  .cc-coin { border-width: 2px; border-radius: 12px; }
+  .cc-coin-caption { font-size: 15px; margin: 8px 0 0; }
+
+  .cc-info-col { padding: 20px 15px 24px; }
+  .cc-info-col .cc-title { font-size: 25px; line-height: 1.22; margin-bottom: 12px; }
+  .cc-price { font-size: 30px; }
+  .cc-status { font-size: 11px; padding: 3px 8px; }
+  .cc-price-row { padding-bottom: 13px; gap: 9px; }
+
+  .cc-spec { padding: 11px 1px; gap: 14px; }
+  .cc-spec-label { font-size: 11px; letter-spacing: .05em; }
+  .cc-spec-value { font-size: 16px; }
+
+  .cc-badge-row { gap: 10px; margin: 16px 0 18px; }
+  .cc-cac-badge { height: 36px; }
+  .cc-cac-text { font-size: 13px; }
+
+  /* full-width button is a much better thumb target */
+  .cc-inquire-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 18px;
+    padding: 15px 20px;
+  }
+
+  .cc-tony-says { margin-top: 22px; padding: 16px 16px 18px; border-left-width: 4px; }
+  .cc-tony-head { gap: 9px; margin-bottom: 9px; }
+  .cc-tony-emblem { height: 30px; width: 30px; }
+  .cc-tony-title { font-size: 19px; }
+  .cc-tony-body { font-size: 16px; line-height: 1.55; }
 }
 
 @media (prefers-reduced-motion: reduce) {

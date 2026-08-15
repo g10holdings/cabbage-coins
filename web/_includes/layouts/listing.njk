@@ -37,13 +37,22 @@ parent: Inventory
                         </div>
 {% endfor %}
                     </div>
-                    {# Only rendered/visible below the 900px breakpoint, where the stack
-                       becomes a swipeable + click-through carousel so the page does not
-                       run to five screens on a phone. #}
+                    {# Only visible below the 900px breakpoint, where the stack becomes a
+                       swipeable carousel. Dots show position; the thumbnail strip is the
+                       tap target for jumping straight to a shot. #}
                     <div class="cc-carousel-nav" data-carousel-nav>
-                        <button class="cc-cn-btn" type="button" data-carousel="prev" aria-label="Previous photo">&#10094;</button>
-                        <span class="cc-cn-count"><span class="cc-cn-idx">1</span> of <span class="cc-cn-total">1</span></span>
-                        <button class="cc-cn-btn" type="button" data-carousel="next" aria-label="Next photo">&#10095;</button>
+                        <div class="cc-cn-dots">
+                            <button class="cc-cn-dot" type="button" data-goto="0" aria-label="Photo 1"></button>
+                            {% for image in listing.galleryImageUrl %}
+                            <button class="cc-cn-dot" type="button" data-goto="{{ loop.index }}" aria-label="Photo {{ loop.index + 1 }}"></button>
+                            {% endfor %}
+                        </div>
+                        <div class="cc-cn-thumbs">
+                            <button class="cc-cn-thumb" type="button" data-goto="0" aria-label="Photo 1" style="background-image: url({{ listing.imageUrl }}?w=220&amp;q=90&amp;auto=format&amp;fit=max)"></button>
+                            {% for image in listing.galleryImageUrl %}
+                            <button class="cc-cn-thumb" type="button" data-goto="{{ loop.index }}" aria-label="Photo {{ loop.index + 1 }}" style="background-image: url({{ image }}?w=220&amp;q=90&amp;auto=format&amp;fit=max)"></button>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
@@ -175,10 +184,7 @@ Thank you!</textarea>
     if (!track || !nav) return;
 
     var slides = track.querySelectorAll('.cc-slide');
-    var idxEl = nav.querySelector('.cc-cn-idx');
-    var prevBtn = nav.querySelector('[data-carousel="prev"]');
-    var nextBtn = nav.querySelector('[data-carousel="next"]');
-    nav.querySelector('.cc-cn-total').textContent = slides.length;
+    var marks = nav.querySelectorAll('[data-goto]');
     if (slides.length < 2) { nav.style.display = 'none'; return; }
 
     function step() {
@@ -191,18 +197,21 @@ Thank you!</textarea>
     }
     function sync() {
         var i = Math.min(slides.length - 1, Math.max(0, current()));
-        idxEl.textContent = i + 1;
-        prevBtn.disabled = i === 0;
-        nextBtn.disabled = i === slides.length - 1;
+        for (var n = 0; n < marks.length; n++) {
+            var on = Number(marks[n].getAttribute('data-goto')) === i;
+            marks[n].classList.toggle('is-active', on);
+            marks[n].setAttribute('aria-current', on ? 'true' : 'false');
+        }
     }
-    function go(delta) {
-        var i = Math.min(slides.length - 1, Math.max(0, current() + delta));
+    function goTo(i) {
+        i = Math.min(slides.length - 1, Math.max(0, i));
         // scrollTo rather than scrollIntoView so the page never jumps vertically
         track.scrollTo({ left: i * step(), behavior: 'smooth' });
     }
 
-    prevBtn.addEventListener('click', function () { go(-1); });
-    nextBtn.addEventListener('click', function () { go(1); });
+    Array.prototype.forEach.call(marks, function (m) {
+        m.addEventListener('click', function () { goTo(Number(m.getAttribute('data-goto'))); });
+    });
 
     var raf;
     track.addEventListener('scroll', function () {
