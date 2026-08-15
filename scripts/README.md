@@ -2,7 +2,7 @@
 
 This folder holds a small tool that takes a CSV of coins and creates **draft**
 listings in Sanity for you — filling in all the data fields and writing the image
-**Alternative Text** automatically with AI. The drafts show up unpublished in the
+**Alternative Text** automatically. The drafts show up unpublished in the
 Studio, where you add photos, generate the slug, write the caption/description,
 and publish.
 
@@ -13,11 +13,21 @@ the tools are installed), so each month is just three steps.
 
 ## Your monthly routine
 
-**1. Update the CSV.** Open it in Excel and replace it with this month's coins:
+**1. Update the CSV.** Export this month's coins from Excel over this file:
 
-`D:\OneDrive\G10 Holdings LLC\35Listings_22Jul26.csv`
+`D:\OneDrive\G10 Holdings LLC\listings-to-import.csv`
 
-Keep the **same column headers**. Two rules that matter:
+The name is deliberately generic — it's always "the batch I'm importing right now",
+whatever the month or the count. Keep the name as-is and the tools just work; if you
+want a dated record of a batch, *Save As* a copy alongside it (e.g.
+`archive\18Listings_03Aug26.csv`) — the tool ignores anything but the file above.
+
+Keep the **same column headers** — spelling matters, order doesn't. If a header is
+renamed, misspelled, or deleted, the tool now **stops before writing anything** and
+tells you which column is wrong. (Without that check a renamed header imported
+silently, leaving that field blank on all your listings.)
+
+Two rules that matter:
 - **`date`** = the plain year (e.g. `1900`).
 - **`date shown`** = the year *with* the mint mark (e.g. `1900-S`). This is the one
   that shows on the website as "Issue".
@@ -25,8 +35,9 @@ Keep the **same column headers**. Two rules that matter:
 Save it (as CSV).
 
 **2. Preview.** Double-click **`preview-import.cmd`**.
-It prints every coin with its AI-written alt text and writes **nothing** to Sanity.
-Read it over. If something looks off, fix the CSV and preview again.
+It prints every coin with its alt text and writes **nothing** to Sanity.
+Read it over — pay attention to any ⚠ warnings at the bottom. If something looks
+off, fix the CSV and preview again.
 
 **3. Import.** Double-click **`run-import.cmd`**.
 It creates the drafts in Sanity (with alt text). The window stays open so you can
@@ -59,7 +70,25 @@ caption + description, check the alt text, then **Publish**.
 
 Also automatic:
 - **CAC** checkbox — ticked when the Grade contains "CAC".
-- **Alternative Text** — written by AI from the coin's name.
+- **Alternative Text** — looked up from the coin's series in `coin-designs.js`.
+
+### About the alt text
+
+A coin's artwork is fixed by its **series**, not its date — every Barber dime looks
+the same whether it's 1892 or 1916. So the tool looks the design up in a table
+(`coin-designs.js`) rather than guessing at it. That table is exact.
+
+If a coin's series isn't in the table yet, the alt text is **left blank on purpose**
+and the tool **prints a warning naming that coin**. Nothing guesses: a wrong reverse
+design would read as authoritative to someone using a screen reader, and blank is
+honest. Write those few by hand in the Studio.
+
+To fix one for good, add a line to `coin-designs.js` (instructions are at the top of
+the file) — then that coin and every future one in the same series fills itself in.
+
+The preview tells you the split, e.g. `Alternative Text: 18/18 from the known-design
+table.` When that number is the full count, every coin got its text and there's
+nothing to write by hand.
 
 Left blank for you to do in the Studio: **photos, slug, caption, description**.
 
@@ -81,13 +110,13 @@ the old draft — remove that one by hand in the Studio.)
 
 ## Good to know
 
-- **Where the secrets live:** `scripts\.env` holds your Sanity token and Anthropic
-  API key. They persist, so you don't re-enter them. This file is kept out of git.
-- **Cost:** the AI alt text costs a few cents per batch (Anthropic API). If you ever
-  want to skip it, double-click nothing — instead run `run-import.cmd`'s command with
-  `--no-alt` (see below).
-- **A different CSV:** drag the CSV onto a terminal, or run
-  `node import-listings.js "D:\path\to\file.csv"`.
+- **Where the secrets live:** `scripts\.env` holds your Sanity token. It persists, so
+  you don't re-enter it. This file is kept out of git.
+- **Cost: nothing.** The tool only talks to Sanity. There is no AI service behind it
+  and no per-run charge.
+- **A different CSV:** the default path above is only a default — you can point the
+  tool at any file: `node import-listings.js "D:\path\to\file.csv"`. Handy for
+  re-running an archived batch.
 
 ### Command-line equivalents (if you prefer typing)
 
@@ -96,6 +125,5 @@ From this folder:
 npm run import -- --dry-run     # preview (same as preview-import.cmd)
 npm run import                  # import (same as run-import.cmd)
 node import-listings.js --delete            # delete drafts (asks to confirm)
-node import-listings.js --no-alt            # import without AI alt text
 node import-listings.js --limit 3 --dry-run # preview just the first 3 rows
 ```

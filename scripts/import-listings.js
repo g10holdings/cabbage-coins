@@ -1,21 +1,24 @@
 /**
  * Bulk-create DRAFT coin listings in Sanity from a CSV.
  *
- * Reads a CSV, maps each row to a `listing` document, generates the image
- * Alternative Text with Claude (Haiku), and writes each doc as a Sanity draft
- * (so it lands unpublished in the Studio for you to add photos + description).
+ * Reads a CSV, maps each row to a `listing` document, fills in the image
+ * Alternative Text from the known-design table, and writes each doc as a Sanity
+ * draft (so it lands unpublished in the Studio for you to add photos +
+ * description).
+ *
+ * A coin whose series isn't in coin-designs.js gets NO alt text and a warning
+ * naming it, so you can write that one by hand in the Studio. Nothing guesses.
  *
  * Usage:
  *   node import-listings.js [path/to/file.csv] [flags]
  *
  * Flags:
- *   --dry-run     Build + preview everything (incl. AI alt text) but write nothing to Sanity.
- *   --no-alt      Skip the Claude call; leave Alternative Text blank.
+ *   --dry-run     Build + preview everything but write nothing to Sanity.
  *   --limit N     Only process the first N rows (handy for a test run).
  *   --delete      Delete the DRAFT listings matching this CSV (never touches published docs).
  *   --yes         Skip the confirmation prompt (use with --delete for unattended runs).
  *
- * Env (see .env.example): SANITY_WRITE_TOKEN, ANTHROPIC_API_KEY,
+ * Env (see .env.example): SANITY_WRITE_TOKEN,
  *   optional SANITY_PROJECT_ID, SANITY_DATASET.
  */
 
@@ -27,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@sanity/client';
-import Anthropic from '@anthropic-ai/sdk';
+import { lookupDesign } from './coin-designs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -37,12 +40,11 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
-const NO_ALT = args.includes('--no-alt');
 const DELETE = args.includes('--delete');
 const YES = args.includes('--yes');
 const limitIdx = args.indexOf('--limit');
 const LIMIT = limitIdx !== -1 ? parseInt(args[limitIdx + 1], 10) : Infinity;
-const DEFAULT_CSV = 'D:/OneDrive/G10 Holdings LLC/35Listings_22Jul26.csv';
+const DEFAULT_CSV = 'D:/OneDrive/G10 Holdings LLC/listings-to-import.csv';
 const csvPath = args.find((a) => !a.startsWith('--') && a !== String(LIMIT)) || DEFAULT_CSV;
 
 const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'la880an7';
@@ -115,6 +117,48 @@ function normalizeCategory(raw, rowLabel) {
 
 const MINT_MARK_RE = /-\s*[A-Za-z]{1,3}$/; // e.g. "1900-S", "1870-CC"
 
+// Every column the importer reads. Field lookups are by header NAME, and a field
+// is only written when it's non-empty — so a renamed or misspelled header doesn't
+// error, it just silently imports that column as blank for every row. This check
+// turns that silent failure into a loud one.
+const EXPECTED_COLUMNS = [
+  'grade number', 'name', 'date shown', 'date', 'denomination',
+  'Grade', 'Price', 'Grading Company', 'PCGS Catalog Number', 'Category',
+];
+
+/** Stops the run with a readable explanation if any expected column is missing. */
+function checkHeaders(rows) {
+  const norm = (s) => String(s).trim().toLowerCase();
+
+  if (!rows.length) {
+    console.error('The CSV has no rows. Check that you saved it with the coin data in it.');
+    process.exit(1);
+  }
+
+  const actual = Object.keys(rows[0]);
+  const actualNorm = actual.map(norm);
+  const missing = EXPECTED_COLUMNS.filter((c) => !actualNorm.includes(norm(c)));
+  if (!missing.length) return;
+
+  const expectedNorm = EXPECTED_COLUMNS.map(norm);
+  const unexpected = actual.filter((a) => !expectedNorm.includes(norm(a)));
+
+  console.error('\nThe CSV is missing column(s) the importer needs:\n');
+  for (const m of missing) console.error(`  MISSING:  ${m}`);
+  if (unexpected.length) {
+    console.error('\nThese column(s) in the CSV are not recognised — most likely one of');
+    console.error('them is a missing column above that got renamed or misspelled:\n');
+    for (const u of unexpected) console.error(`  UNEXPECTED:  ${u}`);
+  }
+  console.error('\nHeaders found in the file:');
+  console.error(`  ${actual.join(', ')}`);
+  console.error('\nExpected (spelling matters, order does not):');
+  console.error(`  ${EXPECTED_COLUMNS.join(', ')}`);
+  console.error('\nFix the header row in Excel, re-save as CSV, and run this again.');
+  console.error('Nothing was written to Sanity.\n');
+  process.exit(1);
+}
+
 /** Simple concurrency-limited async map. */
 async function mapPool(items, limit, fn) {
   const results = new Array(items.length);
@@ -127,35 +171,6 @@ async function mapPool(items, limit, fn) {
   });
   await Promise.all(workers);
   return results;
-}
-
-// ---------------------------------------------------------------------------
-// Alternative-text generation (Claude Haiku)
-// ---------------------------------------------------------------------------
-const ALT_SYSTEM = `You write short, plain-language ALT TEXT for the images on a coin dealer's website.
-You are given a coin's listing title, its metal category, and its denomination.
-Return a concise 6-14 word description of what the coin physically looks like: its color/metal and the main design elements (portraits, animals, emblems, mottos, wreaths, etc.).
-Rules:
-- Describe imagery only. Do NOT mention the grade, price, year/date, mint mark, certification company (PCGS/NGC/CACG), CAC, or varieties like "doubled die".
-- Use the metal category for the color: Copper/Bronze -> "copper", Silver -> "silver", Gold -> "gold".
-- Lowercase. No surrounding quotes. No trailing period. Output only the phrase.
-Examples:
-Title: "1909-S VDB 1C Lincoln Cent" (Copper/Bronze, 1C) -> copper cent with a portrait of lincoln and the liberty motto
-Title: "1881-S $1 Morgan Silver Dollar" (Silver, $1) -> silver dollar with liberty's head and an eagle clutching arrows
-Title: "1913 $10 Indian Head Eagle" (Gold, $10) -> gold coin with a native american headdress and a standing eagle`;
-
-async function generateAltText(anthropic, { name, category, denomination }) {
-  const resp = await anthropic.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 64,
-    system: ALT_SYSTEM,
-    messages: [
-      { role: 'user', content: `Title: "${name}" (${category || 'Unknown'}, ${denomination || 'Unknown'})` },
-    ],
-  });
-  if (resp.stop_reason === 'refusal') return '';
-  const text = resp.content.find((b) => b.type === 'text')?.text ?? '';
-  return text.trim().replace(/^["']|["']$/g, '').replace(/\.$/, '').toLowerCase();
 }
 
 // ---------------------------------------------------------------------------
@@ -215,7 +230,7 @@ function buildDoc(row, rowLabel, usedSlugs) {
   if (category) doc.category = category;
 
   // Caption + Description intentionally left blank (filled in Studio).
-  // Alternative Text is attached later, after the AI pass.
+  // Alternative Text is attached later, from the known-design table.
   doc.__meta = { name, category, denomination };
   return doc;
 }
@@ -292,6 +307,7 @@ async function main() {
 
   const raw = fs.readFileSync(csvPath, 'utf8');
   let rows = parse(raw, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+  checkHeaders(rows); // stops here if a column is missing or renamed
   if (Number.isFinite(LIMIT)) rows = rows.slice(0, LIMIT);
 
   console.log(`Read ${rows.length} row(s) from ${csvPath}`);
@@ -310,28 +326,30 @@ async function main() {
     return;
   }
 
-  // Generate Alternative Text.
-  if (NO_ALT) {
-    console.log('Skipping Alternative Text generation (--no-alt).\n');
-  } else {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY is not set. Add it to scripts/.env, or run with --no-alt.');
-      process.exit(1);
-    }
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    console.log('Generating Alternative Text with Claude Haiku…');
-    let done = 0;
-    await mapPool(docs, 5, async (doc) => {
-      try {
-        const alt = await generateAltText(anthropic, doc.__meta);
-        if (alt) doc.image = { _type: 'mainImage', alt };
-      } catch (err) {
-        warn(`${doc.__meta.name}: alt-text generation failed (${err.message}).`);
-      }
-      done++;
-      if (done % 5 === 0 || done === docs.length) console.log(`  ${done}/${docs.length}`);
-    });
-    console.log('');
+  // Alternative Text: from the known-design table only.
+  //
+  // The table is exact — a coin's artwork is fixed by its series — so anything it
+  // matches is right by construction. Anything it doesn't match is left blank on
+  // purpose rather than guessed at: a wrong reverse design reads as authoritative
+  // to a screen-reader user, and blank is honest. The warning below names each
+  // one so you can write it by hand in the Studio.
+  const unmatched = [];
+  for (const doc of docs) {
+    const known = lookupDesign(doc.__meta.name);
+    if (known) doc.image = { _type: 'mainImage', alt: known };
+    else unmatched.push(doc);
+  }
+  const matched = docs.length - unmatched.length;
+  console.log(`Alternative Text: ${matched}/${docs.length} from the known-design table.`);
+  if (unmatched.length) {
+    console.log(`${unmatched.length} left blank — listed at the end to write in the Studio.`);
+  }
+  console.log('');
+
+  // Name every listing that needs alt text written by hand. Adding the series to
+  // coin-designs.js fixes it for good, for this coin and every future one like it.
+  for (const doc of unmatched) {
+    warn(`${doc.__meta.name}: series not in coin-designs.js — alt text left BLANK, write it in the Studio.`);
   }
 
   // Preview.
