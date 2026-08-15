@@ -20,14 +20,16 @@ parent: Inventory
                    full-size file in the lightbox gallery ("Image 1 of 4", arrows to page
                    through) exactly as before. #}
                 <div class="cc-img-col">
+{% if listing.image.caption %}
+                    {# Sits above the photos on desktop and below them on narrow screens;
+                       the swap is flex `order`, so there is only ever one copy of it. #}
+                    <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
+{% endif %}
                     <div class="cc-img-track" data-carousel-track>
                         <div class="cc-slide">
                             <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins">
                                 <img class="cc-coin" src="{{ listing.imageUrl }}?w=1044&amp;q=90&amp;auto=format&amp;fit=max" alt="{{ listing.name }} obverse">
                             </a>
-{% if listing.image.caption %}
-                            <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
-{% endif %}
                         </div>
 {% for image in listing.galleryImageUrl %}
                         <div class="cc-slide">

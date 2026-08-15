@@ -343,12 +343,17 @@ body {
   padding: 30px;
   background: #f5f8fb;
   border-right: 1px solid #e6ebf1;
+  display: flex;
+  flex-direction: column;
 }
 .cc-img-track {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  order: 2;
+  min-width: 0;   /* let the track shrink when it becomes a scroller */
 }
+.cc-carousel-nav { order: 3; }
 .cc-slide { min-width: 0; }
 .cc-slide > a { display: block; }
 /* carousel controls are narrow-window only */
@@ -361,16 +366,16 @@ body {
   border: 3px solid #1d3961;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
-/* The caption lives inside slide 1, so the track's 18px flex gap sits below it
-   but not above it. It needs its own breathing room off the photo -- and less
-   of it than the gap below, so it reads as belonging to the shot above. */
+/* Desktop: order 1 puts this above the photo stack, as a lead-in to the set.
+   Under 900px it flips to order 3, i.e. back under the carousel. */
 .cc-coin-caption {
+  order: 1;
   text-align: center;
   font-style: italic;
   color: #7c8aa0;
   font-size: 18px;
   line-height: 1.4;
-  margin: 14px 0 4px;
+  margin: 0 0 18px;
 }
 
 /* ---- info ---- */
@@ -537,6 +542,10 @@ body {
     flex: 0 0 100%;
     scroll-snap-align: center;
   }
+
+  /* caption flips back to sitting under the photos, above the dots */
+  .cc-img-track { order: 1; }
+  .cc-coin-caption { order: 2; margin: 12px 0 0; }
 
   .cc-carousel-nav { display: block; margin-top: 12px; }
 
