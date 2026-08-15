@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabbage Coins — Inventory Image Quality Test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 28px; font-family: 'Roboto', system-ui, sans-serif; background: #f3f6f9; color: #22303f; }
+h1 { font-size: 24px; color: #1d3961; margin: 0 0 6px; }
+.sub { color: #5f6b7a; margin: 0 0 26px; font-size: 15px; max-width: 900px; line-height: 1.6; }
+h2 { font-size: 17px; color: #1d3961; margin: 34px 0 4px; }
+.h2sub { color: #5f6b7a; font-size: 14px; margin: 0 0 14px; }
+
+.row { display: flex; gap: 22px; flex-wrap: wrap; }
+.cell { background: #fff; border: 1px solid #dde5ee; border-radius: 12px; padding: 14px; width: max-content; max-width: 340px; }
+.cell h3 { margin: 0 0 3px; font-size: 14px; color: #1d3961; }
+.cell .meta { font-size: 12px; color: #7c8aa0; font-variant-numeric: tabular-nums; margin: 0 0 10px; min-height: 16px; }
+.cell.now  { border-color: #e0b9b9; box-shadow: inset 0 0 0 2px #f7e7e7; }
+.cell.prop { border-color: #a9d8bd; box-shadow: inset 0 0 0 2px #e7f5ec; }
+.tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; vertical-align: 2px; margin-left: 6px; }
+.tag.now { background: #f7e7e7; color: #b23b3b; }
+.tag.prop { background: #e7f5ec; color: #2e7d52; }
+
+/* an inventory tile at its real rendered size */
+.tile { width: 300px; height: 300px; background-size: cover; background-position: center;
+        border: 3px solid #1d3961; border-radius: 20px; box-shadow: 5px 5px 5px gray; }
+
+/* 1:1 pixel-peep — a 260px crop of the master shown at native size, no scaling */
+.peep { width: 260px; height: 260px; background-repeat: no-repeat; background-position: center;
+        border: 2px solid #1d3961; border-radius: 8px; image-rendering: auto; }
+
+.note { margin-top: 30px; max-width: 900px; padding: 16px 20px; background: #fffbea;
+        border: 1px solid #e8d9a8; border-left: 5px solid #c99b45; border-radius: 10px;
+        font-size: 15px; line-height: 1.65; color: #4a3f22; }
+.note b { color: #7a5c14; }
+code { background: #eef2f7; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Inventory image quality — what is actually causing the graininess</h1>
+<p class="sub">
+  Same coin, same master file, different Sanity CDN parameters. The tiles below are rendered at
+  <b>300&nbsp;px</b> — the real size of an inventory tile on a 1440px monitor. Zoom your browser to
+  200–300% (Ctrl&nbsp;+&nbsp;+) to see the difference clearly, or just compare the file sizes:
+  that is detail being thrown away.
+</p>
+
+<h2>1 · Inventory tile, as rendered on the site today vs. proposed</h2>
+<p class="h2sub">Look at the flat black background and the fine luster in the fields — that is where JPEG quality 75 shows up as mottling.</p>
+<div class="row" id="tiles"></div>
+
+<h2>2 · Pixel-peep — 260px crop of the master, shown 1:1 with no scaling</h2>
+<p class="h2sub">This isolates the encoder. Identical pixel dimensions, only the quality setting differs.</p>
+<div class="row" id="peeps"></div>
+
+<div class="note" id="verdict">Measuring…</div>
+
+<script>
+var BASE = 'https://cdn.sanity.io/images/la880an7/production/';
+var ASSET = '3cce058b3432d34e31d84c58bfefea629c41a48e-1044x1044.jpg';  // 1902-S Barber Half, obverse
+var MASTER = 1044;
+
+var TILES = [
+  { label: 'Today', tag: 'now',  cls: 'now',
+    q: '?h=900',
+    bytes: 153118, type: 'image/jpeg',
+    why: 'no q= set → Sanity re-encodes at its default quality 75, JPEG only' },
+  { label: 'Just add quality', tag: '', cls: '',
+    q: '?h=900&q=90',
+    bytes: 223837, type: 'image/jpeg',
+    why: 'same 900px size, quality 90' },
+  { label: 'Proposed', tag: 'prop', cls: 'prop',
+    q: '?w=640&q=90&auto=format&fit=max',
+    bytes: 57789, type: 'image/avif',
+    why: 'sized for the tile at 2× retina, quality 90, AVIF/WebP where supported' }
+];
+
+var PEEPS = [
+  { label: 'quality 75 (today’s default)', cls: 'now',  q: '?rect=300,300,260,260&q=75',  bytes: 17558, type: 'image/jpeg' },
+  { label: 'quality 90 (proposed)',        cls: 'prop', q: '?rect=300,300,260,260&q=90',  bytes: 29900, type: 'image/jpeg' },
+  { label: 'quality 100 (the master)',     cls: '',     q: '?rect=300,300,260,260&q=100', bytes: 67022, type: 'image/jpeg' }
+];
+
+var sizes = {};
+function build(containerId, items, cls) {
+  var html = items.map(function (it, i) {
+    var url = BASE + ASSET + it.q;
+    return '<div class="cell ' + (it.cls || '') + '">'
+      + '<h3>' + it.label + (it.tag ? '<span class="tag ' + it.tag + '">' + (it.tag === 'now' ? 'current' : 'recommended') + '</span>' : '') + '</h3>'
+      + '<p class="meta" id="' + containerId + '-m' + i + '">' + (it.why || '') + '</p>'
+      + '<div class="' + cls + '" style="background-image:url(' + url + ')"></div>'
+      + '<p class="meta" style="margin:10px 0 0"><code>' + it.q + '</code></p>'
+      + '</div>';
+  }).join('');
+  document.getElementById(containerId).innerHTML = html;
+
+  // Transferred sizes, measured against the CDN with a real browser Accept header.
+  // (Measured server-side rather than with fetch() because cdn.sanity.io does not
+  //  send CORS headers for image responses.)
+  items.forEach(function (it, i) {
+    if (!it.bytes) return;
+    sizes[it.label] = it.bytes;
+    document.getElementById(containerId + '-m' + i).textContent =
+      (it.why ? it.why + ' — ' : '') + Math.round(it.bytes / 1024) + ' KB, ' + it.type;
+  });
+  verdict();
+}
+
+function verdict() {
+  var now = sizes['Today'], prop = sizes['Proposed'];
+  if (!now || !prop) return;
+  var pct = Math.round((1 - prop / now) * 100);
+  document.getElementById('verdict').innerHTML =
+      '<b>Diagnosis.</b> The tiles are not short of pixels — today’s <code>?h=900</code> already sends a 900px '
+    + 'image into a ~300px box. The problem is that <i>any</i> Sanity parameter triggers a re-encode, and with no '
+    + '<code>q=</code> set that re-encode lands at <b>quality 75</b>. On coin photography — fine luster, flat black '
+    + 'backgrounds, subtle toning — q75 is exactly where JPEG starts mottling.'
+    + '<br><br><b>The fix costs nothing.</b> Today: <b>' + Math.round(now / 1024) + ' KB</b> per tile. '
+    + 'Proposed: <b>' + Math.round(prop / 1024) + ' KB</b> per tile — '
+    + (pct > 0 ? pct + '% <b>smaller</b>' : Math.abs(pct) + '% larger')
+    + ' and visibly cleaner, because it is sized for the tile and encoded at q90 as AVIF/WebP instead of oversized at q75 as JPEG. '
+    + 'The inventory page renders all <b>102</b> listings at once, so across the whole page that is roughly '
+    + '<b>15 MB → 6 MB</b> of image traffic.'
+    + '<br><br><b>The ceiling.</b> Every master in your dataset is <b>' + MASTER + '×' + MASTER + '</b>. That is plenty for a 300px '
+    + 'inventory tile even on a retina screen, but it is the binding constraint on the big listing page photos.';
+}
+
+build('tiles', TILES, 'tile');
+build('peeps', PEEPS, 'peep');
+</script>
+</body>
+</html>

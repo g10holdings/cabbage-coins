@@ -9,7 +9,7 @@
                 <div class="row">
                 {% for image in listing.galleryImageUrl %}
                     {% if (loop.index >= 2) %}
-                        <div class="featured-coin-img" style="background-image: url({{ image }}?h=300)"></div>
+                        <div class="featured-coin-img" style="background-image: url({{ image }}?w=400&amp;q=90&amp;auto=format&amp;fit=max)"></div>
                     {% endif %}
                 {% endfor %}
                 </div>

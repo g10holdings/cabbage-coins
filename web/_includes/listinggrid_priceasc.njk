@@ -7,9 +7,9 @@
             {% endif %}
             <div class="listing-preview"><a class="listing-title-link" href="/listings/{{ listing.slug.current | slug }}/">
                     <div class="image-dummy" 
-                        style="background-image: url({{ listing.imageUrl }}?h=900)"
-                        data-img-front="{{ listing.imageUrl }}?h=900"
-                        data-img-back="{{ listing.galleryImageUrl[0] }}?h=900"></div>
+                        style="background-image: url({{ listing.imageUrl }}?w=640&amp;q=90&amp;auto=format&amp;fit=max)"
+                        data-img-front="{{ listing.imageUrl }}?w=640&amp;q=90&amp;auto=format&amp;fit=max"
+                        data-img-back="{{ listing.galleryImageUrl[0] }}?w=640&amp;q=90&amp;auto=format&amp;fit=max"></div>
                     <h2 class="text-start listing-title-preview">{{ listing.name }}<br></h2>
                 </a> 
 <div class="row">
