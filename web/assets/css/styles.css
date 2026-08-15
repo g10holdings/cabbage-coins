@@ -361,12 +361,16 @@ body {
   border: 3px solid #1d3961;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
+/* The caption lives inside slide 1, so the track's 18px flex gap sits below it
+   but not above it. It needs its own breathing room off the photo -- and less
+   of it than the gap below, so it reads as belonging to the shot above. */
 .cc-coin-caption {
   text-align: center;
   font-style: italic;
   color: #7c8aa0;
   font-size: 18px;
-  margin: -4px 0 -2px;
+  line-height: 1.4;
+  margin: 14px 0 4px;
 }
 
 /* ---- info ---- */
