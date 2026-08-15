@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabbage Coins — Away Notice Preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif+Display&display=swap">
+<!-- the real site stylesheet, so this looks exactly like production -->
+<link rel="stylesheet" href="../web/assets/css/styles.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Roboto',system-ui,sans-serif; }
+
+  /* ---- preview chrome (not part of the design) ---- */
+  #bar { position:sticky; top:0; z-index:5000; display:flex; flex-wrap:wrap; gap:12px;
+         align-items:center; padding:10px 16px; background:#12203a; color:#cfe0f7;
+         border-bottom:3px solid #c99b45; font-size:13px; }
+  #bar .brand { font-weight:700; color:#f0dcab; letter-spacing:.04em; }
+  #bar button { font:inherit; font-weight:600; cursor:pointer; padding:7px 13px;
+                border-radius:7px; border:1px solid #3a5a8c; background:#1d3961; color:#cfe0f7; }
+  #bar button:hover { background:#274a7d; }
+  #bar button.on { background:#c99b45; border-color:#e8c987; color:#21170a; }
+  #bar .live { margin-left:auto; opacity:.85; }
+
+  /* fake page behind the modal so the dimmed backdrop reads correctly */
+  #stage { position:relative; height:calc(100vh - 52px); overflow:hidden; }
+  #page { height:100%; overflow:hidden;
+          background:linear-gradient(0deg,#1e3a63 0%,#587db3 100%); }
+  #page .hdr { text-align:center; padding:26px 20px; }
+  #page .hdr img { max-width:380px; width:100%; }
+  #page .nav { background:#fff; padding:14px; text-align:center; box-shadow:0 0 10px 5px rgba(0,0,0,.185); }
+  #page .nav span { color:#2196f3; font-size:16px; padding:8px 20px; display:inline-block; }
+  #page .body { background:#fff; height:100%; padding:40px 20px; text-align:center;
+                font-family:'Noto Serif Display',Georgia,serif; color:#6289c1; font-size:26px; }
+
+  /* phone mode: clamp the whole stage to a phone width */
+  body.phone #stage { width:393px; margin:0 auto; border-left:1px solid #444; border-right:1px solid #444; }
+
+  /* the notice is position:fixed in production; scope it to the stage here */
+  #stage .cc-away { position:absolute; }
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <span class="brand">AWAY NOTICE PREVIEW</span>
+  <button id="bDesk" class="on">Desktop</button>
+  <button id="bPhone">Phone 393px</button>
+  <span class="live">Live on the real site 2026-08-24 → 2026-09-24 · hidden every other day</span>
+</div>
+
+<div id="stage">
+  <div id="page">
+    <div class="hdr"><img src="../web/assets/img/Cabbage%20Coins_White.png" alt="Cabbage Coins"></div>
+    <div class="nav"><span>Home</span><span>Inventory</span><span>Sell To Us</span><span>FAQs</span><span>About</span></div>
+    <div class="body">New Purchases:</div>
+  </div>
+
+  <!-- markup below is copied from web/_includes/awaynotice.njk -->
+  <div class="cc-away" role="dialog" aria-modal="true" aria-labelledby="h">
+    <div class="cc-away__backdrop"></div>
+    <div class="cc-away__card">
+      <button class="cc-away__x" type="button" aria-label="Close this notice">&times;</button>
+      <img class="cc-away__emblem" src="../web/assets/img/CabbageCoins_Emblem_Small.png" alt="">
+      <p class="cc-away__eyebrow">A note from Tony</p>
+      <h2 class="cc-away__heading" id="h">Cabbage Coins is away</h2>
+      <p class="cc-away__dateline">August 24 – September 24</p>
+      <p class="cc-away__body">Inquiries on coins can still be made — Tony will be responding to email (tony@cabbagecoins.com). All purchases will be held and will ship to customers starting again on September 25th, 2026.</p>
+      <p class="cc-away__signoff">Thanks for your patience,<br>Tony Gryckiewicz</p>
+      <div class="cc-away__actions">
+        <button class="cc-away__btn" type="button">Browse the inventory</button>
+        <a class="cc-away__link" href="mailto:tony@cabbagecoins.com">Email Tony directly</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var d = document.getElementById('bDesk'), p = document.getElementById('bPhone');
+  function mode(phone) {
+    document.body.classList.toggle('phone', phone);
+    p.classList.toggle('on', phone); d.classList.toggle('on', !phone);
+  }
+  d.onclick = function () { mode(false); };
+  p.onclick = function () { mode(true); };
+  // preview only: dismissing would defeat the point, so re-show it
+  document.querySelectorAll('.cc-away__x, .cc-away__btn, .cc-away__backdrop').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); });
+  });
+</script>
+</body>
+</html>
