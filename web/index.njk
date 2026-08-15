@@ -20,8 +20,9 @@ title: Cabbage Coins | Home
                             <span class="featured-ribbon">★ Featured this week</span>
                             <div class="featured-inner">
                                 <div class="featured-slabs">
-                                    {% if featured.slabFront %}<span class="featured-slab" style="background-image: url('{{ featured.slabFront }}?w=760&q=85');"></span>{% endif %}
-                                    {% if featured.slabBack %}<span class="featured-slab" style="background-image: url('{{ featured.slabBack }}?w=760&q=85');"></span>{% endif %}
+                                    {# .featured-slab renders at clamp(150px, 21vw, 278px), so 640 covers it at 2x #}
+                                    {% if featured.slabFront %}<span class="featured-slab" style="background-image: url('{{ featured.slabFront }}?w=640&amp;q=90&amp;auto=format&amp;fit=max');"></span>{% endif %}
+                                    {% if featured.slabBack %}<span class="featured-slab" style="background-image: url('{{ featured.slabBack }}?w=640&amp;q=90&amp;auto=format&amp;fit=max');"></span>{% endif %}
                                 </div>
                                 <div class="featured-copy">
                                     <span class="featured-eyebrow">Featured Listing</span>
