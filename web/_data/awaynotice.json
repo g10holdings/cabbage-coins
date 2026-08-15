@@ -1,20 +1,20 @@
 {
   "_comment": "Away / vacation notice. Shows once per visit (per showAgainAfterHours) on the homepage and the inventory page, whichever the visitor lands on first. TO TURN IT ON: set enabled to true, fill in the dates and copy below, commit, let Netlify deploy. It will NOT appear before showFrom or after showUntil even when enabled is true, so it is safe to switch on early and let it schedule itself. Both dates are INCLUSIVE and are read in the visitor's local time.",
 
-  "enabled": false,
+  "enabled": true,
 
-  "showFrom": "2026-08-29",
-  "showUntil": "2026-09-15",
+  "showFrom": "2026-08-24",
+  "showUntil": "2026-09-24",
 
   "eyebrow": "A note from Tony",
   "heading": "Cabbage Coins is away",
-  "dateline": "August 29 – September 15",
-  "body": "I am away from the shop and will not be shipping coins or answering inquiries during this time. The full inventory stays online, so please browse — I will reply to every message in the order it arrived as soon as I am back.",
+  "dateline": "August 24 – September 24, 2026",
+  "body": "Inquiries on coins can still be made — Tony will be responding to email at tony@cabbagecoins.com throughout. All purchases will be held and will ship to customers starting again on September 25th, 2026.",
   "signoff": "Thanks for your patience,<br>Tony Gryckiewicz",
 
   "buttonText": "Browse the inventory",
-  "secondaryText": "Send an inquiry anyway",
-  "secondaryHref": "/aboutus/",
+  "secondaryText": "Email Tony directly",
+  "secondaryHref": "mailto:tony@cabbagecoins.com",
 
   "showAgainAfterHours": 24
 }
