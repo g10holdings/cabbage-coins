@@ -9,157 +9,100 @@ navtitle: Coin Shows
 title: Cabbage Coins | Coin Show Schedule
 ---
 
+{#
+  The schedule below is driven entirely by the "Coin Shows" documents in Sanity
+  Studio — see `web/_data/coinshows.js` for the query, the month grouping and
+  the retention rule (a show stays until the end of the month AFTER it ends).
+  Add or edit shows in Studio, then hit the "Blog Website" deploy button on the
+  Studio dashboard to rebuild. Nothing here needs editing by hand.
+#}
+
 <div class="container site-section main-section" style="text-align:center;">
     <h1 style="text-align:center;">Coin Show Schedule</h1>
     <p style="font-family:'Roboto'; font-size:18px; color:#444; max-width:700px; margin:0 auto 40px auto;">Come find us at these upcoming shows! Stop by the table to browse inventory, talk coins, or sell your collection in person.</p>
 
-    <!-- June 2026 -->
-    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">June 2026</h2>
+    {% for group in coinshows %}
+    <div class="show-month-group" data-month="{{ group.key }}" style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
+        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">{{ group.label }}</h2>
         <div style="display:flex; flex-direction:column; gap:12px;">
 
-            <div class="show-card" data-end="2026-06-13">
+            {% for show in group.shows %}
+            <div class="show-card{% if show.isPast %} is-past{% endif %}" data-end="{{ show.endISO }}">
                 <div class="show-date-badge">
-                    <div class="show-month-short">June</div>
-                    <div class="show-day">11–13</div>
+                    <div class="show-month-short">{{ show.monthShort }}</div>
+                    <div class="show-day">{{ show.dayRange }}</div>
                 </div>
                 <div class="show-details">
-                    <a href="https://whitmanexpo.com/baltimore-summer-expo/" target="_blank" class="show-name-link">
-                        <h3 class="show-name">Whitman Summer Expo</h3>
+                    {% if show.url %}
+                    <a href="{{ show.url }}" target="_blank" rel="noopener" class="show-name-link">
+                        <h3 class="show-name">{{ show.name }}</h3>
                     </a>
-                    <div class="show-location">📍 Baltimore, MD</div>
-                    <div class="show-meta">Table: 655</div>
+                    {% else %}
+                    <h3 class="show-name">{{ show.name }}</h3>
+                    {% endif %}
+                    <div class="show-location">📍 {{ show.location }}</div>
+                    <div class="show-meta">Table: {{ show.tableNumber }}</div>
                 </div>
-                <div class="show-badge-status"></div>
+                <div class="show-badge-status {% if show.isPast %}is-past{% else %}is-upcoming{% endif %}">{% if show.isPast %}Past{% else %}Upcoming{% endif %}</div>
             </div>
+            {% endfor %}
 
         </div>
     </div>
+    {% endfor %}
 
-    <!-- July 2026 -->
-    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">July 2026</h2>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-
-            <div class="show-card" data-end="2026-07-11">
-                <div class="show-date-badge">
-                    <div class="show-month-short">JUL</div>
-                    <div class="show-day">9–11</div>
-                </div>
-                <div class="show-details">
-                    <a href="http://www.funtopics.com/summer-fun.html" target="_blank" class="show-name-link">
-                        <h3 class="show-name">FUN Show</h3>
-                    </a>
-                    <div class="show-location">📍 Orlando, FL</div>
-                    <div class="show-meta">Table: 635</div>
-                </div>
-                <div class="show-badge-status"></div>
-            </div>
-
-            <div class="show-card" data-end="2026-07-25">
-                <div class="show-date-badge">
-                    <div class="show-month-short">JUL</div>
-                    <div class="show-day">23–25</div>
-                </div>
-                <div class="show-details">
-                    <a href="https://www.baystatecoinshow.com/" target="_blank" class="show-name-link">
-                        <h3 class="show-name">Bay State Coin Show</h3>
-                    </a>
-                    <div class="show-location">📍 Marlborough, MA</div>
-                    <div class="show-meta">Table: TBD</div>
-                </div>
-                <div class="show-badge-status"></div>
-            </div>
-
-        </div>
-    </div>
-    <!-- August 2026 -->
-    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">August 2026</h2>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-
-            <div class="show-card" data-end="2026-08-8">
-                <div class="show-date-badge">
-                    <div class="show-month-short">AUG</div>
-                    <div class="show-day">6–8</div>
-                </div>
-                <div class="show-details">
-                    <a href="https://www.brna.org" target="_blank" class="show-name-link">
-                        <h3 class="show-name">Blue Ridge Numismatic Association</h3>
-                    </a>
-                    <div class="show-location">📍 Dalton, GA</div>
-                    <div class="show-meta">Table: 911</div>
-                </div>
-                <div class="show-badge-status"></div>
-            </div>
-
-        </div>
-    </div>
-    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">August 2026</h2>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-
-            <div class="show-card" data-end="2026-08-29">
-                <div class="show-date-badge">
-                    <div class="show-month-short">AUG</div>
-                    <div class="show-day">25–29</div>
-                </div>
-                <div class="show-details">
-                    <a href="https://www.money.org/worldsfairofmoney/" target="_blank" class="show-name-link">
-                        <h3 class="show-name">ANA WFoM</h3>
-                    </a>
-                    <div class="show-location">📍 Pittsburgh, PA</div>
-                    <div class="show-meta">Table: 1707</div>
-                </div>
-                <div class="show-badge-status"></div>
-            </div>
-
-        </div>
-    </div>
-    <!-- October 2026 -->
-    <div style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">October 2026</h2>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-
-            <div class="show-card" data-end="2026-10-3">
-                <div class="show-date-badge">
-                    <div class="show-month-short">OCT</div>
-                    <div class="show-day">1–3</div>
-                </div>
-                <div class="show-details">
-                    <a href="https://www.gacc.show/" target="_blank" class="show-name-link">
-                        <h3 class="show-name">Great American Coin & Collectibles Show 2026</h3>
-                    </a>
-                    <div class="show-location">📍 Rosemont, IL</div>
-                    <div class="show-meta">Table: TBD</div>
-                </div>
-                <div class="show-badge-status"></div>
-            </div>
-
-        </div>
-    </div>
+    <p id="no-shows-message" style="font-family:'Roboto'; font-size:17px; color:#666; max-width:700px; margin:0 auto;" {% if coinshows.length %}hidden{% endif %}>
+        Our next show schedule is being finalized — check back soon, or <a href="/contactus/">get in touch</a> and we'll let you know where to find us.
+    </p>
 
 </div>
 
 <script>
-(function() {
+(function () {
+    // Mirrors the build-time rule in web/_data/coinshows.js so the page keeps
+    // tidying itself between deploys. The static build only re-runs when the
+    // site is rebuilt; without this, last month's shows would sit here until
+    // the next publish. Kept deliberately in sync with retentionCutoff() there.
     var today = new Date();
-    today.setHours(0,0,0,0);
-    document.querySelectorAll('.show-card').forEach(function(card) {
-        var endDate = new Date(card.dataset.end);
+    today.setHours(0, 0, 0, 0);
+    var cutoff = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+    function parseYMD(value) {
+        var parts = String(value || '').split('-');
+        if (parts.length !== 3) return null;
+        var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    var visibleCount = 0;
+
+    document.querySelectorAll('.show-card').forEach(function (card) {
+        var endDate = parseYMD(card.dataset.end);
+        if (!endDate) return;
+
+        if (endDate < cutoff) {
+            card.hidden = true;
+            return;
+        }
+        visibleCount++;
+
         var isPast = endDate < today;
         var badge = card.querySelector('.show-badge-status');
-        var dateBadge = card.querySelector('.show-date-badge');
-        if (isPast) {
-            card.style.opacity = '0.6';
-            card.style.background = '#f9f9f9';
-            dateBadge.style.background = '#888';
-            badge.textContent = 'Past';
-            badge.style.cssText = 'font-family:Roboto; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; background:#f0f0f0; color:#888; white-space:nowrap;';
-        } else {
-            badge.textContent = 'Upcoming';
-            badge.style.cssText = 'font-family:Roboto; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; background:#e8f0fb; color:#1d3961; white-space:nowrap;';
+        card.classList.toggle('is-past', isPast);
+        if (badge) {
+            badge.textContent = isPast ? 'Past' : 'Upcoming';
+            badge.classList.toggle('is-past', isPast);
+            badge.classList.toggle('is-upcoming', !isPast);
         }
     });
+
+    // A month heading with every show expired underneath it should go too.
+    document.querySelectorAll('.show-month-group').forEach(function (group) {
+        var live = group.querySelectorAll('.show-card:not([hidden])');
+        group.hidden = live.length === 0;
+    });
+
+    var empty = document.getElementById('no-shows-message');
+    if (empty) empty.hidden = visibleCount > 0;
 })();
 </script>

@@ -10,6 +10,7 @@ import category from './documents/category'
 import post from './documents/post'
 import siteSettings from './documents/siteSettings'
 import listing from './documents/listing'
+import coinShow from './documents/coinShow'
 
 // Object types
 import bodyPortableText from './objects/bodyPortableText'
@@ -33,6 +34,7 @@ export default createSchema({
     author,
     mainImage,
     listing,
+    coinShow,
     authorReference,
     bodyPortableText,
     bioPortableText,

@@ -1,9 +1,10 @@
 import S from '@sanity/desk-tool/structure-builder'
 import { MdSettings } from "react-icons/md";
 import { MdPerson } from "react-icons/md";
+import { MdEvent } from "react-icons/md";
 
 const hiddenDocTypes = listItem =>
-  !['category', 'author', 'post', 'siteSettings'].includes(listItem.getId())
+  !['category', 'author', 'post', 'siteSettings', 'coinShow'].includes(listItem.getId())
 
 export default () =>
   S.list()
@@ -17,6 +18,15 @@ export default () =>
             .id('siteSettings')
             .schemaType('siteSettings')
             .documentId('siteSettings')
+        ),
+      S.listItem()
+        .title('Coin Shows')
+        .icon(MdEvent)
+        .schemaType('coinShow')
+        .child(
+          S.documentTypeList('coinShow')
+            .title('Coin Shows')
+            .defaultOrdering([{ field: 'startDate', direction: 'asc' }])
         ),
       S.listItem()
         .title('Blog posts')

@@ -1701,6 +1701,39 @@ margin: 10px 0px 10px 0px;
     color: #555;
     margin-bottom: 4px;
 }
+/* Coin show status badge + past-show treatment.
+   Previously applied as inline styles from a script on coinshows.njk; moved
+   here so the server-rendered markup is already correct on first paint and
+   the script only has to toggle classes. */
+.show-badge-status {
+    font-family: 'Roboto';
+    font-weight: 700;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.show-badge-status.is-upcoming {
+    background: #e8f0fb;
+    color: #1d3961;
+}
+.show-badge-status.is-past {
+    background: #f0f0f0;
+    color: #888;
+}
+.show-card.is-past {
+    opacity: 0.6;
+    background: #f9f9f9;
+}
+.show-card.is-past .show-date-badge {
+    background: #888;
+}
+.show-card[hidden],
+.show-month-group[hidden] {
+    display: none !important;
+}
 .show-meta {
     font-family: 'Roboto';
     font-size: 14px;
