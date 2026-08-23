@@ -1,3 +1,24 @@
+/**
+ * Site-wide settings. Only fields that the website actually reads belong here.
+ *
+ * Six fields were removed on 2026-08-23 — keywords, author, frontpagemessage,
+ * aboutustext, aboutusbio, aboutusbioimage. All were leftovers from the Sanity
+ * eleventy-blog starter template and none were rendered anywhere: `keywords`
+ * still held "sanity.io, blog, webperf, sapper, svelte", `author` pointed at
+ * "My name", and `aboutusbio` claimed "since 2020" while the live site says
+ * 2021 in two places. `aboutustext` was referenced in aboutus.njk but sat
+ * inside an HTML comment, so it rendered nothing.
+ *
+ * The About page copy is deliberately still hardcoded in `web/aboutus.njk`:
+ * it is formatted markup (bullet list, bold, links, two call-to-action
+ * buttons) that a plain-text field cannot represent. Moving it into Studio
+ * would mean Portable Text, which is a bigger change than it is worth for
+ * copy that changes once a year.
+ *
+ * Before adding a field here, make sure something in `web/` actually reads it
+ * via `metadata.<field>` — an unread field is worse than no field, because it
+ * looks editable and silently is not.
+ */
 export default {
   name: 'siteSettings',
   type: 'document',
@@ -7,54 +28,14 @@ export default {
     {
       name: 'title',
       type: 'string',
-      title: 'Title'
+      title: 'Title',
+      description: 'Fallback browser-tab title and og:title. Pages that set their own title win.'
     },
     {
       name: 'description',
       type: 'text',
       title: 'Description',
-      description: 'Describe your blog for search engines and social media.'
-    },
-    {
-      name: 'keywords',
-      type: 'array',
-      title: 'Keywords',
-      description: 'Add keywords that describes your blog.',
-      of: [{type: 'string'}],
-      options: {
-        layout: 'tags'
-      }
-    },
-    {
-      name: 'author',
-      type: 'reference',
-      description: 'Publish an author and set a reference to them here.',
-      title: 'Author',
-      to: [{type: 'author'}]
-    },
-    {
-      name: 'frontpagemessage',
-      type: 'text',
-      description: 'Message in the top section of the homepage.',
-      title: 'Front Page Message'
-    },
-    {
-      name: 'aboutustext',
-      type: 'text',
-      description: 'Text for the About Cabbage Coins page',
-      title: 'About Cabbage Coins Text'
-    },
-    {
-      name: 'aboutusbio',
-      type: 'text',
-      description: 'Bio for the About Cabbage Coins page',
-      title: 'About Cabbage Coins Bio'
-    },
-    {
-      name: 'aboutusbioimage',
-      type: 'image',
-      description: 'Image for the About Us Bio',
-      title: 'About Us Bio Image'
+      description: 'Fallback meta description for search engines and social media.'
     }
   ]
 }
