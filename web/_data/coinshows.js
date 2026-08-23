@@ -28,20 +28,6 @@ function toISO (date) {
   ].join('-')
 }
 
-/**
- * Retention cutoff (agreed with Tony, 2026-08-23): keep any show that ended on
- * or after the FIRST DAY OF LAST MONTH. On Aug 23 that cutoff is Jul 1, so the
- * June shows drop off while July and August still list. Every show in a month
- * expires together on the 1st, so a heading never lingers over one stale show.
- *
- * Deliberately calendar-based rather than "30 days after the show ends": that
- * literal version would have dropped the Jul 9–11 FUN show on Aug 10 while
- * leaving Jul 23–25 behind, hollowing out the July section mid-month.
- */
-function retentionCutoff (today) {
-  return new Date(today.getFullYear(), today.getMonth() - 1, 1)
-}
-
 /** "11–13", "6–8", "30–Aug 2" when a show straddles a month, or "14" for one day. */
 function formatDayRange (start, end) {
   if (!end || start.getTime() === end.getTime()) return String(start.getDate())
@@ -51,6 +37,17 @@ function formatDayRange (start, end) {
   return `${start.getDate()}–${MONTHS[end.getMonth()].slice(0, 3)} ${end.getDate()}`
 }
 
+/**
+ * Every published coinShow document is listed, oldest first — there is no
+ * automatic expiry. Tony removes past shows himself by unpublishing them in
+ * Studio (unpublishing leaves a draft, which the anonymous build query does
+ * not see) and redeploying, the same routine he already follows for listings.
+ *
+ * An earlier version expired shows automatically after a calendar month. That
+ * was dropped deliberately: its main advantage was surviving long gaps between
+ * deploys, which does not apply here, and it meant duplicating the rule in the
+ * page script to keep a static build honest.
+ */
 async function getCoinShows () {
   const query = groq`*[_type == "coinShow"]{
     _id,
@@ -68,7 +65,6 @@ async function getCoinShows () {
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const cutoff = retentionCutoff(today)
 
   const shows = docs
     .map(doc => {
@@ -84,7 +80,6 @@ async function getCoinShows () {
       }
       return true
     })
-    .filter(({ end }) => end >= cutoff)
     .sort((a, b) => a.start - b.start || a.end - b.end)
     .map(({ doc, start, end }) => ({
       id: doc._id,

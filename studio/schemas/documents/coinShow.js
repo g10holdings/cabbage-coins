@@ -3,11 +3,13 @@ import { MdEvent } from 'react-icons/md'
 /**
  * A single coin show on the public "Coin Show Schedule" page (/coinshows/).
  *
- * Retention rule (agreed with Tony, 2026-08-23): a show stays on the page until
- * the end of the calendar month AFTER the month it ends in — so on Aug 23 the
- * June shows are gone, July and August are still listed. Whole month sections
- * drop off together rather than thinning out one show at a time. The filtering
- * itself lives in `web/_data/coinshows.js`; nothing needs unpublishing here.
+ * Past shows do NOT expire automatically (decided with Tony, 2026-08-23). To take
+ * one off the page, unpublish it here and redeploy the site — the same routine he
+ * already follows for listings.
+ *
+ * Prefer unpublishing to deleting: most of these shows recur annually, so keeping
+ * the document means next year is a duplicate-and-change-the-dates job rather than
+ * retyping the name, URL, city and table number.
  */
 export default {
   name: 'coinShow',

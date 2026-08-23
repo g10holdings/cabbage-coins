@@ -11,10 +11,12 @@ title: Cabbage Coins | Coin Show Schedule
 
 {#
   The schedule below is driven entirely by the "Coin Shows" documents in Sanity
-  Studio — see `web/_data/coinshows.js` for the query, the month grouping and
-  the retention rule (a show stays until the end of the month AFTER it ends).
-  Add or edit shows in Studio, then hit the "Blog Website" deploy button on the
-  Studio dashboard to rebuild. Nothing here needs editing by hand.
+  Studio — see `web/_data/coinshows.js` for the query, month grouping and date
+  formatting. Nothing here needs editing by hand.
+
+  To take a past show off the page: unpublish it in Studio, then hit the "Blog
+  Website" deploy button on the Studio dashboard. Same for adding or editing —
+  changes are only live once that deploy runs. Shows do NOT expire on their own.
 #}
 
 <div class="container site-section main-section" style="text-align:center;">
@@ -59,32 +61,24 @@ title: Cabbage Coins | Coin Show Schedule
 
 <script>
 (function () {
-    // Mirrors the build-time rule in web/_data/coinshows.js so the page keeps
-    // tidying itself between deploys. The static build only re-runs when the
-    // site is rebuilt; without this, last month's shows would sit here until
-    // the next publish. Kept deliberately in sync with retentionCutoff() there.
+    // Refreshes the Past / Upcoming badge against today's date. The server
+    // already rendered the correct state at build time; this only matters for
+    // a show that ends between deploys, so the badge does not sit on
+    // "Upcoming" for a show that has already happened.
+    //
+    // Removing a past show from the page is deliberately NOT done here — that
+    // is a manual step in Studio (unpublish, then redeploy). Keeping the rule
+    // out of this file means there is no schedule logic to keep in sync with
+    // web/_data/coinshows.js.
     var today = new Date();
     today.setHours(0, 0, 0, 0);
-    var cutoff = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-
-    function parseYMD(value) {
-        var parts = String(value || '').split('-');
-        if (parts.length !== 3) return null;
-        var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-        return isNaN(d.getTime()) ? null : d;
-    }
-
-    var visibleCount = 0;
 
     document.querySelectorAll('.show-card').forEach(function (card) {
-        var endDate = parseYMD(card.dataset.end);
-        if (!endDate) return;
+        var parts = String(card.dataset.end || '').split('-');
+        if (parts.length !== 3) return;
 
-        if (endDate < cutoff) {
-            card.hidden = true;
-            return;
-        }
-        visibleCount++;
+        var endDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        if (isNaN(endDate.getTime())) return;
 
         var isPast = endDate < today;
         var badge = card.querySelector('.show-badge-status');
@@ -95,14 +89,5 @@ title: Cabbage Coins | Coin Show Schedule
             badge.classList.toggle('is-upcoming', !isPast);
         }
     });
-
-    // A month heading with every show expired underneath it should go too.
-    document.querySelectorAll('.show-month-group').forEach(function (group) {
-        var live = group.querySelectorAll('.show-card:not([hidden])');
-        group.hidden = live.length === 0;
-    });
-
-    var empty = document.getElementById('no-shows-message');
-    if (empty) empty.hidden = visibleCount > 0;
 })();
 </script>

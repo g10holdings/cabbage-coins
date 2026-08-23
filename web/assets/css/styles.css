@@ -1730,10 +1730,6 @@ margin: 10px 0px 10px 0px;
 .show-card.is-past .show-date-badge {
     background: #888;
 }
-.show-card[hidden],
-.show-month-group[hidden] {
-    display: none !important;
-}
 .show-meta {
     font-family: 'Roboto';
     font-size: 14px;
