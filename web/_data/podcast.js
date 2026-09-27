@@ -1,6 +1,10 @@
 const https = require('https')
 
-const API_KEY = 'AIzaSyCehTOSYjal6lcMESn-uKj5Xrr39fNbDGM'
+require('dotenv').config({
+    path: `.env.${process.env.NODE_ENV || 'development'}`
+})
+
+const API_KEY = process.env.YOUTUBE_API_KEY
 const PLAYLIST_ID = 'PLlr-GEyMjkcbnDLipOKqe2p5MT9MKNy3L'
 
 function fetchJSON(url) {
@@ -14,6 +18,11 @@ function fetchJSON(url) {
 }
 
 async function getPodcastEpisodes() {
+    if (!API_KEY) {
+        console.warn('YOUTUBE_API_KEY not set - skipping podcast episodes')
+        return []
+    }
+
     try {
         const searchUrl = `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=${PLAYLIST_ID}&part=snippet&maxResults=10`
         const data = await fetchJSON(searchUrl)
