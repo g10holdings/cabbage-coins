@@ -37,7 +37,7 @@ function sanityFetch(query) {
             hostname: `${PROJECT_ID}.api.sanity.io`,
             path: `/${API_VERSION}/data/query/${DATASET}?query=${encoded}`,
             method: 'GET',
-            headers: {}
+            headers: TOKEN ? { 'Authorization': `Bearer ${TOKEN}` } : {}
         }
         const req = https.request(options, (res) => {
             let data = ''
@@ -88,14 +88,11 @@ async function cleanupUnusedAssets() {
     console.log(`Total assets in library: ${allAssets.length}`)
     console.log(`Total size: ${(allAssets.reduce((sum, a) => sum + (a.size || 0), 0) / 1024 / 1024 / 1024).toFixed(2)} GB`)
 
-    const refsResult = await sanityFetch(`*[_type == "listing"]{ "imageId": image.asset->_id, "galleryIds": imagesGallery[].asset->_id }`)
-    const referencedAssets = refsResult.result
-
-    const referencedIds = new Set()
-    referencedAssets.forEach(doc => {
-        if (doc.imageId) referencedIds.add(doc.imageId)
-        if (doc.galleryIds) doc.galleryIds.forEach(id => { if(id) referencedIds.add(id) })
-    })
+    // Count references from ANY document type - not just listings. An image used
+    // by siteSettings, a coinShow or a post would otherwise look unreferenced and
+    // be deleted. Needs an authenticated query so drafts are counted too.
+    const refsResult = await sanityFetch(`*[_type == "sanity.imageAsset" && count(*[references(^._id)]) > 0]._id`)
+    const referencedIds = new Set(refsResult.result || [])
 
     console.log(`Referenced assets: ${referencedIds.size}`)
 
