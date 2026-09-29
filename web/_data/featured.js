@@ -19,7 +19,9 @@ const hasToken = !!client.config().token
  * resolved from the last two gallery photos) or `null` when nothing is featured.
  */
 async function getFeatured () {
-  const query = groq`*[_type == "listing" && featured == true && !sold]{
+  // `sold != true`, not `!sold`: in GROQ `!null` is null (not true), so `!sold`
+  // silently drops every listing whose Sold toggle was never touched.
+  const query = groq`*[_type == "listing" && featured == true && sold != true]{
     _id,
     _createdAt,
     name,
