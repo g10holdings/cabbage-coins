@@ -1,0 +1,24 @@
+{# PCGS population around this coin's grade (±2 steps, plus grades included).
+   Shown on unsold PCGS listings that have population saved (filled by the import script).
+   PCGS's license requires, on every page that shows it: a live link to PCGS, the PCGS
+   logo, and the credit line below (at least 10pt). #}
+{% set pop = popData %}
+{% set top = pop.cells | last %}
+<section class="cc-pop" aria-labelledby="cc-pop-title">
+    <div class="cc-pop-head">
+        <h3 class="cc-pop-title" id="cc-pop-title">PCGS Population</h3>
+        <a class="cc-pop-logo" href="{{ pop.coinFactsUrl }}" target="_blank" rel="noopener"><img src="/assets/img/pcgs-logo.png" alt="PCGS CoinFacts for this coin" width="95" height="31"></a>
+    </div>
+    <p class="cc-pop-lead">This coin is <strong>1 of {{ pop.thisPop }}</strong> graded {{ pop.grade }} by PCGS{% if pop.thisHigher > 0 %}, with <strong>{{ pop.thisHigher }}</strong> graded higher{% else %}, and none graded higher{% endif %}.</p>
+
+    <table class="cc-pop-grid">
+        <thead><tr><th scope="col"><span class="cc-sr">Grade</span></th>{% for c in pop.cells %}{% if not c.plus %}<th scope="col">{{ c.label }}</th>{% endif %}{% endfor %}</tr></thead>
+        <tbody>
+            <tr><th scope="row">Pop</th>{% for c in pop.cells %}{% if not c.plus %}<td{% if c.isThisGrade %} class="is-this"{% endif %}>{{ c.pop }}</td>{% endif %}{% endfor %}</tr>
+            <tr class="cc-pop-plusrow"><th scope="row"><span aria-hidden="true">+</span><span class="cc-sr">Plus grade</span></th>{% for c in pop.cells %}{% if not c.plus %}{% set p = pop.cells[loop.index] %}{% if p and p.plus and p.num == c.num %}<td{% if p.isThisGrade %} class="is-this"{% endif %}>{{ p.pop }}</td>{% else %}<td class="cc-pop-na">&ndash;</td>{% endif %}{% endif %}{% endfor %}</tr>
+        </tbody>
+    </table>
+
+    <p class="cc-pop-foot">{% if pop.higherThanTop > 0 %}{{ pop.higherThanTop }} graded above {{ top.label }} &middot; {% endif %}As of {{ pop.asOf | monthYear }} &middot; <a href="{{ pop.coinFactsUrl }}" target="_blank" rel="noopener">PCGS CoinFacts &#8599;</a></p>
+    <p class="cc-pop-credit">The Data is obtained from and is subject to a license agreement with Collectors Universe, Inc. and its divisions PCGS and PSA.</p>
+</section>

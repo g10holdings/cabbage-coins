@@ -18,6 +18,12 @@ module.exports = function(eleventyConfig) {
     return util.inspect(value, {compact: false})
    });
 
+  // "2026-10-10" → "Oct 2026" (the PCGS population "as of" date on listings).
+  eleventyConfig.addFilter("monthYear", (iso) => {
+    const d = new Date(String(iso).slice(0, 10) + "T12:00:00Z");
+    return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  });
+
    eleventyConfig.addFilter("readableDate", dateObj => {
     return new Date(dateObj).toDateString()
   }); 

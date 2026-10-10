@@ -134,3 +134,33 @@ npm run import                  # import (same as run-import.cmd)
 node import-listings.js --delete            # delete drafts (asks to confirm)
 node import-listings.js --limit 3 --dry-run # preview just the first 3 rows
 ```
+
+---
+
+## PCGS population on listings (`fill-pcgs-pop`)
+
+Unsold **PCGS** listings show a small **PCGS Population** grid on their page: the
+coin's grade ±2 steps, with the **+** grades, the coin's own cell highlighted, and a
+line like *"This coin is 1 of 9 graded MS64 by PCGS, with 18 graded higher."* NGC and
+CACG listings don't get one, and it disappears when a coin is marked **Sold**.
+
+The numbers come from the PCGS API and are saved on the listing (read-only field
+**PCGS Population** in the Studio), so visitors never cause PCGS calls.
+
+- **`run-import`** fills it in for the new listings right after creating them.
+- **`fill-pcgs-pop`** (double-click) fills in whatever is still missing. PCGS allows
+  **100 calls a day** for your account (shared with The Cabbage Patch), and each coin
+  takes about **6 calls**, so a big batch takes a few days: when it hits the limit it
+  stops and says so — double-click it again the next day and it carries on. Answers
+  are saved in `.pcgs-cache.json`, so stopping part-way wastes nothing.
+- **Refreshing** stale numbers (every few months): open a terminal in `scripts` and run
+  `node fill-pcgs-pop.js --refresh-days 120`.
+- `node fill-pcgs-pop.js --dry-run` lists what it would do without any calls or writes.
+
+Needs `PCGS_API_TOKEN` in `scripts/.env` (the same token The Cabbage Patch uses). The
+**Grade Number** must be the PCGS cert number; anything else is skipped with a warning.
+
+**PCGS's license** (PCGS API End User Agreement) allows this "in support of specific
+sales you offer" and requires on each page: a link to PCGS (CoinFacts), the PCGS logo,
+and their credit line in at least 10-point type. The listing page shows all three —
+don't remove them.

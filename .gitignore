@@ -12,3 +12,6 @@ node_modules/
 .env.*
 !.env.example
 !.env.development.template
+
+# PCGS answers saved by scripts/fill-pcgs-pop.js
+scripts/.pcgs-cache.json

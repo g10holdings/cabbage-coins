@@ -88,6 +88,13 @@ parent: Inventory
                     <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
                     {% endif %}
 
+                    {# PCGS population around this grade: unsold PCGS listings only, once the
+                       population has been saved (scripts/fill-pcgs-pop.js). #}
+                    {% if listing.pcgsPop and listing.gradingCompany == "PCGS" and not listing.sold %}
+                    {% set popData = listing.pcgsPop %}{% include "pcgspop.njk" %}
+                    {% endif %}
+
+
                     {# Stays in the right-hand info column for featured and non-featured
                        alike; it only drops below the photos when the grid collapses to a
                        single column under 900px. #}

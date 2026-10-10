@@ -115,6 +115,48 @@ export default {
   title: 'PCGS Catalog Number'
 },
 {
+  // Filled by scripts/fill-pcgs-pop.js from the PCGS API (one cert lookup + one call per nearby grade).
+  // The listing page shows it as a grid on unsold PCGS listings. Read-only: re-run the script to refresh.
+  name: 'pcgsPop',
+  type: 'object',
+  title: 'PCGS Population (filled automatically)',
+  description: 'Saved from the PCGS API by fill-pcgs-pop. Shown on the listing page while the coin is unsold. To refresh, re-run the script.',
+  readOnly: true,
+  options: {collapsible: true, collapsed: true},
+  fields: [
+    {name: 'asOf', type: 'date', title: 'As of'},
+    {name: 'v', type: 'number', title: 'Format version'},
+    {name: 'cert', type: 'string', title: 'From cert #'},
+    {name: 'grade', type: 'string', title: 'PCGS grade'},
+    {name: 'pcgsNumber', type: 'number', title: 'PCGS #'},
+    {name: 'thisPop', type: 'number', title: 'Population at this grade'},
+    {name: 'thisHigher', type: 'number', title: 'Graded higher'},
+    {name: 'higherThanTop', type: 'number', title: 'Graded above the grid'},
+    {name: 'maxPop', type: 'number', title: 'Largest cell'},
+    {name: 'coinFactsUrl', type: 'url', title: 'PCGS CoinFacts link'},
+    {
+      name: 'cells',
+      type: 'array',
+      title: 'Grid (±2 grades, with + grades)',
+      of: [{
+        type: 'object',
+        name: 'pcgsPopCell',
+        fields: [
+          {name: 'label', type: 'string'},
+          {name: 'num', type: 'number'},
+          {name: 'plus', type: 'boolean'},
+          {name: 'pop', type: 'number'},
+          {name: 'isThisGrade', type: 'boolean'}
+        ],
+        preview: {
+          select: {label: 'label', pop: 'pop', mine: 'isThisGrade'},
+          prepare: ({label, pop, mine}) => ({title: `${label}: ${pop}${mine ? '  (this coin)' : ''}`})
+        }
+      }]
+    }
+  ]
+},
+{
   name: 'category',
   type: 'string',
   title: 'Category',

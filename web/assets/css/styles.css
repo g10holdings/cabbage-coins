@@ -1907,3 +1907,61 @@ margin: 10px 0px 10px 0px;
   .cc-away__heading { font-size: 27px; }
   .cc-away__body, .cc-away__signoff { font-size: 16px; }
 }
+
+/* ---- PCGS population (unsold PCGS listings) ---- */
+.cc-pop {
+  margin: 28px 0 0;
+  padding: 20px 22px 16px;
+  background: #fff;
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+}
+.cc-pop-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.cc-pop-title {
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-weight: 800;
+  color: #1d3961;
+  font-size: 22px;
+  margin: 0;
+}
+.cc-pop-logo { display: block; flex-shrink: 0; line-height: 0; }
+.cc-pop-logo img { height: 28px; width: auto; }
+.cc-pop-lead { font-family: 'Roboto', sans-serif; font-size: 17px; line-height: 1.5; color: #2c3a4d; margin: 0 0 14px; }
+.cc-pop-lead strong { color: #1d3961; }
+
+.cc-pop-grid { width: 100%; border-collapse: separate; border-spacing: 4px; font-family: 'Roboto', sans-serif; table-layout: fixed; margin: 0 -4px; }
+.cc-pop-grid thead th {
+  font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: #5f6b7a;
+  text-align: center; padding: 0 0 2px;
+}
+.cc-pop-grid tbody th {
+  width: 44px; font-size: 12px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase;
+  color: #5f6b7a; text-align: left; padding: 0;
+}
+.cc-pop-grid td {
+  text-align: center; font-size: 18px; font-weight: 700; color: #1d3961;
+  background: #f5f8fb; border-radius: 6px; padding: 8px 2px; font-variant-numeric: tabular-nums;
+}
+.cc-pop-grid .cc-pop-plusrow th { font-size: 17px; font-weight: 700; letter-spacing: 0; padding-left: 6px; }
+.cc-pop-grid .cc-pop-plusrow td { font-size: 15px; font-weight: 500; color: #5f6b7a; padding: 5px 2px; }
+.cc-pop-grid td.is-this { background: #1d3961; color: #fff; }
+.cc-pop-grid td.cc-pop-na { background: transparent; color: #b7c0cc; }
+
+.cc-pop-foot { font-family: 'Roboto', sans-serif; font-size: 14px; color: #5f6b7a; margin: 12px 0 6px; }
+.cc-pop-foot a { color: #2196f3; }
+/* License: at least 10pt (13.33px). */
+.cc-pop-credit { font-family: 'Roboto', sans-serif; font-size: 13.5px; line-height: 1.4; color: #7c8aa0; margin: 0; }
+.cc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .cc-pop { margin-top: 22px; padding: 16px 14px 14px; }
+  .cc-pop-title { font-size: 19px; }
+  .cc-pop-logo img { height: 24px; }
+  .cc-pop-lead { font-size: 15px; }
+  .cc-pop-grid { border-spacing: 3px; margin: 0 -3px; }
+  .cc-pop-grid thead th { font-size: 11px; letter-spacing: .02em; }
+  .cc-pop-grid tbody th { width: 34px; font-size: 10px; }
+  .cc-pop-grid td { font-size: 16px; padding: 7px 0; }
+  .cc-pop-grid .cc-pop-plusrow td { font-size: 13px; }
+  .cc-pop-foot { font-size: 13px; }
+}
