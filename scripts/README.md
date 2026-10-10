@@ -78,6 +78,13 @@ A coin's artwork is fixed by its **series**, not its date — every Barber dime 
 the same whether it's 1892 or 1916. So the tool looks the design up in a table
 (`coin-designs.js`) rather than guessing at it. That table is exact.
 
+The lookup reads the coin's **name, denomination and year** together, so the wording of
+the name doesn't matter: "Peace Dollar", "Peace Silver Dollar", "Seated Liberty",
+"Liberty Seated" and plain "Seated" all work. The denomination column can say `1`,
+`2.5`, `$1` or `50C`. The year is a check too: a coin named "Capped Bust" but dated
+1857 (that design ended in 1837) is left blank with a warning, because the name and
+date disagree. Fix the name in that case.
+
 If a coin's series isn't in the table yet, the alt text is **left blank on purpose**
 and the tool **prints a warning naming that coin**. Nothing guesses: a wrong reverse
 design would read as authoritative to someone using a screen reader, and blank is

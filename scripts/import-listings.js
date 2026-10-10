@@ -335,7 +335,8 @@ async function main() {
   // one so you can write it by hand in the Studio.
   const unmatched = [];
   for (const doc of docs) {
-    const known = lookupDesign(doc.__meta.name);
+    // Name + denomination (+ the year in the name): wording like "Peace Silver Dollar" or "Liberty Seated" still matches.
+    const known = lookupDesign(doc.__meta.name, doc.__meta.denomination);
     if (known) doc.image = { _type: 'mainImage', alt: known };
     else unmatched.push(doc);
   }
@@ -349,7 +350,7 @@ async function main() {
   // Name every listing that needs alt text written by hand. Adding the series to
   // coin-designs.js fixes it for good, for this coin and every future one like it.
   for (const doc of unmatched) {
-    warn(`${doc.__meta.name}: series not in coin-designs.js — alt text left BLANK, write it in the Studio.`);
+    warn(`${doc.__meta.name}: no match in coin-designs.js (series not listed, or the name and date disagree) — alt text left BLANK, write it in the Studio.`);
   }
 
   // Preview.
