@@ -67,7 +67,9 @@ function loadCache() {
 }
 
 const baseId = (id) => id.replace(/^drafts\./, '');
-const certOf = (doc) => String(doc.gradenumber ?? '').replace(/\D/g, '');
+// Tony adds "_2", "_3" to the Grade Number when the same coin comes back into stock (keeps his spreadsheet rows
+// unique): the cert is the part before it.
+const certOf = (doc) => String(doc.gradenumber ?? '').trim().replace(/_\d+$/, '').replace(/\D/g, '');
 
 function needsPop(doc) {
   const p = doc.pcgsPop;

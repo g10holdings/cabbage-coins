@@ -18,6 +18,10 @@ module.exports = function(eleventyConfig) {
     return util.inspect(value, {compact: false})
    });
 
+  // "51354567_2" → "51354567": Tony adds _2, _3 to a Grade Number when a coin he sold comes back, to keep his
+  // spreadsheet rows unique. Customers see the real cert number.
+  eleventyConfig.addFilter("certNumber", (n) => String(n ?? "").trim().replace(/_\d+$/, ""));
+
   // "2026-10-10" → "Oct 2026" (the PCGS population "as of" date on listings).
   eleventyConfig.addFilter("monthYear", (iso) => {
     const d = new Date(String(iso).slice(0, 10) + "T12:00:00Z");
