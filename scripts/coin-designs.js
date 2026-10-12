@@ -26,7 +26,7 @@
 // ADDING A SERIES
 // Add an entry to DESIGNS below: { match: /pattern/i, denoms: [...], years: [from, to], alt: '...' }.
 // - denoms: the denominations it applies to ('1/2C', '1C', '5C', 'H10C', '10C', '25C', '50C', '$1', 'G$1',
-//   '$2.50', '$3', '$5', '$10', '$20'). Leave it out only when the name alone is unmistakable.
+//   '$2.50', '$3', '$5', '$10', '$20', 'PESO'). Leave it out only when the name alone is unmistakable.
 // - years: optional, for a series whose design changed (Lincoln cent reverse, etc.).
 // - Order matters: the FIRST match wins, so put specific entries (commemoratives) above general ones.
 // - Describe imagery only — no grade, date, mint mark, or PCGS/NGC/CAC.
@@ -89,6 +89,12 @@ const DESIGNS = [
     alt: 'silver half dollar with a bust of daniel boone and boone standing with a shawnee chief' },
   { match: /Hawaii/i, denoms: ['50C'],
     alt: 'silver half dollar with a bust of captain cook and a hawaiian chief with an outstretched arm' },
+
+  // --- U.S. Philippines ----------------------------------------------------
+  // US-administered pesos, 1903-1912 (large size to 1906, reduced after; same design). The 1936 Commonwealth
+  // commemorative pesos are a different design, hence the years.
+  { match: /Philippine/i, denoms: ['PESO'], years: [1903, 1912],
+    alt: 'silver peso with a filipina woman at an anvil before a smoking volcano and an eagle atop a shield' },
 
   // --- Dollars -------------------------------------------------------------
   // Trade dollar first: it is a $1 coin too.
