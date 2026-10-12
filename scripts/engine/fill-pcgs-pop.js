@@ -19,7 +19,7 @@
  *   --max-calls N      Stop after N PCGS calls this run (default 90).
  *   --refresh-days N   Also re-fetch listings whose population is older than N days (e.g. 120).
  *
- * Env (scripts/.env): SANITY_WRITE_TOKEN, PCGS_API_TOKEN.
+ * Env (scripts/engine/.env): SANITY_WRITE_TOKEN, PCGS_API_TOKEN.
  */
 
 import fs from 'node:fs';
@@ -82,8 +82,8 @@ function needsPop(doc) {
 
 async function main() {
   const { SANITY_WRITE_TOKEN, PCGS_API_TOKEN } = process.env;
-  if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from scripts/.env');
-  if (!PCGS_API_TOKEN && !DRY_RUN) throw new Error('PCGS_API_TOKEN is missing from scripts/.env');
+  if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from scripts/engine/.env');
+  if (!PCGS_API_TOKEN && !DRY_RUN) throw new Error('PCGS_API_TOKEN is missing from scripts/engine/.env');
 
   const client = createClient({
     projectId: process.env.SANITY_PROJECT_ID || 'la880an7',

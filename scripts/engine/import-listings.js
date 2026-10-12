@@ -240,7 +240,7 @@ function buildDoc(row, rowLabel, usedSlugs) {
 // ---------------------------------------------------------------------------
 function makeClient() {
   if (!process.env.SANITY_WRITE_TOKEN) {
-    console.error('SANITY_WRITE_TOKEN is not set. Add it to scripts/.env (Editor-permission token).');
+    console.error('SANITY_WRITE_TOKEN is not set. Add it to scripts/engine/.env (Editor-permission token).');
     process.exit(1);
   }
   return createClient({

@@ -89,7 +89,7 @@ parent: Inventory
                     {% endif %}
 
                     {# PCGS population around this grade: unsold PCGS listings only, once the
-                       population has been saved (scripts/fill-pcgs-pop.js). #}
+                       population has been saved (scripts/engine/fill-pcgs-pop.js). #}
                     {% if listing.pcgsPop and listing.gradingCompany == "PCGS" and not listing.sold %}
                     {% set popData = listing.pcgsPop %}{% include "pcgspop.njk" %}
                     {% endif %}

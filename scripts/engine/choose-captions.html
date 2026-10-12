@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose Captions</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* One column of coin cards: slab-label strip, photos, then the options. Sticky bar holds progress + Save. */
+:root {
+  --bg: #eef0f2; --card: #ffffff; --fg: #1d2329; --muted: #5b6672; --line: #d3d8de;
+  --accent: #1f5f73; --accent-soft: #dcebef; --warn: #8a5a00; --warn-soft: #fbf0d9;
+  --bad: #a3402f; --bad-soft: #f6e3df; --good: #2f7a3f; --label: #f7f3e6; --label-fg: #2a2a22;
+  --f-display: "Alegreya SC", Georgia, serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #14181c; --card: #1d2227; --fg: #e4e8ec; --muted: #9aa5b0; --line: #333b43;
+  --accent: #7cc3d6; --accent-soft: #1f3a42; --warn: #e8c070; --warn-soft: #3a2f17;
+  --bad: #e79a8b; --bad-soft: #43251f; --good: #7fcf8d; --label: #2b2a22; --label-fg: #ece6cf; color-scheme: dark } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--f-body); }
+.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 80px; display: grid; gap: 24px; }
+h1 { font: 700 clamp(28px, 5vw, 40px)/1.1 var(--f-display); margin: 0; }
+.intro p { margin: 8px 0 0; color: var(--muted); max-width: 64ch; }
+.bar { position: sticky; top: 0; z-index: 3; background: var(--bg); border-bottom: 1px solid var(--line);
+  padding-block: 10px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-variant-numeric: tabular-nums; }
+.bar b { font: 700 22px var(--f-display); }
+.bar span { color: var(--muted); }
+.save { margin-left: auto; font: 600 15px var(--f-body); color: var(--card); background: var(--accent); border: 0; border-radius: 5px; padding: 9px 16px; cursor: pointer; }
+.save[disabled] { opacity: .45; cursor: default; }
+.coin { background: var(--card); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.slab { background: var(--label); color: var(--label-fg); font: 500 13px var(--f-mono); padding: 10px 16px; border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; gap: 12px; }
+.slab .n { opacity: .6; white-space: nowrap; }
+.photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; background: var(--line); }
+.photos img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #0b0d0f; display: block; cursor: zoom-in; }
+.body { padding: 16px; display: grid; gap: 10px; }
+.note { margin: 0; padding: 8px 12px; border-radius: 5px; font-size: 14px; }
+.note.warn { background: var(--warn-soft); color: var(--warn); }
+.opts { display: grid; gap: 8px; }
+.row { display: flex; gap: 8px; align-items: stretch; }
+.opt { flex: 1; min-width: 0; display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; background: var(--card); }
+.opt:hover { border-color: var(--accent); }
+.opt input[type=radio] { margin-top: 5px; accent-color: var(--accent); flex: none; }
+.opt .txt { font-weight: 600; font-size: 17px; }
+.opt .check { display: block; font-size: 13px; color: var(--warn); font-weight: 400; margin-top: 2px; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.flagged { opacity: .55; text-decoration: line-through; }
+.opt.flagged .check { text-decoration: none; }
+.own { flex: 1; min-width: 0; font: 600 17px var(--f-body); color: var(--fg); background: transparent; border: 0; border-bottom: 1px dashed var(--line); padding: 0 0 2px; }
+.own:focus { outline: none; border-bottom-color: var(--accent); }
+.flag { flex: none; width: 46px; border: 1px solid var(--line); border-radius: 5px; background: var(--card); color: var(--muted); font-size: 18px; cursor: pointer; }
+.flag[aria-pressed="true"] { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+.flag:focus-visible, .save:focus-visible, .opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dup { font-size: 14px; color: var(--warn); margin: 0; }
+.meta { font-size: 14px; color: var(--muted); margin: 0; }
+.meta b { color: var(--fg); font-weight: 600; }
+details { font-size: 14px; color: var(--muted); }
+details li { margin: 2px 0; }
+.result { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 16px 20px; }
+.result h2 { font: 700 24px var(--f-display); margin: 0 0 8px; }
+.result li.ok { color: var(--good); }
+dialog { border: 0; padding: 0; background: transparent; max-width: min(94vw, 1100px); }
+dialog img { max-height: 90vh; width: auto; display: block; }
+dialog::backdrop { background: rgba(0,0,0,.85); }
+@media (max-width: 560px) { .photos { grid-template-columns: repeat(2, 1fr); } .slab { flex-direction: column; gap: 2px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>Choose captions</h1>
+    <p>Pick one caption per coin or write your own. Press <strong>⚑</strong> on any option you'd never publish, and future suggestions will steer away from it. You can skip coins: they'll be waiting next time with no extra charge. Save writes to the <em>drafts</em> only, so you still review and publish in the Studio.</p>
+  </header>
+  <div class="bar"><b id="count">0 / 0</b><span id="sub">chosen</span><button type="button" class="save" id="save" disabled>Save to Studio</button></div>
+  <main id="list" style="display:grid;gap:24px"><p class="meta">Loading…</p></main>
+</div>
+<dialog id="zoom"><img id="zimg" alt=""></dialog>
+<script>
+const KEY = 'choose-captions';
+let batch = [];
+let picks = {};   // id -> { choice: 0|1|2|'own', own: '', flagged: [texts] }
+try { picks = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+const keep = () => { try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch (e) {} };
+const el = (t, cls, txt) => { const e = document.createElement(t); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const FILLER = new Set(['a','an','the','this','that','one','our','my','just','very','so']);
+const lead = (s) => (s.toLowerCase().replace(/[^a-z0-9$'+-]+/g, ' ').trim().split(/\s+/).find(w => w && !FILLER.has(w))) || '';
+
+function captionOf(c) {
+  const p = picks[c.id];
+  if (!p || p.choice == null) return '';
+  return p.choice === 'own' ? (p.own || '').trim() : (c.options[p.choice]?.text || '');
+}
+
+function render() {
+  const list = document.getElementById('list'); list.innerHTML = '';
+  // Lead words of what's picked so far, to warn about two coins that start alike.
+  const leads = new Map();
+  for (const c of batch) { const cap = captionOf(c); if (cap && !/^\d/.test(lead(cap))) { const l = lead(cap); leads.set(l, [...(leads.get(l) || []), c]); } }
+  for (const [i, c] of batch.entries()) {
+    const p = picks[c.id] || (picks[c.id] = { choice: null, own: '', flagged: [] });
+    const card = el('section', 'coin');
+    const slab = el('div', 'slab'); slab.append(el('span', '', c.name), el('span', 'n', `${i + 1} of ${batch.length}`)); card.append(slab);
+    const ph = el('div', 'photos');
+    c.photos.forEach((src, k) => { const im = el('img'); im.src = src.thumb; im.alt = `Photo ${k + 1} of ${c.name}`; im.loading = 'lazy';
+      im.onclick = () => { zimg.src = src.full; zimg.alt = im.alt; zoom.showModal(); }; ph.append(im); });
+    card.append(ph);
+    const body = el('div', 'body');
+    if (c.mismatch) body.append(el('p', 'note warn', `Label check: ${c.mismatch}`));
+    const opts = el('div', 'opts');
+    c.options.forEach((o, k) => {
+      const row = el('div', 'row');
+      const flagged = p.flagged.includes(o.text);
+      const lab = el('label', 'opt' + (p.choice === k ? ' sel' : '') + (flagged ? ' flagged' : ''));
+      const r = el('input'); r.type = 'radio'; r.name = c.id; r.id = `${c.id}-${k}`; r.checked = p.choice === k; r.disabled = flagged;
+      r.onchange = () => { p.choice = k; keep(); render(); };
+      const t = el('span'); t.append(el('span', 'txt', o.text));
+      if (o.check) t.append(el('span', 'check', `Check: ${o.check}`));
+      lab.append(r, t); row.append(lab);
+      const fg = el('button', 'flag', '⚑'); fg.type = 'button'; fg.id = `${c.id}-f${k}`;
+      fg.setAttribute('aria-pressed', flagged); fg.title = flagged ? 'Unflag' : "I'd never publish this";
+      fg.setAttribute('aria-label', `I'd never publish "${o.text}"`);
+      fg.onclick = () => { if (flagged) p.flagged = p.flagged.filter(x => x !== o.text); else { p.flagged.push(o.text); if (p.choice === k) p.choice = null; } keep(); render(); };
+      row.append(fg); opts.append(row);
+    });
+    const row = el('div', 'row');
+    const lab = el('label', 'opt' + (p.choice === 'own' ? ' sel' : ''));
+    const r = el('input'); r.type = 'radio'; r.name = c.id; r.id = `${c.id}-own`; r.checked = p.choice === 'own';
+    r.onchange = () => { p.choice = 'own'; keep(); render(); document.getElementById(`${c.id}-text`).focus(); };
+    const inp = el('input', 'own'); inp.type = 'text'; inp.id = `${c.id}-text`; inp.placeholder = 'Write my own'; inp.value = p.own; inp.setAttribute('aria-label', `Your own caption for ${c.name}`);
+    inp.oninput = () => { p.own = inp.value; p.choice = inp.value.trim() ? 'own' : (p.choice === 'own' ? null : p.choice); keep(); updateBar(); r.checked = p.choice === 'own'; lab.classList.toggle('sel', p.choice === 'own'); };
+    inp.onchange = () => render();
+    lab.append(r, inp); row.append(lab); opts.append(row);
+    body.append(opts);
+    const cap = captionOf(c);
+    const twins = cap && !/^\d/.test(lead(cap)) ? (leads.get(lead(cap)) || []).filter(x => x !== c) : [];
+    if (twins.length) body.append(el('p', 'dup', `Starts like your pick for ${twins.map(x => x.name).join(', ')}.`));
+    const meta = el('p', 'meta'); meta.append(el('b', '', 'Label read as: '), document.createTextNode(c.label || '?'));
+    if (c.seen) { meta.append(document.createElement('br'), el('b', '', 'Drew on: '), document.createTextNode(c.seen)); }
+    body.append(meta);
+    if (c.dropped?.length) {
+      const d = el('details'); d.append(el('summary', '', `${c.dropped.length} suggestion${c.dropped.length === 1 ? '' : 's'} filtered out`));
+      const ul = el('ul'); c.dropped.forEach(x => ul.append(el('li', '', `${x.text} (${x.why})`))); d.append(ul); body.append(d);
+    }
+    card.append(body); list.append(card);
+  }
+  updateBar();
+}
+
+function updateBar() {
+  const n = batch.filter(c => captionOf(c)).length;
+  const flags = batch.reduce((s, c) => s + (picks[c.id]?.flagged.length || 0), 0);
+  count.textContent = `${n} / ${batch.length}`;
+  sub.textContent = `chosen${flags ? ` · ${flags} flagged` : ''}`;
+  save.disabled = !(n || flags);
+  save.textContent = n ? `Save ${n} caption${n === 1 ? '' : 's'} to Studio` : 'Save flags';
+}
+
+save.onclick = async () => {
+  save.disabled = true; save.textContent = 'Saving…';
+  const choices = batch.map(c => ({ id: c.id, caption: captionOf(c), source: picks[c.id]?.choice === 'own' ? 'own' : 'ai', flagged: picks[c.id]?.flagged || [] }));
+  try {
+    const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ choices }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.statusText);
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    const box = el('section', 'result'); box.append(el('h2', '', 'Saved'));
+    const ul = el('ul'); j.results.forEach(x => ul.append(el('li', x.status === 'saved' ? 'ok' : '', x.status === 'saved' ? `${x.name}: ${x.caption}` : `${x.name}: ${x.status}`)));
+    box.append(ul, el('p', 'meta', 'Your flags and picks were recorded for next time. Open the Studio to review and publish. You can close this tab.'));
+    const list = document.getElementById('list'); list.innerHTML = ''; list.append(box);
+    document.querySelector('.bar').hidden = true;
+  } catch (e) {
+    save.disabled = false; updateBar();
+    const err = el('p', 'note warn', `Couldn't save: ${e.message}. Is the caption window still open? Your picks are kept on this page.`);
+    document.getElementById('list').prepend(err);
+  }
+};
+zoom.addEventListener('click', () => zoom.close());
+fetch('/api/batch').then(r => r.json()).then(b => { batch = b; render(); })
+  .catch(() => { document.getElementById('list').innerHTML = '<p class="note warn">The caption window isn\'t running. Double-click choose-captions.cmd to start it.</p>'; });
+</script>
+</body>
+</html>

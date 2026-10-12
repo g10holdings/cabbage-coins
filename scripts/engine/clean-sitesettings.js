@@ -53,7 +53,7 @@ async function confirm(question) {
 
 async function main() {
   if (!process.env.SANITY_WRITE_TOKEN) {
-    console.error('SANITY_WRITE_TOKEN is not set. Add it to scripts/.env (Editor-permission token).');
+    console.error('SANITY_WRITE_TOKEN is not set. Add it to scripts/engine/.env (Editor-permission token).');
     process.exit(1);
   }
 

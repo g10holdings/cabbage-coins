@@ -115,7 +115,7 @@ export default {
   title: 'PCGS Catalog Number'
 },
 {
-  // Filled by scripts/fill-pcgs-pop.js from the PCGS API (one cert lookup + one call per nearby grade).
+  // Filled by scripts/engine/fill-pcgs-pop.js from the PCGS API (one cert lookup + one call per nearby grade).
   // The listing page shows it as a grid on unsold PCGS listings. Read-only: re-run the script to refresh.
   name: 'pcgsPop',
   type: 'object',

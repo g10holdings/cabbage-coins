@@ -1,19 +1,27 @@
-# Monthly coin listing import — how it works
+# Monthly coin listings — how it works
 
-This folder holds a small tool that takes a CSV of coins and creates **draft**
-listings in Sanity for you — filling in all the data fields and writing the image
-**Alternative Text** automatically. The drafts show up unpublished in the
-Studio, where you add photos, generate the slug, write the caption/description,
-and publish.
+Everything you double-click is in this folder, numbered in the order you use it each
+month. The **`engine`** folder holds the code, settings and saved keys that make it
+work. You never need to open it (except to edit `coin-designs.js`, below).
 
-You run this about once a month. Setup is already done (your tokens are saved,
-the tools are installed), so each month is just three steps.
+| Double-click | What it does |
+|---|---|
+| `1_Preview-Import` | Shows what the CSV import would create. Writes nothing. |
+| `2_Run-Import` | Creates the draft listings in Sanity, then fills in PCGS population. |
+| `3_Preview-Photo-Rename` | Shows how the photos in "waiting to post" would be renamed. Changes nothing. |
+| `4_Rename-Photos` | Renames them to `<Folder>-1.jpg`, `-2` … |
+| *(you)* | Upload the photos to the drafts in the Studio. |
+| `5_Choose-Captions` | Suggests captions from the photos and opens the chooser. |
+| *(you)* | Finish each draft in the Studio and **Publish**. |
+
+The **`Extras`** folder has the occasional ones: `Undo-Import` (deletes the drafts from
+the current CSV) and `Fill-PCGS-Pop` (finishes PCGS population another day).
 
 ---
 
 ## Your monthly routine
 
-**1. Update the CSV.** Export this month's coins from Excel over this file:
+**Before step 1: update the CSV.** Export this month's coins from Excel over this file:
 
 `D:\OneDrive\G10 Holdings LLC\listings-to-import.csv`
 
@@ -23,33 +31,61 @@ want a dated record of a batch, *Save As* a copy alongside it (e.g.
 `archive\18Listings_03Aug26.csv`) — the tool ignores anything but the file above.
 
 Keep the **same column headers** — spelling matters, order doesn't. If a header is
-renamed, misspelled, or deleted, the tool now **stops before writing anything** and
-tells you which column is wrong. (Without that check a renamed header imported
-silently, leaving that field blank on all your listings.)
+renamed, misspelled, or deleted, the tool **stops before writing anything** and
+tells you which column is wrong.
 
 Two rules that matter:
 - **`date`** = the plain year (e.g. `1900`).
 - **`date shown`** = the year *with* the mint mark (e.g. `1900-S`). This is the one
   that shows on the website as "Issue".
 
-Save it (as CSV).
-
-**2. Preview.** Double-click **`preview-import.cmd`**.
+**1. Preview the import.** Double-click **`1_Preview-Import`**.
 It prints every coin with its alt text and writes **nothing** to Sanity.
 Read it over — pay attention to any ⚠ warnings at the bottom. If something looks
 off, fix the CSV and preview again.
 
-**3. Import.** Double-click **`run-import.cmd`**.
-It creates the drafts in Sanity (with alt text). The window stays open so you can
-see the results. Safe to run twice — coins that already exist are skipped.
+**2. Import.** Double-click **`2_Run-Import`**.
+It creates the drafts in Sanity (with alt text), then fills in PCGS population. Safe
+to run twice — coins that already exist are skipped.
 
-Then open the Studio to finish each listing:
+**3 and 4. Rename the photos.** Put each coin's photos in its own folder under
+`D:\OneDrive\Cabbage Coins\Inventory Photos\waiting_website\waiting to post`.
+Double-click **`3_Preview-Photo-Rename`** to check, then **`4_Rename-Photos`**. Each
+folder's photos become `<FolderName>-1.jpg`, `-2` … in their current name order.
+Folders already renamed are skipped.
+
+**Upload the photos** to each draft in the Studio.
+
+**5. Captions.** Double-click **`5_Choose-Captions`**. For every draft that has all 4
+photos and no caption, Claude looks at the photos (slab label and CAC sticker
+included) and suggests captions. A page then opens in your browser:
+
+- Pick one of the three suggestions, or type your own in the fourth box.
+- Press **⚑** on any suggestion you'd never publish.
+- Press **Save to Studio**. Your picks go into each draft's **Caption** field.
+  Nothing is published, and a draft that already has a caption is never overwritten.
+
+You can skip coins. They'll be waiting next time, and their suggestions are kept, so
+you aren't charged twice. Expect about 10 cents per coin.
+
+The suggester learns from you. What you flag, pick and write is saved in
+`engine\caption-feedback.json` and shapes the next batch. Its built-in rules:
+
+- **Colors:** broad words only (gray, gold, brown, white, silver, black).
+- **Numbers:** population figures only from the PCGS data. No mintages or prices.
+- **No repeats:** nothing that starts like, or reuses a phrase from, a caption already
+  on the site or waiting in a draft.
+
+A **"Check:"** note under a suggestion means it states a fact you should confirm first.
+A **"Label check"** warning means the slab label disagrees with the listing's data.
+
+**Finish in the Studio:** click **Generate** on the slug, write the description, check
+the alt text and caption, then **Publish**. To run the Studio on this computer:
 ```
 cd "C:\Users\Tony Gryckiewicz\cabbage-coins\studio"
 npm run dev
 ```
-→ http://localhost:3333 → add photos, click **Generate** on the slug, write the
-caption + description, check the alt text, then **Publish**.
+→ http://localhost:3333
 
 ---
 
@@ -70,7 +106,7 @@ caption + description, check the alt text, then **Publish**.
 
 Also automatic:
 - **CAC** checkbox — ticked when the Grade contains "CAC".
-- **Alternative Text** — looked up from the coin's series in `coin-designs.js`.
+- **Alternative Text** — looked up from the coin's series in `engine\coin-designs.js`.
 
 ### About the alt text
 
@@ -90,14 +126,13 @@ and the tool **prints a warning naming that coin**. Nothing guesses: a wrong rev
 design would read as authoritative to someone using a screen reader, and blank is
 honest. Write those few by hand in the Studio.
 
-To fix one for good, add a line to `coin-designs.js` (instructions are at the top of
-the file) — then that coin and every future one in the same series fills itself in.
+To fix one for good, add a line to `engine\coin-designs.js` (instructions are at the
+top of the file) — then that coin and every future one in the same series fills
+itself in.
 
 The preview tells you the split, e.g. `Alternative Text: 18/18 from the known-design
 table.` When that number is the full count, every coin got its text and there's
 nothing to write by hand.
-
-Left blank for you to do in the Studio: **photos, slug, caption, description**.
 
 ---
 
@@ -105,39 +140,41 @@ Left blank for you to do in the Studio: **photos, slug, caption, description**.
 
 Imported a batch, then noticed a CSV error?
 
-1. Double-click **`delete-import.cmd`** — it lists the drafts matching the current
+1. Double-click **`Extras\Undo-Import`** — it lists the drafts matching the current
    CSV and asks you to confirm before removing them.
-2. Fix the CSV, then double-click **`run-import.cmd`** again.
+2. Fix the CSV, then double-click **`2_Run-Import`** again.
 
-Safety: delete only removes **drafts**. Anything you've already **published is never
-touched**. (One catch: if you fixed a typo in a coin's *name*, delete won't recognize
+Safety: undo only removes **drafts**. Anything you've already **published is never
+touched**. (One catch: if you fixed a typo in a coin's *name*, undo won't recognize
 the old draft — remove that one by hand in the Studio.)
 
 ---
 
 ## Good to know
 
-- **Where the secrets live:** `scripts\.env` holds your Sanity token. It persists, so
-  you don't re-enter it. This file is kept out of git.
-- **Cost: nothing.** The tool only talks to Sanity. There is no AI service behind it
-  and no per-run charge.
+- **Where the secrets live:** `engine\.env` holds your Sanity, PCGS and Anthropic keys.
+  It persists, so you don't re-enter them. This file is kept out of git.
+- **Cost:** the import and the photo rename are free. Only step 5 (captions) uses a
+  paid service, about 10 cents per coin from your Anthropic credits. The import itself
+  has no AI in it: alt text comes from the lookup table.
 - **A different CSV:** the default path above is only a default — you can point the
   tool at any file: `node import-listings.js "D:\path\to\file.csv"`. Handy for
   re-running an archived batch.
 
 ### Command-line equivalents (if you prefer typing)
 
-From this folder:
+From the `engine` folder:
 ```
-npm run import -- --dry-run     # preview (same as preview-import.cmd)
-npm run import                  # import (same as run-import.cmd)
+npm run import -- --dry-run     # preview (same as 1_Preview-Import)
+npm run import                  # import (same as 2_Run-Import)
 node import-listings.js --delete            # delete drafts (asks to confirm)
 node import-listings.js --limit 3 --dry-run # preview just the first 3 rows
+node choose-captions.js --fresh             # throw away saved caption suggestions and ask again
 ```
 
 ---
 
-## PCGS population on listings (`fill-pcgs-pop`)
+## PCGS population on listings
 
 Unsold **PCGS** listings show a small **PCGS Population** grid on their page: the
 coin's grade ±2 steps, with the **+** grades, the coin's own cell highlighted, and a
@@ -147,17 +184,17 @@ CACG listings don't get one, and it disappears when a coin is marked **Sold**.
 The numbers come from the PCGS API and are saved on the listing (read-only field
 **PCGS Population** in the Studio), so visitors never cause PCGS calls.
 
-- **`run-import`** fills it in for the new listings right after creating them.
-- **`fill-pcgs-pop`** (double-click) fills in whatever is still missing. PCGS allows
+- **`2_Run-Import`** fills it in for the new listings right after creating them.
+- **`Extras\Fill-PCGS-Pop`** fills in whatever is still missing. PCGS allows
   **100 calls a day** for your account (shared with The Cabbage Patch), and each coin
   takes about **6 calls**, so a big batch takes a few days: when it hits the limit it
   stops and says so — double-click it again the next day and it carries on. Answers
-  are saved in `.pcgs-cache.json`, so stopping part-way wastes nothing.
-- **Refreshing** stale numbers (every few months): open a terminal in `scripts` and run
-  `node fill-pcgs-pop.js --refresh-days 120`.
+  are saved in `engine\.pcgs-cache.json`, so stopping part-way wastes nothing.
+- **Refreshing** stale numbers (every few months): open a terminal in `scripts\engine`
+  and run `node fill-pcgs-pop.js --refresh-days 120`.
 - `node fill-pcgs-pop.js --dry-run` lists what it would do without any calls or writes.
 
-Needs `PCGS_API_TOKEN` in `scripts/.env` (the same token The Cabbage Patch uses). The
+Needs `PCGS_API_TOKEN` in `engine\.env` (the same token The Cabbage Patch uses). The
 **Grade Number** must be the PCGS cert number; anything else is skipped with a warning.
 
 **PCGS's license** (PCGS API End User Agreement) allows this "in support of specific

@@ -1,0 +1,169 @@
+{
+  "_about": "What Tony has taught the caption suggester. choose-captions adds to this every time you save: 'never' = options you flagged, 'liked' = AI options you picked, 'written' = captions you wrote yourself. Safe to edit by hand.",
+  "never": [
+    {
+      "text": "Nobody's Messed With This One",
+      "coin": "1898-S 50C Barber Half Dollar PCGS MS65",
+      "why": "States the obvious for an MS65"
+    },
+    {
+      "text": "Lots of Hair Left for an 1803",
+      "coin": "1803 50C Draped Bust Half Dollar NGC XF40 CAC",
+      "why": "Newbie comment"
+    },
+    {
+      "text": "Tilt This One Under a Light",
+      "coin": "1914 25C Barber Quarter PCGS MS64 CAC",
+      "why": "Bland, no personality"
+    },
+    {
+      "text": "Smoky Lavender Halo Around Bright Silver",
+      "coin": "1914 25C Barber Quarter PCGS MS64 CAC",
+      "why": "Wrong color; specific hues can't be verified"
+    },
+    {
+      "text": "Matron Head Gem, Not a Spot on It",
+      "coin": "1835 1C Large Cent NGC MS65 BN CAC"
+    },
+    {
+      "text": "31,715 Minted, Try Finding a CAC One",
+      "coin": "1803 50C Draped Bust Half Dollar NGC XF40 CAC"
+    },
+    {
+      "text": "Untouched Gray on an 1803 Half",
+      "coin": "1803 50C Draped Bust Half Dollar NGC XF40 CAC"
+    },
+    {
+      "text": "Pair It with Our 1898-S Half",
+      "coin": "1898-S 25C Barber Quarter PCGS MS64 CAC"
+    },
+    {
+      "text": "Toning Hugs the Rims, Centers Stay Bright",
+      "coin": "1914 25C Barber Quarter PCGS MS64 CAC"
+    },
+    {
+      "text": "Philly 1914 in a Pre-Gold-Shield Holder",
+      "coin": "1914 25C Barber Quarter PCGS MS64 CAC"
+    },
+    {
+      "text": "Frisco Morgan, Hair Over the Ear All There",
+      "coin": "1882-S $1 Morgan Silver Dollar PCGS MS66 CAC"
+    },
+    {
+      "text": "Wheatie in a Green Label PCGS Holder",
+      "coin": "1909-S 1C Lincoln Cent PCGS MS65BN CAC OGH"
+    },
+    {
+      "text": "That Soft Spot on the Reverse Is Strike, Not Wear",
+      "coin": "1806 50C Draped Bust Half Dollar NGC VF25 CAC"
+    },
+    {
+      "text": "XF40 Is the Sweet Spot on an 1815/2 IMO",
+      "coin": "1815/2 50C Capped Bust Half Dollar PCGS XF40"
+    },
+    {
+      "text": "AU58 Over a Baggy MS61 Any Day IMO",
+      "coin": "1830 50C Capped Bust Half Dollar Small 0 PCGS AU58"
+    },
+    {
+      "text": "The 1889-CC, Big Key of the CC Run",
+      "coin": "1889-CC $1 Morgan Silver Dollar PCGS XF40 CAC"
+    }
+  ],
+  "liked": [
+    {
+      "text": "Just 12 at MS65, 7 Finer at PCGS",
+      "coin": "1898-S 50C Barber Half Dollar PCGS MS65"
+    },
+    {
+      "text": "Original Skin on an 1898-S Half",
+      "coin": "1898-S 50C Barber Half Dollar PCGS MS65"
+    },
+    {
+      "text": "Way Scarcer Than an 1806 or 1807",
+      "coin": "1803 50C Draped Bust Half Dollar NGC XF40 CAC"
+    },
+    {
+      "text": "1835 in an Early NGC Holder, CAC'd",
+      "coin": "1835 1C Large Cent NGC MS65 BN CAC"
+    },
+    {
+      "text": "Cartwheel Luster on a White 66",
+      "coin": "1882-S $1 Morgan Silver Dollar PCGS MS66 CAC"
+    },
+    {
+      "text": "Affordable Way into a Cameo Proof Morgan",
+      "coin": "1892 $1 Proof Morgan Silver Dollar PCGS PR62CAM CAC"
+    },
+    {
+      "text": "The Other 1909-S!",
+      "coin": "1909-S 1C Lincoln Cent PCGS MS65BN CAC OGH"
+    },
+    {
+      "text": "Draped Bust Half for the Type Set",
+      "coin": "1806 50C Draped Bust Half Dollar NGC VF25 CAC"
+    },
+    {
+      "text": "Black and White on a 78-CC DMPL",
+      "coin": "1878-CC $1 Morgan Silver Dollar PCGS MS62DMPL CAC"
+    },
+    {
+      "text": "CAC Doesn't Sticker Many 62 DMPLs",
+      "coin": "1878-CC $1 Morgan Silver Dollar PCGS MS62DMPL CAC"
+    },
+    {
+      "text": "1933-S Is No Easy Date in Gem",
+      "coin": "1933-S 50C Walking Liberty Half Dollar PCGS MS66 CAC"
+    },
+    {
+      "text": "Capped Bust Half Key Date in XF40",
+      "coin": "1815/2 50C Capped Bust Half Dollar PCGS XF40"
+    },
+    {
+      "text": "From the San Diego Collection, MS65!",
+      "coin": "1821 50C Capped Bust Half Dollar PCGS MS65 San Diego"
+    },
+    {
+      "text": "Most 1857 Dollars Went Overseas",
+      "coin": "1857 $1 Seated Liberty Dollar PCGS VF25"
+    },
+    {
+      "text": "CAC Approved 89-CC in XF40",
+      "coin": "1889-CC $1 Morgan Silver Dollar PCGS XF40 CAC"
+    }
+  ],
+  "written": [
+    {
+      "text": "Small Eagle Bust Dollar - Key Date!",
+      "coin": "1796 $1 Draped Bust Dollar Small Date Large Letters NGC VF30"
+    },
+    {
+      "text": "High Grade and Beautiful CAC Bust Dollar",
+      "coin": "1803 $1 Draped Bust Dollar Large 3 CAC AU50"
+    },
+    {
+      "text": "Crusty and Original AU50 Bust Half Dollar",
+      "coin": "1825 50C Capped Bust Half Dollar CAC AU50 Witterbrick"
+    },
+    {
+      "text": "Absolutely Gorgeous Color",
+      "coin": "1830 50C Capped Bust Half Dollar Small 0 PCGS AU58"
+    },
+    {
+      "text": "Incredible, Ethereal Color",
+      "coin": "1831 25C Capped Bust Quarter PCGS MS64+ Small Letters"
+    },
+    {
+      "text": "Ideal Example of the Type",
+      "coin": "1835 25C Capped Bust Quarter PCGS XF40 CAC"
+    },
+    {
+      "text": "Nice, Choice and Original Trade Dollar",
+      "coin": "1878-S T$1 Trade Dollar CACG AU50"
+    },
+    {
+      "text": "New Orleans DMPLs - Tough Coins!",
+      "coin": "1881-O $1 Morgan Silver Dollar PCGS MS64DMPL CAC"
+    }
+  ]
+}
