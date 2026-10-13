@@ -1250,6 +1250,23 @@ to{
   margin-top: 60px;
 }
 
+/* Sold cards on inventory + homepage: lightly faded so available coins stand out.
+   Color is kept on purpose (Tony wants the toning visible). Full strength on hover. */
+.cc-sold .image-dummy{
+  opacity: 0.7;
+  transition: opacity 0.25s;
+}
+
+.cc-sold:hover .image-dummy{
+  opacity: 1;
+}
+
+.cc-sold .listing-title-preview,
+.cc-sold .listing-price strike,
+.cc-sold .cac-coin-preview{
+  opacity: 0.7;
+}
+
 #show-sold-check{
   width:20px;
   height:20px;
