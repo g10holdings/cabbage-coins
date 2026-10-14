@@ -157,6 +157,46 @@ export default {
   ]
 },
 {
+  name: 'cacPop',
+  type: 'object',
+  title: 'CAC Population (filled automatically)',
+  description: 'Saved from the CAC API. Shown on the listing page, under the PCGS box, while the coin is unsold.',
+  readOnly: true,
+  options: {collapsible: true, collapsed: true},
+  fields: [
+    {name: 'asOf', type: 'date', title: 'As of'},
+    {name: 'v', type: 'number', title: 'Format version'},
+    {name: 'cert', type: 'string', title: 'From cert #'},
+    {name: 'gsId', type: 'number', title: 'CAC catalog # (gsId)'},
+    {name: 'grade', type: 'string', title: 'Grade'},
+    {name: 'held', type: 'string', title: 'Stickered or CACG holder', options: {list: ['stickered', 'cacg']}},
+    {name: 'thisStickered', type: 'number', title: 'Stickered at this grade'},
+    {name: 'higherStickered', type: 'number', title: 'Stickered higher'},
+    {name: 'thisGraded', type: 'number', title: 'CACG at this grade'},
+    {name: 'higherGraded', type: 'number', title: 'CACG higher'},
+    {
+      name: 'cells',
+      type: 'array',
+      title: 'Grid (±2 grades)',
+      of: [{
+        type: 'object',
+        name: 'cacPopCell',
+        fields: [
+          {name: 'label', type: 'string'},
+          {name: 'num', type: 'number'},
+          {name: 'stickered', type: 'number'},
+          {name: 'graded', type: 'number'},
+          {name: 'isThisGrade', type: 'boolean'}
+        ],
+        preview: {
+          select: {label: 'label', s: 'stickered', g: 'graded', mine: 'isThisGrade'},
+          prepare: ({label, s, g, mine}) => ({title: `${label}: ${s} stickered, ${g} CACG${mine ? '  (this coin)' : ''}`})
+        }
+      }]
+    }
+  ]
+},
+{
   name: 'category',
   type: 'string',
   title: 'Category',

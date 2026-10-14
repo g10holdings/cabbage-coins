@@ -38,6 +38,7 @@ async function getListings () {
     gradingCompany,
     pcgsCatalogNumber,
     pcgsPop,
+    cacPop,
     category,
     description[]{
       ...,

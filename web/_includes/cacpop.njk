@@ -1,0 +1,27 @@
+{# CAC population around this coin's grade (±2 grades), in its own box under the PCGS one.
+   PCGS and CAC are competitors: keep their data, logos and links in separate boxes.
+   Two rows: Stickered (PCGS/NGC coins CAC approved) and CACG (coins in CAC's own holders).
+   The highlighted cell is on the row this coin belongs to. Filled by scripts/engine (CAC API). #}
+{% set cp = cacPopData %}
+{% set row = "cacg" if cp.held == "cacg" else "stickered" %}
+<section class="cc-pop cc-cacpop" aria-labelledby="cc-cacpop-title">
+    <div class="cc-pop-head">
+        <h3 class="cc-pop-title" id="cc-cacpop-title">CAC Population</h3>
+        <a class="cc-pop-logo" href="https://cacgrading.com" target="_blank" rel="noopener"><img src="/assets/img/caccoin.png" alt="CAC Grading" width="200" height="119"></a>
+    </div>
+    {% if row == "cacg" %}
+    <p class="cc-pop-lead">This coin is <strong>1 of {{ cp.thisGraded }}</strong> graded {{ cp.grade }} by CAC{% if cp.higherGraded > 0 %}, with <strong>{{ cp.higherGraded }}</strong> higher{% else %}, and none higher{% endif %}.</p>
+    {% else %}
+    <p class="cc-pop-lead">This coin is <strong>1 of {{ cp.thisStickered }}</strong> stickered by CAC at {{ cp.grade }}{% if cp.higherStickered > 0 %}, with <strong>{{ cp.higherStickered }}</strong> higher{% else %}, and none higher{% endif %}.</p>
+    {% endif %}
+
+    <table class="cc-pop-grid">
+        <thead><tr><th scope="col"><span class="cc-sr">Grade</span></th>{% for c in cp.cells %}<th scope="col">{{ c.label }}</th>{% endfor %}</tr></thead>
+        <tbody>
+            <tr class="cc-cacpop-stk"><th scope="row">Stickered</th>{% for c in cp.cells %}<td{% if c.isThisGrade and row == "stickered" %} class="is-this"{% endif %}>{{ c.stickered }}</td>{% endfor %}</tr>
+            <tr class="cc-cacpop-cacg"><th scope="row">CACG</th>{% for c in cp.cells %}<td{% if c.isThisGrade and row == "cacg" %} class="is-this"{% endif %}>{{ c.graded }}</td>{% endfor %}</tr>
+        </tbody>
+    </table>
+
+    <p class="cc-pop-foot">As of {{ cp.asOf | monthYear }} &middot; <a href="https://cacgrading.com" target="_blank" rel="noopener">CAC &#8599;</a></p>
+</section>

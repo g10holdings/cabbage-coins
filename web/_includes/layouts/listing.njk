@@ -94,6 +94,11 @@ parent: Inventory
                     {% set popData = listing.pcgsPop %}{% include "pcgspop.njk" %}
                     {% endif %}
 
+                    {# CAC population (stickered and CACG rows): unsold listings that have it saved. #}
+                    {% if listing.cacPop and listing.cacPop.cells and not listing.sold %}
+                    {% set cacPopData = listing.cacPop %}{% include "cacpop.njk" %}
+                    {% endif %}
+
 
                     {# Stays in the right-hand info column for featured and non-featured
                        alike; it only drops below the photos when the grid collapses to a
