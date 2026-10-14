@@ -19,3 +19,4 @@ scripts/engine/.pcgs-cache.json
 # Caption suggestions waiting to be chosen (scripts/engine/choose-captions.js)
 scripts/engine/.caption-suggestions.json
 scripts/engine/caption-history.jsonl
+scripts/engine/cac-marketplace-preview.json
