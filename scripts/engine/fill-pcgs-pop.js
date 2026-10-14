@@ -1,7 +1,7 @@
 /**
  * Fill in PCGS population (±2 grades, with + grades) on unsold PCGS listings.
  *
- * For each unsold PCGS listing — drafts first (the new batch), then published — that
+ * For each unsold PCGS listing — drafts first (the new batch), then published, priciest first — that
  * has no population saved yet, or whose cert number changed, it asks PCGS for the
  * population around the coin's grade (about 6 calls per coin, see pcgs-pop.js) and
  * saves it on the listing as `pcgsPop`. The listing page shows it as a grid.
@@ -96,22 +96,23 @@ async function main() {
 
   const docs = await client.fetch(
     `*[_type == "listing" && gradingCompany == "PCGS" && sold != true && defined(gradenumber)]
-      {_id, _createdAt, name, gradenumber, pcgsPop}`,
+      {_id, name, gradenumber, price, pcgsPop}`,
   );
 
   // One coin per listing, whether it exists as a draft, a published doc, or both (both get written,
-  // so publishing a draft later can't drop the population). Drafts first: they're the batch being prepared.
+  // so publishing a draft later can't drop the population). Drafts first (the batch being prepared), then the
+  // most expensive coins, since the daily PCGS limit means a backlog fills over several days.
   const coins = new Map();
   for (const d of docs) {
-    const c = coins.get(baseId(d._id)) ?? { name: d.name, cert: certOf(d), ids: [], isDraft: false, reason: null, createdAt: d._createdAt };
+    const c = coins.get(baseId(d._id)) ?? { name: d.name, cert: certOf(d), ids: [], isDraft: false, reason: null, price: d.price ?? 0 };
     c.ids.push(d._id);
-    if (d._id.startsWith('drafts.')) { c.isDraft = true; c.name = d.name; c.cert = certOf(d); }
+    if (d._id.startsWith('drafts.')) { c.isDraft = true; c.name = d.name; c.cert = certOf(d); c.price = d.price ?? 0; }
     c.reason ??= needsPop(d);
     coins.set(baseId(d._id), c);
   }
   const todo = [...coins.values()]
     .filter((c) => c.reason && /^\d{5,9}$/.test(c.cert))
-    .sort((a, b) => (b.isDraft - a.isDraft) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    .sort((a, b) => (b.isDraft - a.isDraft) || b.price - a.price);
   const skipped = [...coins.values()].filter((c) => c.reason && !/^\d{5,9}$/.test(c.cert));
 
   console.log(`PCGS population: ${todo.length} listing(s) to fill${DRY_RUN ? '  [DRY RUN]' : ''}, up to ${MAX_CALLS} PCGS calls this run.\n`);
