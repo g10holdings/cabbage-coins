@@ -55,9 +55,11 @@ const imageUrl = (ref) => {
   const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
   return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
 };
-// "MS66 CAC" -> "MS66", "PR65 CAM CAC" -> "PR65CAM": CAC wants the grade alone, written like its examples.
+// "MS66 CAC" -> "MS66", "PR65 CAM CAC" -> "PR65CAM", "VG08" -> "VG8": CAC wants the grade alone, written like
+// its examples (it rejects the leading zero: "Invalid `grade`").
 const gradeOf = (g) => String(g ?? '').replace(/\b(CAC|OGH|CACG)\b/g, '').replace(/\s+/g, ' ').trim()
-  .replace(/^([A-Z]+\d+\+?) (?=[A-Z]+$)/, '$1');
+  .replace(/^([A-Z]+\d+\+?) (?=[A-Z]+$)/, '$1')
+  .replace(/^([A-Z]+)0(?=\d)/, '$1');
 const certOf = (n) => String(n ?? '').trim().replace(/_\d+$/, '').replace(/\D/g, '');
 // The page's URL, made exactly the way the site's "slug" filter makes it (web/.eleventy.js): keep the two in step.
 const pageSlug = (s) => slugify(s.replace('.', '-'), { replacement: '-', remove: /[&,+()$~%.'":*?<>{}]/g, lower: true })
@@ -168,7 +170,12 @@ async function main() {
   });
   const text = await res.text();
   fs.writeFileSync(path.join(__dirname, 'cac-marketplace-last-response.json'), text);
-  if (res.status === 429) throw new Error('CAC says the daily limit is reached. Nothing changed on our side; try again tomorrow.');
+  // 429 is either the daily limit or "too rapid": CAC allows only one marketplace upload per set period.
+  if (res.status === 429) {
+    const wait = res.headers.get('retry-after');
+    throw new Error(`CAC says too many requests${text ? ` ("${text.slice(0, 200)}")` : ''}${wait ? `, retry after ${wait}s` : ''}. `
+      + 'Nothing changed on our side; wait a while (it may be a cooldown between uploads) and run it again.');
+  }
   if (res.status === 401) throw new Error('CAC refused the key (401). Check CAC_API_KEY / CAC_API_TOKEN in engine\\.env.');
   if (!res.ok) throw new Error(`CAC answered ${res.status}: ${text.slice(0, 400)}`);
   let body;
