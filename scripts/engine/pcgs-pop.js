@@ -49,7 +49,7 @@ function label(prefix, num, plus) {
  * @returns {Promise<null | {thisPop: number, thisHigher: number, maxPop: number, pcgsNumber: number, name: string, grade: string, coinFactsUrl: string|null, cells: {label: string, num: number, plus: boolean, pop: number, isThisGrade: boolean}[], higherThanTop: number|null, calls: number}>}
  *   null when PCGS has no such cert.
  */
-export async function fetchPopGrid({ cert, token, steps = 2, fetchImpl = fetch, onCall = () => {}, cache = null }) {
+export async function fetchPopGrid({ cert, token, catalogNumber = null, steps = 2, fetchImpl = fetch, onCall = () => {}, cache = null }) {
   let calls = 0;
   async function get(path) {
     const saved = cache?.get(path);
@@ -73,10 +73,16 @@ export async function fetchPopGrid({ cert, token, steps = 2, fetchImpl = fetch, 
   const coin = await get(`/GetCoinFactsByCertNo/${certNo}`);
   const g = parseGrade(coin?.Grade);
   if (!coin || !g || !SHELDON.includes(g.num)) return null;
-  const pcgsNumber = Number(coin.PCGSNo);
+  // The cert answers with the number PCGS attributed the slab to, which can be a die variety (1821 50C → 39576,
+  // "O-101a") and makes the coin look scarcer than its date. The listing's own PCGS catalog number wins then,
+  // but not when the difference is only the designation (1878 25C CAM = 85579, not 5579): that number is right.
+  const useCatalog = Boolean(catalogNumber) && Number(catalogNumber) !== Number(coin.PCGSNo) && !String(coin.Designation ?? '').trim();
+  const pcgsNumber = useCatalog ? Number(catalogNumber) : Number(coin.PCGSNo);
+  const gradeKey = `${g.num}${g.plus ? '+' : ''}`;
+  const info = useCatalog ? (await get(`/GetCoinFactsByGrade?PCGSNo=${pcgsNumber}&GradeNo=${g.num}&PlusGrade=${g.plus}`)) ?? {} : coin;
 
-  // {pop, higher} per grade key ("64", "64+"); the cert call already answered its own grade.
-  const facts = new Map([[`${g.num}${g.plus ? '+' : ''}`, { pop: Number(coin.Population) || 0, higher: Number(coin.PopHigher) || 0 }]]);
+  // {pop, higher} per grade key ("64", "64+"); the first call already answered the coin's own grade.
+  const facts = new Map([[gradeKey, { pop: Number(info.Population) || 0, higher: Number(info.PopHigher) || 0 }]]);
   async function at(num, plus) {
     const key = `${num}${plus ? '+' : ''}`;
     if (!facts.has(key)) {
@@ -114,10 +120,10 @@ export async function fetchPopGrid({ cert, token, steps = 2, fetchImpl = fetch, 
     thisHigher: mine.higher,
     maxPop: Math.max(1, ...cells.map((c) => c.pop)),
     pcgsNumber,
-    name: coin.Name ?? '',
+    name: info.Name ?? coin.Name ?? '',
     // "MS67FB", "PR62CAM": the population is for that designation (PCGS gives each its own PCGS number).
     grade: label(g.prefix, g.num, g.plus) + String(coin.Designation ?? '').replace(/s+/g, '').toUpperCase(),
-    coinFactsUrl: coin.CoinFactsLink ? `https://${String(coin.CoinFactsLink).replace(/^https?:\/\//, '')}` : null,
+    coinFactsUrl: info.CoinFactsLink ? `https://${String(info.CoinFactsLink).replace(/^https?:\/\//, '')}` : null,
     cells: cells.map((c) => ({ ...c, label: label(g.prefix, c.num, c.plus), isThisGrade: c.num === g.num && c.plus === g.plus })),
     higherThanTop: topFacts ? topFacts.higher : null,
     calls,

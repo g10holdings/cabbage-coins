@@ -76,6 +76,10 @@ function needsPop(doc) {
   if (!p?.cells?.length) return 'missing';
   if (p.v !== VERSION) return 'saved by an older version';
   if (p.cert !== certOf(doc)) return 'cert changed';
+  // Saved before the catalog number counted (2026-10-16): redo only the ones that used a variety's number.
+  const usedCatalog = p.catalogNumber !== undefined ? p.catalogNumber
+    : /\d\+?$/.test(p.grade ?? '') ? p.pcgsNumber : doc.pcgsCatalogNumber;
+  if (doc.pcgsCatalogNumber && usedCatalog !== doc.pcgsCatalogNumber) return 'catalog number changed';
   if (REFRESH_DAYS != null && Date.now() - Date.parse(p.asOf) > REFRESH_DAYS * DAY) return `older than ${REFRESH_DAYS} days`;
   return null;
 }
@@ -96,7 +100,7 @@ async function main() {
 
   const docs = await client.fetch(
     `*[_type == "listing" && gradingCompany == "PCGS" && sold != true && defined(gradenumber)]
-      {_id, name, gradenumber, price, pcgsPop}`,
+      {_id, name, gradenumber, price, pcgsCatalogNumber, pcgsPop}`,
   );
 
   // One coin per listing, whether it exists as a draft, a published doc, or both (both get written,
@@ -104,9 +108,9 @@ async function main() {
   // most expensive coins, since the daily PCGS limit means a backlog fills over several days.
   const coins = new Map();
   for (const d of docs) {
-    const c = coins.get(baseId(d._id)) ?? { name: d.name, cert: certOf(d), ids: [], isDraft: false, reason: null, price: d.price ?? 0 };
+    const c = coins.get(baseId(d._id)) ?? { name: d.name, cert: certOf(d), ids: [], isDraft: false, reason: null, price: d.price ?? 0, catalog: d.pcgsCatalogNumber ?? null };
     c.ids.push(d._id);
-    if (d._id.startsWith('drafts.')) { c.isDraft = true; c.name = d.name; c.cert = certOf(d); c.price = d.price ?? 0; }
+    if (d._id.startsWith('drafts.')) { c.isDraft = true; c.name = d.name; c.cert = certOf(d); c.price = d.price ?? 0; c.catalog = d.pcgsCatalogNumber ?? null; }
     c.reason ??= needsPop(d);
     coins.set(baseId(d._id), c);
   }
@@ -133,6 +137,7 @@ async function main() {
       grid = await fetchPopGrid({
         cert: c.cert,
         token: PCGS_API_TOKEN,
+        catalogNumber: c.catalog,
         cache,
         onCall: () => { if (calls >= MAX_CALLS) throw new BudgetReached(); calls++; },
       });
@@ -151,6 +156,7 @@ async function main() {
       ...rest,
       v: VERSION,
       cert: c.cert,
+      catalogNumber: c.catalog,
       asOf: new Date().toISOString().slice(0, 10),
       cells: rest.cells.map((cell) => ({ _key: `${cell.num}${cell.plus ? 'p' : ''}`, _type: 'pcgsPopCell', ...cell })),
     };
