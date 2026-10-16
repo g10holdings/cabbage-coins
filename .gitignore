@@ -20,3 +20,4 @@ scripts/engine/.pcgs-cache.json
 scripts/engine/.caption-suggestions.json
 scripts/engine/caption-history.jsonl
 scripts/engine/cac-marketplace-preview.json
+scripts/engine/cac-marketplace-last-response.json

@@ -1,30 +1,50 @@
 /**
- * Build the CAC marketplace feed from unsold Sanity listings.
+ * Keep Tony's coins on CAC's marketplace in step with the website.
  *
- * PREVIEW ONLY for now: it shows what would be sent to CAC (POST /marketplace) and writes it to
- * cac-marketplace-preview.json. Nothing is sent. Sending waits on CAC's answers: which coins they accept
- * (CAC-approved only, or everything), and how a sold coin is taken down (there's no delete call in the docs).
+ * One run = one POST /marketplace with the whole feed:
+ *   - every unsold graded listing (new ones get added, changed ones updated: CAC matches on sellerId,
+ *     which is the Sanity listing id, so sending a coin again never duplicates it);
+ *   - every coin sent before that has since sold, been deleted or stopped qualifying, sent with
+ *     quantity 0 to take it down.
  *
- * Each coin's sellerId is the Sanity listing id, so sending the feed again updates coins instead of duplicating them.
+ * CAC's docs have no delete call, only this POST, whose answer counts "inserted / updated / deleted".
+ * CAC says sold items can be deleted; how the API does it isn't documented, so removals go as
+ * quantity 0 inside the full feed (that covers both "quantity 0 deletes" and "the feed replaces
+ * everything"), and the answer is checked: a removal CAC doesn't confirm stays on the list, is sent
+ * again next run, and is reported so it can be deleted by hand on CAC's site.
+ *
+ * What has been sent is remembered in Sanity (document "cac-marketplace-ledger"), not on this
+ * computer, so a sold coin can still be taken down after its listing is deleted.
  *
  * Usage:
- *   node cac-marketplace.js            Preview every unsold graded coin.
- *   node cac-marketplace.js --cac-only Preview only CAC-stickered and CACG coins.
+ *   node cac-marketplace.js                Preview: what would be added, updated, removed. Sends nothing.
+ *   node cac-marketplace.js --send         Send it to CAC.
+ *   node cac-marketplace.js --cac-only     Only CAC-stickered and CACG coins (works with --send too).
+ *   --allow-mass-removal                   Needed when a run would take down more than 10 coins at once.
  *
- * Env (scripts/engine/.env): none needed for the preview (reads the public dataset).
+ * Env (scripts/engine/.env): SANITY_WRITE_TOKEN; CAC_API_KEY and CAC_API_TOKEN for --send.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import slugify from 'slugify';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CAC_ONLY = process.argv.includes('--cac-only');
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+const args = process.argv.slice(2);
+const SEND = args.includes('--send');
+const CAC_ONLY = args.includes('--cac-only');
+const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
+const MASS_REMOVAL = 10;
 const SITE = 'https://cabbagecoins.com';
 const PROJECT = 'la880an7';
+const API = process.env.CAC_MARKETPLACE_URL || 'https://api.cacgrading.com/marketplace';   // overridable for testing
+const LEDGER_ID = 'cac-marketplace-ledger';
 const OUT_FILE = path.join(__dirname, 'cac-marketplace-preview.json');
 
 // CAC's marketplace knows these grading services; Tony's data says "CACG" for CAC's own holders.
@@ -42,14 +62,14 @@ const certOf = (n) => String(n ?? '').trim().replace(/_\d+$/, '').replace(/\D/g,
 // The page's URL, made exactly the way the site's "slug" filter makes it (web/.eleventy.js): keep the two in step.
 const pageSlug = (s) => slugify(s.replace('.', '-'), { replacement: '-', remove: /[&,+()$~%.'":*?<>{}]/g, lower: true })
   .replace('dollar', 'usd');
+const money = (n) => `$${Number(n).toLocaleString()}`;
 
-async function main() {
-  const client = createClient({ projectId: PROJECT, dataset: 'production', apiVersion: '2024-01-01', useCdn: false });
+/** The feed: one item per unsold listing CAC can take, plus why the others were left out. */
+async function buildFeed(client) {
   const listings = await client.fetch(
-    `*[_type == "listing" && sold != true] | order(price desc)
+    `*[_type == "listing" && sold != true && !(_id in path("drafts.**"))] | order(price desc)
       {_id, name, slug, grade, gradenumber, gradingCompany, cac, price, pcgsCatalogNumber, image, imagesGallery}`,
   );
-
   const items = [];
   const skipped = [];
   for (const l of listings) {
@@ -82,18 +102,102 @@ async function main() {
       ...(photos[3] && { imageUrl4: photos[3] }),
     });
   }
+  return { items, skipped };
+}
 
-  fs.writeFileSync(OUT_FILE, JSON.stringify(items, null, 2));
-  console.log(`CAC marketplace PREVIEW${CAC_ONLY ? ' (CAC coins only)' : ''}: ${items.length} coin(s) would be sent. Nothing was sent.\n`);
-  for (const i of items) {
-    const photos = [i.imageUrl, i.imageUrl2, i.imageUrl3, i.imageUrl4].filter(Boolean).length;
-    console.log(`  ${`$${i.price.toLocaleString()}`.padStart(8)}  ${i.gradingService.padEnd(4)} ${i.grade.padEnd(9)} ${i.title}  (${photos} photo${photos === 1 ? '' : 's'})`);
+/** What's on CAC, as far as we know: sellerId -> {item (as last sent), sentAt, removing?}. */
+async function loadLedger(client) {
+  const doc = await client.getDocument(LEDGER_ID);
+  return doc?.entries ? JSON.parse(doc.entries) : {};
+}
+async function saveLedger(client, ledger) {
+  await client.createOrReplace({
+    _id: LEDGER_ID,
+    _type: 'cacMarketplaceLedger',
+    note: 'What scripts/engine/cac-marketplace.js has sent to the CAC marketplace. Do not edit by hand.',
+    entries: JSON.stringify(ledger),
+  });
+}
+
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+async function main() {
+  const { SANITY_WRITE_TOKEN, CAC_API_KEY, CAC_API_TOKEN } = process.env;
+  if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from scripts/engine/.env');
+  if (SEND && (!CAC_API_KEY || !CAC_API_TOKEN)) throw new Error('CAC_API_KEY / CAC_API_TOKEN are missing from scripts/engine/.env');
+  const client = createClient({ projectId: PROJECT, dataset: 'production', apiVersion: '2024-01-01', token: SANITY_WRITE_TOKEN, useCdn: false });
+
+  const [{ items, skipped }, ledger] = await Promise.all([buildFeed(client), loadLedger(client)]);
+  const inFeed = new Set(items.map((i) => i.sellerId));
+  const added = items.filter((i) => !ledger[i.sellerId] || ledger[i.sellerId].removing);
+  const changed = items.filter((i) => ledger[i.sellerId] && !ledger[i.sellerId].removing && !same(ledger[i.sellerId].item, i));
+  const removals = Object.entries(ledger).filter(([id]) => !inFeed.has(id)).map(([, e]) => ({ ...e.item, quantity: 0 }));
+  const feed = [...items, ...removals];
+
+  console.log(`CAC marketplace${CAC_ONLY ? ' (CAC coins only)' : ''}: ${SEND ? 'SENDING' : 'PREVIEW, nothing is sent'}\n`);
+  console.log(`  On the website and going to CAC:  ${items.length}`);
+  console.log(`    new to CAC:                     ${added.length}`);
+  console.log(`    changed since last send:        ${changed.length}`);
+  console.log(`  To take down (sold or gone):      ${removals.length}\n`);
+  for (const i of added) console.log(`  + ${money(i.price).padStart(8)}  ${i.title}`);
+  for (const i of changed) {
+    const was = ledger[i.sellerId].item;
+    const what = Object.keys(i).filter((k) => !same(i[k], was[k])).map((k) => (k === 'price' ? `price ${money(was.price)} → ${money(i.price)}` : k));
+    console.log(`  ~ ${money(i.price).padStart(8)}  ${i.title}  (${what.join(', ')})`);
   }
+  for (const i of removals) console.log(`  − ${money(i.price).padStart(8)}  ${i.title}${ledger[i.sellerId].removing ? '  (removal not confirmed by CAC last time; trying again)' : ''}`);
   if (skipped.length) {
-    console.log(`\nLeft out (${skipped.length}):`);
-    for (const s of skipped) console.log(`  - ${s.name}: ${s.why}`);
+    console.log(`\n  Not sent (${skipped.length}):`);
+    for (const s of skipped) console.log(`    - ${s.name}: ${s.why}`);
   }
-  console.log(`\nFull feed: ${OUT_FILE}`);
+  fs.writeFileSync(OUT_FILE, JSON.stringify(feed, null, 2));
+
+  if (removals.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) {
+    throw new Error(`This would take down ${removals.length} coins at once. If that's right, run again with --allow-mass-removal.`);
+  }
+  if (!SEND) {
+    console.log(`\nNothing was sent. To send it, run: node cac-marketplace.js --send${CAC_ONLY ? ' --cac-only' : ''}`);
+    return;
+  }
+  if (!feed.length) { console.log('\nNothing to send.'); return; }
+
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'X-API-KEY': CAC_API_KEY, 'X-API-TOKEN': CAC_API_TOKEN, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(feed),
+  });
+  const text = await res.text();
+  fs.writeFileSync(path.join(__dirname, 'cac-marketplace-last-response.json'), text);
+  if (res.status === 429) throw new Error('CAC says the daily limit is reached. Nothing changed on our side; try again tomorrow.');
+  if (res.status === 401) throw new Error('CAC refused the key (401). Check CAC_API_KEY / CAC_API_TOKEN in engine\\.env.');
+  if (!res.ok) throw new Error(`CAC answered ${res.status}: ${text.slice(0, 400)}`);
+  let body;
+  try { body = JSON.parse(text); } catch { throw new Error(`CAC's answer wasn't JSON: ${text.slice(0, 400)}`); }
+  const r = body?.data?.results ?? body?.results ?? {};
+  const errorItems = body?.data?.errorItems ?? body?.errorItems ?? [];
+  const failed = new Map(errorItems.map((e) => [e.sellerId, e.error ?? 'error']));
+
+  console.log(`\nCAC: ${r.inserted ?? '?'} added, ${r.updated ?? '?'} updated, ${r.deleted ?? '?'} deleted, ${r.errors ?? errorItems.length} with errors.`);
+  for (const [id, err] of failed) console.log(`  ✗ ${feed.find((f) => f.sellerId === id)?.title ?? id}: ${err}`);
+
+  // Removals count as done only when CAC's own "deleted" count covers them all.
+  const removedOk = removals.filter((i) => !failed.has(i.sellerId));
+  const removalsConfirmed = removedOk.length > 0 && Number(r.deleted) >= removedOk.length;
+  const now = new Date().toISOString();
+  for (const i of items) if (!failed.has(i.sellerId)) ledger[i.sellerId] = { item: i, sentAt: now };
+  for (const i of removals) {
+    if (removalsConfirmed && !failed.has(i.sellerId)) delete ledger[i.sellerId];
+    else ledger[i.sellerId] = { ...ledger[i.sellerId], removing: true, lastTried: now };
+  }
+  await saveLedger(client, ledger);
+
+  const pending = Object.values(ledger).filter((e) => e.removing);
+  if (pending.length) {
+    console.log(`\n⚠ CAC didn't confirm taking down ${pending.length} coin(s). They'll be sent again next run, but`);
+    console.log('  please check them on CAC\'s site and delete them there by hand if they are still showing:');
+    for (const e of pending) console.log(`    - ${e.item.title}`);
+  }
+  console.log('\nDone. CAC\'s full answer is in engine\\cac-marketplace-last-response.json.');
 }
 
 main().catch((err) => {

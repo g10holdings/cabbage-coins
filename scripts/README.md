@@ -13,6 +13,8 @@ work. You never need to open it (except to edit `coin-designs.js`, below).
 | *(you)* | Upload the photos to the drafts in the Studio. |
 | `5_Choose-Captions` | Suggests captions from the photos and opens the chooser. |
 | *(you)* | Finish each draft in the Studio and **Publish**. |
+| `6_Preview-CAC-Marketplace` | Shows what would go to CAC's marketplace: new coins, changes, sold coins to take down. Sends nothing. |
+| `7_Send-To-CAC-Marketplace` | Sends it. Run it after publishing a batch, and after marking coins **Sold**. |
 
 The **`Extras`** folder has the occasional ones: `Undo-Import` (deletes the drafts from
 the current CSV) and `Fill-PCGS-Pop` (finishes PCGS population another day).
@@ -201,3 +203,40 @@ Needs `PCGS_API_TOKEN` in `engine\.env` (the same token The Cabbage Patch uses).
 sales you offer" and requires on each page: a link to PCGS (CoinFacts), the PCGS logo,
 and their credit line in at least 10-point type. The listing page shows all three —
 don't remove them.
+
+---
+
+## CAC marketplace
+
+Your coins are also listed on **CAC's marketplace**, and each one links back to its page on
+cabbagecoins.com. CAC takes PCGS, NGC and CACG coins, so every graded, unsold coin goes up.
+Ungraded items, like the ingot, are left out.
+
+**When to run it:** after you **publish** a batch, and after you mark coins **Sold**. Run
+`6_Preview-CAC-Marketplace` first, then `7_Send-To-CAC-Marketplace`. Running it more often
+does no harm.
+
+**What one send does.** It sends CAC the whole list in a single call. A coin it sent
+before is updated, never duplicated, because each coin carries its own fixed ID.
+
+- **+ new:** coins CAC doesn't have yet. They get added.
+- **~ changed:** a coin whose price, photos, title or grade changed since the last send.
+  It gets updated, and the preview names what changed.
+- **− take down:** a coin that was sent before but has since been marked **Sold**, or deleted
+  from the Studio. It goes to CAC with quantity 0, which removes it.
+
+**How it knows what's on CAC:** each send is remembered in Sanity (a hidden record named
+`cac-marketplace-ledger`). Even a deleted listing can still be taken down, and this works
+from any computer.
+
+**If CAC doesn't confirm a take-down**, the send ends with a ⚠ list of those coins. They'll
+be tried again on every send. Meanwhile, delete them by hand on CAC's site: CAC's dealer
+page has a delete button for uploaded items.
+
+**Safety catch:** if one send would take down more than 10 coins, it stops and asks you to
+run `node cac-marketplace.js --send --allow-mass-removal` from `engine`. A glitch that
+made the inventory look empty can't wipe your marketplace listings.
+
+CAC allows 1,000 calls a day, and one send uses one call. It needs `CAC_API_KEY` and
+`CAC_API_TOKEN` in `engine.env`. CAC's full reply to the last send is saved in
+`enginec-marketplace-last-response.json`.
