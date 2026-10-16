@@ -238,5 +238,5 @@ run `node cac-marketplace.js --send --allow-mass-removal` from `engine`. A glitc
 made the inventory look empty can't wipe your marketplace listings.
 
 CAC allows 1,000 calls a day, and one send uses one call. It needs `CAC_API_KEY` and
-`CAC_API_TOKEN` in `engine.env`. CAC's full reply to the last send is saved in
-`enginec-marketplace-last-response.json`.
+`CAC_API_TOKEN` in `engine\.env`. CAC's full reply to the last send is saved in
+`engine\cac-marketplace-last-response.json`.
