@@ -27,6 +27,11 @@ import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './work
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
+// Listings the check leaves alone, by cert # (Tony, 2026-10-17).
+const IGNORE = new Map([
+  ['6042153-049', '2020-W Palladium Eagle: a stand-in listing; Tony shows one of several at a time'],
+]);
+
 const money = (n) => (n == null || n === '' ? '—' : `$${Number(n).toLocaleString()}`);
 const loose = (s) => String(s ?? '').toUpperCase().replace(/\s+/g, '');
 
@@ -53,7 +58,8 @@ async function main() {
   const hasListing = (w) => listedKeys.has(w.key) || listedNames.has(nameKey(w.name));
 
   const soldInBook = [], notFlagged = [], noRow = [], diffs = [], names = [];
-  for (const l of published.filter((x) => !x.sold)) {
+  const ignored = published.filter((x) => !x.sold && IGNORE.has(certKey(x.gradenumber)));
+  for (const l of published.filter((x) => !x.sold && !IGNORE.has(certKey(x.gradenumber)))) {
     const r = rowFor(l);
     if (!r) { noRow.push(l); continue; }
     const w = listingFromRow(r);
@@ -85,6 +91,7 @@ async function main() {
   section('Coins whose details differ', diffs, ([l, d]) => `${l.name}\n        ${d.join('\n        ')}`);
   console.log(`  FYI: ${names.length} name(s) are worded differently on the site (not an error):`);
   for (const [l, w] of names) console.log(`    site:     ${l.name}\n    workbook: ${w.name}`);
+  if (ignored.length) console.log(`\n  Not checked, on purpose (IGNORE list in check-workbook.js): ${ignored.map((l) => l.name).join('; ')}`);
   console.log('\nNothing was changed, in the workbook or on the website.');
 }
 
