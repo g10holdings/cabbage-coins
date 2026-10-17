@@ -11,8 +11,8 @@
  *
  * One run:
  *   - coins already on eBay that the script hasn't seen before are ADOPTED (matched by cert #, else exact title):
- *     only price, shipping and offers are changed on those; Tony's title, photos and description stay.
- *   - new coins are listed (AddFixedPriceItem) with the website photos, the caption, and Tony's usual description.
+ *     only price, shipping, offers and the return policy are changed on those; Tony's title, photos and description stay.
+ *   - new coins are listed (AddFixedPriceItem) with the website photos + promo card, the title, and Tony's standard text.
  *   - coins whose price/shipping changed are revised (ReviseFixedPriceItem).
  *   - coins sold or removed on the website are ended on eBay (EndFixedPriceItem).
  *   - coins that SOLD ON EBAY are reported, so Tony can mark them sold on the website.
@@ -172,9 +172,16 @@ const CATEGORY_RULES = [
   { test: (c) => yearOf(c) >= 1982 && c.category === 'Gold' && /commem|library of congress|best of the mint/i.test(c.name), id: '179534', how: 'commemorative rule' }, // Commemorative > Modern Gold
   { test: (c) => yearOf(c) >= 1982 && /commem|best of the mint/i.test(c.name), id: '179533', how: 'commemorative rule' },                         // Commemorative > Modern Silver/Clad
 ];
+// Tony's wording, word for word (2026-10-17), under a copy of the title.
 const STANDARD_TEXT = "I've been selling on eBay for 26 years, since 2000! If you have any questions at all, please don't hesitate to reach out. "
   + 'Bid with confidence and be sure to look at all the pictures in the listing! The item will come securely packaged and shipped promptly!'
-  + '<br><br>Cabbage Coins is a retailer of US and World Coins located in Lancaster PA.&nbsp;';
+  + '<br>Cabbage Coins is a retailer of US and World Coins located in Lancaster PA';
+// No returns from US buyers; international returns (handled by eBay International Shipping) accepted, 30 days,
+// buyer pays return shipping (Tony, 2026-10-17). Used on new listings and set on every revised one.
+const RETURN_POLICY = '<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption>'
+  + '<InternationalReturnsAcceptedOption>ReturnsAccepted</InternationalReturnsAcceptedOption>'
+  + '<InternationalReturnsWithinOption>Days_30</InternationalReturnsWithinOption>'
+  + '<InternationalShippingCostPaidByOption>Buyer</InternationalShippingCostPaidByOption></ReturnPolicy>';
 
 // Tony's "Cabbage Coins · follow & message" card (1080×1080): the LAST photo on every listing (Tony, 2026-10-17).
 // Served from the website (web/assets/img), like the coin photos come from Sanity: eBay refuses a listing that
@@ -294,8 +301,7 @@ async function newItemXml(coin) {
   const cat = await categoryFor(coin);
   const photos = [coin.image, ...(coin.imagesGallery ?? [])].map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
     .filter((u, i, all) => all.indexOf(u) === i).slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
-  const caption = coin.image?.caption ? ` - ${coin.image.caption}` : '';
-  const description = `<div>${esc(coin.name)}${esc(caption)}</div><div><br></div><div>${STANDARD_TEXT}</div>`;
+  const description = `<div>${esc(coin.name)}</div><div><br></div><div>${STANDARD_TEXT}</div>`;
   const xml = `<Item><Title>${esc(coin.name.slice(0, 80))}</Title>`
     + `<Description><![CDATA[${description}]]></Description>`
     + `<PrimaryCategory><CategoryID>${cat.id ?? ''}</CategoryID></PrimaryCategory>`
@@ -307,7 +313,7 @@ async function newItemXml(coin) {
     + (cat.id ? await conditionXml(cat.id, coin) : '')
     + `<ItemSpecifics>${specifics(coin)}</ItemSpecifics>`
     + `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`
-    + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy>`
+    + RETURN_POLICY
     + shippingXml(coin.price)
     + `<BestOfferDetails><BestOfferEnabled>${coin.ebayOffers ? 'true' : 'false'}</BestOfferEnabled></BestOfferDetails>`
     + `<InventoryTrackingMethod>ItemID</InventoryTrackingMethod>`
@@ -425,7 +431,7 @@ async function main() {
       for (const w of p.verify.warnings) console.log(`        ⚠ ${w}`);
     }
   }
-  console.log(`\n⇄ Already on eBay, taken over by the sync (price/shipping/offers set; your title, photos, description kept): ${plan.adopt.length}`);
+  console.log(`\n⇄ Already on eBay, taken over by the sync (price, shipping, offers, returns set; your title, photos, description kept): ${plan.adopt.length}`);
   for (const p of plan.adopt) console.log(`  ${line(p)}   (now ${money(p.item.price)}${p.item.bestOffer ? ', offers on' : ''}${p.how !== 'cert/title' ? `; matched by ${p.how}: eBay title "${p.item.title}"` : ''})`);
   console.log(`\n~ Price or shipping to update: ${plan.revise.length}`);
   for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})`);
@@ -450,7 +456,7 @@ async function main() {
   const failed = [];
   const reviseXml = (itemId, p) => `<Item><ItemID>${itemId}</ItemID><StartPrice currencyID="USD">${p.target.price}</StartPrice>`
     + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>${p.target.offers}</BestOfferEnabled></BestOfferDetails>`
-    + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy></Item>`;
+    + RETURN_POLICY + '</Item>';
   for (const p of [...plan.adopt, ...plan.revise]) {
     const r = await trading('ReviseFixedPriceItem', reviseXml(p.item.id, p));
     if (r.ok) ledger[p.coin._id] = { itemId: p.item.id, price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now };
