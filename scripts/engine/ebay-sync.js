@@ -176,12 +176,10 @@ const CATEGORY_RULES = [
 const STANDARD_TEXT = "I've been selling on eBay for 26 years, since 2000! If you have any questions at all, please don't hesitate to reach out. "
   + 'Bid with confidence and be sure to look at all the pictures in the listing! The item will come securely packaged and shipped promptly!'
   + '<br>Cabbage Coins is a retailer of US and World Coins located in Lancaster PA';
-// No returns from US buyers; international returns (handled by eBay International Shipping) accepted, 30 days,
-// buyer pays return shipping (Tony, 2026-10-17). Used on new listings and set on every revised one.
+// No returns at all, US or international: eBay shows these as "Final sale" (Tony, 2026-10-17, matching his
+// current listings). Used on new listings and set on every revised one.
 const RETURN_POLICY = '<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption>'
-  + '<InternationalReturnsAcceptedOption>ReturnsAccepted</InternationalReturnsAcceptedOption>'
-  + '<InternationalReturnsWithinOption>Days_30</InternationalReturnsWithinOption>'
-  + '<InternationalShippingCostPaidByOption>Buyer</InternationalShippingCostPaidByOption></ReturnPolicy>';
+  + '<InternationalReturnsAcceptedOption>ReturnsNotAccepted</InternationalReturnsAcceptedOption></ReturnPolicy>';
 
 // Tony's "Cabbage Coins · follow & message" card (1080×1080): the LAST photo on every listing (Tony, 2026-10-17).
 // Served from the website (web/assets/img), like the coin photos come from Sanity: eBay refuses a listing that
