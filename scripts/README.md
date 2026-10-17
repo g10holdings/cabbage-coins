@@ -254,3 +254,27 @@ made the inventory look empty can't wipe your marketplace listings.
 CAC allows 1,000 calls a day, and one send uses one call. It needs `CAC_API_KEY` and
 `CAC_API_TOKEN` in `engine\.env`. CAC's full reply to the last send is saved in
 `engine\cac-marketplace-last-response.json`.
+
+---
+
+## eBay (cabbage_coins store)
+
+| Double-click | What it does |
+|---|---|
+| `9_Preview-eBay` | Shows what the sync would do: new listings (eBay checks each one, nothing is posted), price/shipping updates, coins to end, coins that sold on eBay. Changes nothing. |
+| `10_Send-To-eBay` | Does it. Run it after publishing coins, changing prices, or marking coins **Sold**. |
+
+Every unsold website coin goes on eBay. eBay follows the website (Sanity), not the workbook.
+
+- **Price:** worked out so you net the website price after eBay's fees (9% up to $4,000, 2.35% above, $0.40 an order, figured on price + 8% sales tax, since eBay charges its fee on the tax too) **plus** the shipping cost, because shipping is free to the buyer.
+- **Shipping** (by website price): under $1,000 USPS Ground Advantage ($6); $1,000–$4,999 USPS Priority ($20); $5,000+ FedEx 2Day ($40). Insurance included.
+- **Always:** Buy It Now, Good 'Til Cancelled, no returns (final sale), your promo card as the last photo, and the description = the title + your standard paragraph.
+- **Category:** chosen automatically (bullion and commemoratives by rule; everything else must sit under its denomination, e.g. Dollars > Morgan). The preview shows each one.
+
+Per coin, in the Studio:
+- **Keep off eBay**: tick it to keep a coin off eBay (and end its listing).
+- **Accept offers on eBay**: tick it to turn on Best Offer.
+- **eBay price (fixed)**: fill it in to use your own eBay price instead of the formula.
+- **eBay category #**: only to correct a category.
+
+When a coin **sells on eBay**, the preview lists it under "SOLD ON EBAY": mark it Sold on the website. When you mark a coin **Sold** on the website, the next send ends its eBay listing.
