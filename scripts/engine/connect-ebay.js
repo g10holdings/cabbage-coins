@@ -38,9 +38,11 @@ function saveEnv(values) {
   if (old) fs.writeFileSync(`${ENV_FILE}.bak`, old);
   const lines = old.split(/\r?\n/);
   for (const [key, value] of Object.entries(values)) {
+    // Quoted: eBay tokens contain "#", which .env otherwise reads as the start of a comment (cutting the token to 5 chars).
+    const line = `${key}="${String(value).replace(/"/g, '\\"')}"`;
     const i = lines.findIndex((l) => l.startsWith(`${key}=`));
-    if (i >= 0) lines[i] = `${key}=${value}`;
-    else lines.splice(lines.at(-1) === '' ? lines.length - 1 : lines.length, 0, `${key}=${value}`);
+    if (i >= 0) lines[i] = line;
+    else lines.splice(lines.at(-1) === '' ? lines.length - 1 : lines.length, 0, line);
   }
   fs.writeFileSync(ENV_FILE, lines.join('\n'));
   // The PCGS token once vanished from .env during an edit: make sure nothing else was lost.
