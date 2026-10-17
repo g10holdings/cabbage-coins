@@ -75,7 +75,7 @@ parent: Inventory
                     <div class="cc-spec"><span class="cc-spec-label">Grading Company</span><span class="cc-spec-value">{{ listing.gradingCompany }}</span></div>
                     <div class="cc-spec"><span class="cc-spec-label">Certification #</span><span class="cc-spec-value">{{ listing.gradenumber | certNumber }}</span></div>
                     <div class="cc-spec"><span class="cc-spec-label">Grade</span><span class="cc-spec-value">{{ listing.grade }}</span></div>
-                    <div class="cc-spec"><span class="cc-spec-label">PCGS Catalog #</span><span class="cc-spec-value">{{ listing.pcgsCatalogNumber }}</span></div>
+                    <div class="cc-spec"><span class="cc-spec-label">PCGS Catalog #</span><span class="cc-spec-value">{{ listing.pcgsDesignationNumber or listing.pcgsCatalogNumber }}</span></div>
 
                     {% if listing.cac %}
                     <div class="cc-badge-row">

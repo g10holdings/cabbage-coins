@@ -10,7 +10,7 @@
  *   - workbook says Website = Y and Active, but there's no listing yet (the import creates these)
  *   - for sale on the site, but the workbook doesn't say Website = Y
  *   - on the site, with no workbook row at all
- *   - matched coins whose price, grade, grading company, date, denomination or PCGS # differ
+ *   - matched coins whose price, grade, grading company, date or PCGS #s differ
  *   - names worded differently (FYI only)
  *
  * Usage: node check-workbook.js
@@ -33,7 +33,7 @@ const loose = (s) => String(s ?? '').toUpperCase().replace(/\s+/g, '');
 async function main() {
   const { rows, file, savedAt } = readInventory();
   const client = createClient({ projectId: 'la880an7', dataset: 'production', apiVersion: '2024-01-01', useCdn: false, token: process.env.SANITY_WRITE_TOKEN });
-  const listings = await client.fetch(`*[_type == "listing"]{_id, name, sold, price, gradenumber, date, dateshown, denomination, grade, gradingCompany, pcgsCatalogNumber}`);
+  const listings = await client.fetch(`*[_type == "listing"]{_id, name, sold, price, gradenumber, date, dateshown, grade, gradingCompany, pcgsCatalogNumber, pcgsDesignationNumber}`);
 
   console.log(`Workbook: ${file}  (saved ${savedAt.toLocaleString()}, ${rows.length} inventory rows; opened read-only)`);
   const published = listings.filter((l) => !l._id.startsWith('drafts.'));
@@ -65,8 +65,9 @@ async function main() {
     if (loose(l.grade) !== loose(w.grade) && w.grade) d.push(`grade: site "${l.grade}", workbook "${w.grade}"`);
     if (l.gradingCompany !== w.gradingCompany) d.push(`grading company: site ${l.gradingCompany}, workbook ${w.gradingCompany}`);
     if (loose(l.dateshown) !== loose(w.dateShown) && w.dateShown) d.push(`date shown: site "${l.dateshown}", workbook "${w.dateShown}"`);
-    if (loose(l.denomination) !== loose(w.denomination) && w.denomination) d.push(`denomination: site "${l.denomination}", workbook "${w.denomination}"`);
-    if (w.pcgsCatalogNumber && Number(l.pcgsCatalogNumber) !== w.pcgsCatalogNumber) d.push(`PCGS #: site ${l.pcgsCatalogNumber ?? '—'}, workbook ${w.pcgsCatalogNumber}${w.pcgsPopNumber !== w.pcgsCatalogNumber ? ` (designation # ${w.pcgsPopNumber})` : ''}`);
+    if (w.pcgsCatalogNumber && Number(l.pcgsCatalogNumber) !== w.pcgsCatalogNumber) d.push(`PCGS catalog #: site ${l.pcgsCatalogNumber ?? '—'}, workbook ${w.pcgsCatalogNumber}`);
+    const designation = w.pcgsPopNumber !== w.pcgsCatalogNumber ? w.pcgsPopNumber : null;
+    if ((l.pcgsDesignationNumber ?? null) !== designation) d.push(`PCGS # with designation: site ${l.pcgsDesignationNumber ?? '—'}, workbook ${designation ?? '—'}`);
     if (d.length) diffs.push([l, d]);
     if (loose(l.name) !== loose(w.name)) names.push([l, w]);
   }

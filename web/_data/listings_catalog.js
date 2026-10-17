@@ -24,7 +24,6 @@ async function getListings () {
     slug,
     date,
     dateshown,
-    denomination,
     featured,
     sold,
     cac,
@@ -36,6 +35,7 @@ async function getListings () {
     price,
     gradingCompany,
     pcgsCatalogNumber,
+    pcgsDesignationNumber,
     category,
     description[]{
       ...,

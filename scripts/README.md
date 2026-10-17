@@ -32,12 +32,12 @@ they read the last saved version.) The `listingsData` sheet and the CSV are no l
 How the inventory columns are read:
 - **inventoryID** = the cert # (Grade Number). A `_2` / `_3` on the end is dropped.
 - **itemDescription** = the listing name. The **date shown** (`1891-CC`, `328 BC`),
-  **date** (`1891`, `-328`), **denomination** (`$1`, `G$10`, `1/2C`) and **grade**
+  **date** (`1891`, `-328`) and **grade**
   (`MS64DMPL CAC`, `PF70 UC`) are read out of it.
 - **Certification** = the grading company (`N/A` → Ungraded).
 - **CAC** = Y adds "CAC" to the grade (and so does a CACG holder).
 - **PCGS Num** = the PCGS #. `97199/7199` means 97199 is the designation # (DMPL) and
-  7199 the catalog # the site uses. A designation # written alone (e.g. `97129` on a
+  7199 the catalog #. The listing shows 97199; sorting by PCGS # uses 7199. A designation # written alone (e.g. `97129` on a
   DMPL coin) is noticed and flagged in the preview.
 - **listPrice** = the website price.
 - **Website** = `Y` means it belongs on the website. A `Y` coin that's **Active** with no
@@ -110,12 +110,12 @@ npm run dev
 | itemDescription | Name |
 | itemDescription (year) | Date (plain year; `-328` for 328 BC) |
 | itemDescription (first word) | Date Shown (with mint mark — the "Issue" line on the site) |
-| itemDescription | Denomination |
 | itemDescription + CAC | Grade |
 | inventoryID (without `_2`) | Grade Number |
 | listPrice | Price |
 | Certification | Grading Company (`N/A` → `Ungraded`) |
-| PCGS Num (catalog #, the part after `/`) | PCGS Catalog Number |
+| PCGS Num, the part after `/` (or the only number) | PCGS Catalog Number (sorting) |
+| PCGS Num, the part before `/` | PCGS # with designation (shown on the listing) |
 | *(worked out)* | Category |
 
 (A CSV with the old column headers still works: `node import-listings.js "D:\path\to\file.csv"`.)

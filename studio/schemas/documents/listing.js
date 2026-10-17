@@ -57,11 +57,6 @@ export default {
         title: 'Date Shown',
       },
       {
-        name: 'denomination',
-        type: 'string',
-        title: 'Denomination',
-      },
-      {
         name: 'featured',
         type: 'boolean',
         title: "Featured"
@@ -112,7 +107,15 @@ export default {
 {
   name: 'pcgsCatalogNumber',
   type: 'number',
-  title: 'PCGS Catalog Number'
+  title: 'PCGS Catalog Number',
+  description: 'The plain catalog # (7199). Used for sorting by PCGS #.'
+},
+{
+  // From the workbook's "97199/7199" (the part before the slash). The listing page shows this when set.
+  name: 'pcgsDesignationNumber',
+  type: 'number',
+  title: 'PCGS # with designation',
+  description: 'Only when the coin has a designation or variety # (97199 for a DMPL 1890-CC). Shown on the listing instead of the catalog #; sorting still uses the catalog #. Leave blank otherwise.'
 },
 {
   // Filled by scripts/engine/fill-pcgs-pop.js from the PCGS API (one cert lookup + one call per nearby grade).

@@ -28,7 +28,6 @@ async function getFeatured () {
     slug,
     date,
     dateshown,
-    denomination,
     category,
     featured,
     sold,
@@ -37,6 +36,7 @@ async function getFeatured () {
     gradenumber,
     gradingCompany,
     pcgsCatalogNumber,
+    pcgsDesignationNumber,
     price,
     "galleryImageUrl": imagesGallery[].asset->url,
     "imageUrl": image.asset->url

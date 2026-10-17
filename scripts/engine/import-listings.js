@@ -34,7 +34,7 @@ import dotenv from 'dotenv';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@sanity/client';
 import { lookupDesign } from './coin-designs.js';
-import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './workbook.js';
+import { readInventory, certKey, nameKey, hasCert, listingFromRow, pcgsOf, denominationOf } from './workbook.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -220,16 +220,18 @@ function buildDoc(row, rowLabel, usedSlugs) {
 
   if (csvDate) doc.date = csvDate;
   if (csvDateShown) doc.dateshown = csvDateShown;
-  const denomination = field(row, 'denomination');
-  if (denomination) doc.denomination = denomination;
+  // Denomination is no longer a Sanity field (2026-10-17); it's only used here for the alt-text lookup.
+  const denomination = field(row, 'denomination') || denominationOf(name);
   if (grade) doc.grade = grade;
   const gradenumber = field(row, 'grade number');
   if (gradenumber) doc.gradenumber = gradenumber;
   const price = toNumber(field(row, 'Price'));
   if (price !== undefined) doc.price = price;
   doc.gradingCompany = normalizeGradingCompany(field(row, 'Grading Company'), rowLabel);
-  const pcgs = toInt(field(row, 'PCGS Catalog Number'));
-  if (pcgs !== undefined) doc.pcgsCatalogNumber = pcgs;
+  // "97199/7199" = designation # (shown on the listing) / catalog # (sorting); one number = catalog # only.
+  const pcgs = pcgsOf(field(row, 'PCGS Catalog Number'), grade);
+  if (pcgs.catalogNumber) doc.pcgsCatalogNumber = pcgs.catalogNumber;
+  if (pcgs.popNumber && pcgs.popNumber !== pcgs.catalogNumber) doc.pcgsDesignationNumber = pcgs.popNumber;
   const category = normalizeCategory(field(row, 'Category'), rowLabel);
   if (category) doc.category = category;
 
@@ -327,7 +329,7 @@ async function rowsFromWorkbook() {
     Grade: w.grade,
     Price: w.price == null ? '' : String(w.price),
     'Grading Company': w.gradingCompany,
-    'PCGS Catalog Number': w.pcgsCatalogNumber == null ? '' : String(w.pcgsCatalogNumber),
+    'PCGS Catalog Number': w.pcgsPopNumber && w.pcgsPopNumber !== w.pcgsCatalogNumber ? `${w.pcgsPopNumber}/${w.pcgsCatalogNumber}` : (w.pcgsCatalogNumber == null ? '' : String(w.pcgsCatalogNumber)),
     Category: w.category,
   }));
 }
@@ -399,7 +401,7 @@ async function main() {
   for (const d of docs) {
     console.log(`  • ${d.name}`);
     console.log(`      id=${d._id}  price=${d.price ?? '—'}  grade=${d.grade ?? '—'}  cac=${d.cac}`);
-    console.log(`      date=${d.date ?? '—'}  dateshown=${d.dateshown ?? '—'}  denomination=${d.denomination ?? '—'}  grading=${d.gradingCompany}  pcgs#=${d.pcgsCatalogNumber ?? '—'}  cat=${d.category ?? '—'}`);
+    console.log(`      date=${d.date ?? '—'}  dateshown=${d.dateshown ?? '—'}  grading=${d.gradingCompany}  pcgs#=${d.pcgsDesignationNumber ? `${d.pcgsDesignationNumber} (sorts as ${d.pcgsCatalogNumber})` : (d.pcgsCatalogNumber ?? '—')}  cat=${d.category ?? '—'}`);
     console.log(`      alt=${d.image?.alt ? `"${d.image.alt}"` : '(none)'}`);
   }
   console.log('');

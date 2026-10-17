@@ -120,7 +120,7 @@ function takenIndex(captions) {
 async function loadState() {
   const needCaption = await sanity.fetch(`*[_type == "listing" && _id in path("drafts.**")
       && defined(image.asset) && (!defined(image.caption) || image.caption == "")] | order(name asc) {
-    _id, name, grade, gradingCompany, cac, denomination, date, dateshown,
+    _id, name, grade, gradingCompany, cac, date, dateshown,
     pcgsPop { thisPop, thisHigher, grade },
     "main": image.asset->url,
     "gallery": imagesGallery[defined(asset)].asset->url
