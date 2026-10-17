@@ -57,12 +57,14 @@ export function shippingFor(sitePrice) {
   if (sitePrice >= 1000) return { service: 'USPSPriority', label: 'USPS Priority', cost: 20 };
   return { service: 'USPSParcel', label: 'USPS Ground Advantage', cost: 6 };
 }
-export const ebayFee = (p) => 0.09 * Math.min(p, 4000) + 0.0235 * Math.max(p - 4000, 0) + 0.40;
+// eBay charges its fee on the whole order total, INCLUDING the sales tax it collects from the buyer, so the fee
+// is figured on price + tax. 8% covers the combined rate in nearly every state (PA is 6%); Tony, 2026-10-17.
+export const SALES_TAX = 0.08;
+export const ebayFee = (p) => { const t = p * (1 + SALES_TAX); return 0.09 * Math.min(t, 4000) + 0.0235 * Math.max(t - 4000, 0) + 0.40; };
 export function ebayPrice(sitePrice) {
   const want = sitePrice + shippingFor(sitePrice).cost;
-  let p = Math.ceil((want + 0.40) / 0.91);
-  if (p > 4000) p = Math.ceil((want + 0.40 + 360 - 94) / 0.9765);
-  while (p - ebayFee(p) < want) p++;   // guard against rounding
+  let p = Math.floor(want);   // the price is never below the target: step up to the first whole dollar that nets enough
+  while (p - ebayFee(p) < want) p++;
   return p;
 }
 
@@ -184,24 +186,62 @@ const imageUrl = (ref) => {
   return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
 };
 
-const categoryCache = new Map();
+// The whole "Coins & Paper Money" category tree, id -> "Coins: US > Dollars > Morgan (1878-1921)" (loaded once a run).
+let treePaths;
+async function categoryPaths() {
+  if (treePaths) return treePaths;
+  const j = await rest('https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_subtree?category_id=11116');
+  treePaths = new Map();
+  const walk = (n, trail) => {
+    const t = [...trail, n.category.categoryName];
+    treePaths.set(n.category.categoryId, { path: t.slice(1).join(' > '), leaf: !n.childCategoryTreeNodes?.length });
+    for (const c of n.childCategoryTreeNodes ?? []) walk(c, t);
+  };
+  walk(j.categorySubtreeNode, []);
+  return treePaths;
+}
+
+/** The "Coins: US > …" group a US coin's denomination belongs in, so a suggestion can't put a dollar in Large Cents. */
+function denominationGroup(coin) {
+  const d = denominationOf(coin.name);
+  const y = yearOf(coin);
+  if (!d || y >= 1934 && /^G\$|^\$(2\.50|3|5|10|20)$/.test(d)) return null;   // modern gold: commemorative/bullion rules
+  if (/^G\$|^\$(2\.50|3|5|10|20)$/.test(d)) return 'Gold (Pre-1933)';
+  return {
+    '1/2C': 'Half Cents', '1C': y && y < 1857 ? 'Large Cents' : 'Small Cents', '2C': 'Two Cents', '3CS': 'Three Cents', '3CN': 'Three Cents',
+    H10C: 'Half Dimes', '5C': 'Nickels', '10C': 'Dimes', '20C': 'Twenty Cent Pieces', '25C': 'Quarters', '50C': 'Half Dollars',
+    $1: 'Dollars', T$1: 'Dollars',
+  }[d] ?? null;
+}
+
 async function categoryFor(coin) {
   if (coin.ebayCategoryId) return { id: String(coin.ebayCategoryId), how: 'set in the Studio' };
   const rule = CATEGORY_RULES.find((r) => r.test(coin));
   if (rule) return { id: rule.id, how: rule.how };
+  const paths = await categoryPaths();
+  const group = /philippines|australia|canada|mexico/i.test(coin.name) ? null : denominationGroup(coin);
+  const fits = (id) => paths.get(id)?.leaf && (!group || paths.get(id).path.startsWith(`Coins: US > ${group} > `));
   const q = coin.name.replace(/\b(PCGS|NGC|CACG|CAC|OGH)\b/g, '').replace(/\b(MS|PR|PF|SP|AU|XF|VF|VG|F|G)\d{1,2}\+?\w*/g, '').replace(/\s+/g, ' ').trim();
   const j = await rest(`https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_suggestions?q=${encodeURIComponent(q)}`);
-  const best = (j.categorySuggestions ?? []).find((s) => /Coins & Paper Money/.test((s.categoryTreeNodeAncestors ?? []).map((a) => a.categoryName).join('>')));
-  return best ? { id: best.category.categoryId, how: 'eBay suggestion' } : { id: null, how: 'no suggestion' };
+  const best = (j.categorySuggestions ?? []).map((s) => s.category.categoryId).find(fits);
+  if (best) return { id: best, how: 'eBay suggestion' };
+  // No suggestion in the right group: the leaf in that group whose years cover the coin (prefer one sharing a series word).
+  if (group) {
+    const y = yearOf(coin);
+    const words = coin.name.toLowerCase().split(/\W+/);
+    const leaves = [...paths].filter(([id, p]) => fits(id) && !/mixed lots/i.test(p.path)).map(([id, p]) => {
+      const leaf = p.path.split(' > ').pop();
+      const [, a, b] = /\((\d{4})-(\d{2,4}|Now)/.exec(leaf) ?? [];
+      const to = b === 'Now' ? 9999 : b && b.length === 2 ? Number(a.slice(0, 2) + b) : Number(b);
+      return { id, covers: a && y >= Number(a) && y <= to, words: leaf.toLowerCase().split(/\W+/).filter((w) => w.length > 3 && words.includes(w)).length };
+    }).filter((l) => l.covers).sort((a, b) => b.words - a.words);
+    if (leaves.length === 1 || (leaves.length > 1 && leaves[0].words > leaves[1].words)) return { id: leaves[0].id, how: `by denomination + years` };
+  }
+  return { id: null, how: group ? `no category under "${group}" fits: set one in the Studio` : 'no suggestion: set one in the Studio' };
 }
 async function categoryName(id) {
   if (!id) return '—';
-  if (categoryCache.has(id)) return categoryCache.get(id);
-  const j = await rest(`https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_subtree?category_id=${id}`).catch(() => null);
-  const n = j?.categorySubtreeNode;
-  const name = n ? [...(n.categoryTreeNodeAncestors ?? []).map((a) => a.categoryName).reverse(), n.category.categoryName].filter((x) => x !== 'Root' && x !== 'Coins & Paper Money').join(' > ') : id;
-  categoryCache.set(id, name);
-  return name;
+  return (await categoryPaths()).get(id)?.path ?? `#${id}`;
 }
 
 const conditionCache = new Map();
