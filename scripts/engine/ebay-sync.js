@@ -6,7 +6,8 @@
  *   ship cost   under $1,000 → USPS Ground Advantage $6 · $1,000–$4,999 → USPS Priority $20 · $5,000+ → FedEx 2Day $40
  *   eBay fees   9% of the sale up to $4,000 + 2.35% above + $0.40 per order (store seller, Coins & Paper Money)
  *   eBay price  the smallest whole dollar where price − fees ≥ website price + ship cost
- * No offers, no returns, Buy It Now, Good 'Til Cancelled. (Tony's rules, 2026-10-17.)
+ * No returns, Buy It Now, Good 'Til Cancelled. Offers off unless the coin's "Accept offers on eBay" box is ticked; a filled-in
+ * "eBay price (fixed)" replaces the formula price. (Tony's rules, 2026-10-17.)
  *
  * One run:
  *   - coins already on eBay that the script hasn't seen before are ADOPTED (matched by cert #, else exact title):
@@ -259,7 +260,7 @@ async function newItemXml(coin) {
     + `<Description><![CDATA[${description}]]></Description>`
     + `<PrimaryCategory><CategoryID>${cat.id ?? ''}</CategoryID></PrimaryCategory>`
     + `<Storefront><StoreCategoryID>1</StoreCategoryID></Storefront>`
-    + `<StartPrice currencyID="USD">${ebayPrice(coin.price)}</StartPrice><Quantity>1</Quantity>`
+    + `<StartPrice currencyID="USD">${coin.ebayPrice > 0 ? coin.ebayPrice : ebayPrice(coin.price)}</StartPrice><Quantity>1</Quantity>`
     + `<ListingType>FixedPriceItem</ListingType><ListingDuration>GTC</ListingDuration>`
     + `<Country>US</Country><Currency>USD</Currency><Location>Lancaster, Pennsylvania</Location><PostalCode>17602</PostalCode>`
     + `<DispatchTimeMax>2</DispatchTimeMax>`
@@ -268,7 +269,7 @@ async function newItemXml(coin) {
     + `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`
     + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy>`
     + shippingXml(coin.price)
-    + `<BestOfferDetails><BestOfferEnabled>false</BestOfferEnabled></BestOfferDetails>`
+    + `<BestOfferDetails><BestOfferEnabled>${coin.ebayOffers ? 'true' : 'false'}</BestOfferEnabled></BestOfferDetails>`
     + `<InventoryTrackingMethod>ItemID</InventoryTrackingMethod>`
     + `</Item>`;
   return { xml, cat, photos: photos.length };
@@ -303,7 +304,7 @@ async function main() {
 
   const [coins, ledger, live] = await Promise.all([
     client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]
-      {_id, name, sold, price, grade, gradenumber, gradingCompany, category, notOnEbay, ebayCategoryId, image, imagesGallery}`),
+      {_id, name, sold, price, grade, gradenumber, gradingCompany, category, notOnEbay, ebayOffers, ebayPrice, ebayCategoryId, image, imagesGallery}`),
     loadLedger(client),
     liveListings(),
   ]);
@@ -316,13 +317,13 @@ async function main() {
   const byTitle = new Map(live.map((l) => [nameKey(l.title), l]));
   const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], unchanged: [] };
   for (const c of wanted) {
-    const target = { price: ebayPrice(c.price), ship: shippingFor(c.price) };
+    const target = { price: c.ebayPrice > 0 ? c.ebayPrice : ebayPrice(c.price), fixed: c.ebayPrice > 0, offers: !!c.ebayOffers, ship: shippingFor(c.price) };
     const e = ledger[c._id];
     if (e) {
       const l = liveById.get(e.itemId);
       if (!l) { const info = await itemInfo(e.itemId); (info.sold > 0 ? plan.soldOnEbay : plan.add).push({ coin: c, target, item: info }); continue; }
       if (l.sold > 0) { plan.soldOnEbay.push({ coin: c, item: l }); continue; }
-      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer) plan.revise.push({ coin: c, target, item: l });
+      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer !== target.offers) plan.revise.push({ coin: c, target, item: l });
       else plan.unchanged.push({ coin: c, item: l });
       continue;
     }
@@ -371,7 +372,7 @@ async function main() {
   }
 
   // Report.
-  const line = (p) => `${money(p.coin.price).padStart(8)} site → ${money(p.target.price).padStart(8)} eBay, ${p.target.ship.label}  ${p.coin.name}`;
+  const line = (p) => `${money(p.coin.price).padStart(8)} site → ${money(p.target.price).padStart(8)} eBay${p.target.fixed ? ' (your fixed price)' : ''}, ${p.target.ship.label}${p.target.offers ? ', offers ON' : ''}  ${p.coin.name}`;
   console.log(`eBay sync: ${SEND ? 'SENDING' : 'PREVIEW, nothing is changed'}\n`);
   console.log(`  Live on eBay now: ${live.length}   Website coins for eBay: ${wanted.length}\n`);
   console.log(`+ New listings: ${plan.add.length}`);
@@ -408,7 +409,7 @@ async function main() {
   const now = new Date().toISOString();
   const failed = [];
   const reviseXml = (itemId, p) => `<Item><ItemID>${itemId}</ItemID><StartPrice currencyID="USD">${p.target.price}</StartPrice>`
-    + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>false</BestOfferEnabled></BestOfferDetails>`
+    + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>${p.target.offers}</BestOfferEnabled></BestOfferDetails>`
     + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy></Item>`;
   for (const p of [...plan.adopt, ...plan.revise]) {
     const r = await trading('ReviseFixedPriceItem', reviseXml(p.item.id, p));

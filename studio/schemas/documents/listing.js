@@ -118,6 +118,18 @@ export default {
   description: 'Tick to keep this coin off eBay. The eBay sync lists every unsold coin unless this is ticked (and ends its eBay listing if it is).'
 },
 {
+  name: 'ebayOffers',
+  type: 'boolean',
+  title: 'Accept offers on eBay',
+  description: 'Tick to turn on Best Offer for this coin on eBay. Off by default.'
+},
+{
+  name: 'ebayPrice',
+  type: 'number',
+  title: 'eBay price (fixed, optional)',
+  description: 'Leave blank and the eBay sync prices it to net the website price after fees and shipping. Fill it in to use this exact eBay price instead.'
+},
+{
   name: 'ebayCategoryId',
   type: 'number',
   title: 'eBay category # (optional)',
