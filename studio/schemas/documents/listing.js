@@ -111,6 +111,19 @@ export default {
   description: 'The plain catalog # (7199). Used for sorting by PCGS #.'
 },
 {
+  // Read by scripts/engine/ebay-sync.js.
+  name: 'notOnEbay',
+  type: 'boolean',
+  title: 'Keep off eBay',
+  description: 'Tick to keep this coin off eBay. The eBay sync lists every unsold coin unless this is ticked (and ends its eBay listing if it is).'
+},
+{
+  name: 'ebayCategoryId',
+  type: 'number',
+  title: 'eBay category # (optional)',
+  description: 'Only to correct the category the eBay sync picked. The number is in the eBay category\'s web address, e.g. 39464 = Morgan dollars, 177652 = Bullion > Gold > Coins.'
+},
+{
   // From the workbook's "97199/7199" (the part before the slash). The listing page shows this when set.
   name: 'pcgsDesignationNumber',
   type: 'number',

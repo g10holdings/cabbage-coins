@@ -1,0 +1,436 @@
+/**
+ * Keep Tony's eBay store (cabbage_coins) in step with the website.
+ *
+ * Every unsold website coin goes on eBay (unless its "Keep off eBay" box is ticked), priced so Tony nets
+ * the same as a website sale, with free shipping whose cost is built into the price:
+ *   ship cost   under $1,000 → USPS Ground Advantage $6 · $1,000–$4,999 → USPS Priority $20 · $5,000+ → FedEx 2Day $40
+ *   eBay fees   9% of the sale up to $4,000 + 2.35% above + $0.40 per order (store seller, Coins & Paper Money)
+ *   eBay price  the smallest whole dollar where price − fees ≥ website price + ship cost
+ * No offers, no returns, Buy It Now, Good 'Til Cancelled. (Tony's rules, 2026-10-17.)
+ *
+ * One run:
+ *   - coins already on eBay that the script hasn't seen before are ADOPTED (matched by cert #, else exact title):
+ *     only price, shipping and offers are changed on those; Tony's title, photos and description stay.
+ *   - new coins are listed (AddFixedPriceItem) with the website photos, the caption, and Tony's usual description.
+ *   - coins whose price/shipping changed are revised (ReviseFixedPriceItem).
+ *   - coins sold or removed on the website are ended on eBay (EndFixedPriceItem).
+ *   - coins that SOLD ON EBAY are reported, so Tony can mark them sold on the website.
+ *   - eBay listings that match no website coin are reported and left alone.
+ * What's on eBay is remembered in Sanity (document "ebay-ledger"), like the CAC marketplace sync.
+ *
+ * Preview (the default) changes nothing: new listings are checked with eBay's VerifyAddFixedPriceItem,
+ * which validates them and quotes the fees without listing anything.
+ *
+ * Usage:
+ *   node ebay-sync.js                    Preview.
+ *   node ebay-sync.js --send             Do it.
+ *   --allow-mass-removal                 Needed when a run would end more than 10 listings.
+ * Env (engine/.env): SANITY_WRITE_TOKEN, EBAY_APP_ID, EBAY_CERT_ID, EBAY_REFRESH_TOKEN (Extras\Connect-eBay).
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
+import { createClient } from '@sanity/client';
+import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+const args = process.argv.slice(2);
+const SEND = args.includes('--send');
+const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
+const MASS_REMOVAL = 10;
+const PROJECT = 'la880an7';
+const LEDGER_ID = 'ebay-ledger';
+const OUT_FILE = path.join(__dirname, 'ebay-preview.json');
+
+// ---------------------------------------------------------------------------
+// Pricing and shipping (Tony's rules)
+// ---------------------------------------------------------------------------
+
+export function shippingFor(sitePrice) {
+  if (sitePrice >= 5000) return { service: 'FedEx2Day', label: 'FedEx 2Day', cost: 40 };
+  if (sitePrice >= 1000) return { service: 'USPSPriority', label: 'USPS Priority', cost: 20 };
+  return { service: 'USPSParcel', label: 'USPS Ground Advantage', cost: 6 };
+}
+export const ebayFee = (p) => 0.09 * Math.min(p, 4000) + 0.0235 * Math.max(p - 4000, 0) + 0.40;
+export function ebayPrice(sitePrice) {
+  const want = sitePrice + shippingFor(sitePrice).cost;
+  let p = Math.ceil((want + 0.40) / 0.91);
+  if (p > 4000) p = Math.ceil((want + 0.40 + 360 - 94) / 0.9765);
+  while (p - ebayFee(p) < want) p++;   // guard against rounding
+  return p;
+}
+
+// ---------------------------------------------------------------------------
+// eBay API plumbing
+// ---------------------------------------------------------------------------
+
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const unesc = (s) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+const tag = (xml, t) => { const m = new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`).exec(xml); return m ? m[1] : ''; };
+const tags = (xml, t) => [...xml.matchAll(new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`, 'g'))].map((m) => m[1]);
+
+let token;
+async function accessToken() {
+  if (token) return token;
+  const { EBAY_APP_ID, EBAY_CERT_ID, EBAY_REFRESH_TOKEN } = process.env;
+  if (!EBAY_APP_ID || !EBAY_CERT_ID || !EBAY_REFRESH_TOKEN) throw new Error('eBay keys are missing from engine/.env: run Extras\\Connect-eBay first.');
+  const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
+    method: 'POST',
+    headers: { Authorization: `Basic ${Buffer.from(`${EBAY_APP_ID}:${EBAY_CERT_ID}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: EBAY_REFRESH_TOKEN }),
+  });
+  const j = await res.json();
+  if (!j.access_token) throw new Error(`eBay refused the saved sign-in (${j.error_description ?? j.error}). Run Extras\\Connect-eBay again.`);
+  return (token = j.access_token);
+}
+
+/** One Trading API call. Returns { ok, xml, errors: [{severity, message}] }. */
+async function trading(name, body) {
+  const res = await fetch('https://api.ebay.com/ws/api.dll', {
+    method: 'POST',
+    headers: {
+      'X-EBAY-API-CALL-NAME': name, 'X-EBAY-API-SITEID': '0', 'X-EBAY-API-COMPATIBILITY-LEVEL': '1349',
+      'X-EBAY-API-IAF-TOKEN': await accessToken(), 'Content-Type': 'text/xml',
+    },
+    body: `<?xml version="1.0" encoding="utf-8"?><${name}Request xmlns="urn:ebay:apis:eBLBaseComponents">${body}</${name}Request>`,
+  });
+  const xml = await res.text();
+  const errors = tags(xml, 'Errors').map((e) => ({ severity: tag(e, 'SeverityCode'), message: unesc(tag(e, 'LongMessage') || tag(e, 'ShortMessage')) }));
+  const ack = tag(xml, 'Ack');
+  return { ok: ack === 'Success' || ack === 'Warning', xml, errors };
+}
+
+async function rest(url) {
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${await accessToken()}`, 'Accept-Language': 'en-US' } });
+  if (!res.ok) throw new Error(`eBay ${res.status} on ${url.split('?')[0]}: ${(await res.text()).slice(0, 300)}`);
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// What's live on eBay
+// ---------------------------------------------------------------------------
+
+/** Every ACTIVE listing (the "active" list also returns recently ended ones, so each is checked with GetItem). */
+async function liveListings() {
+  const ids = [];
+  for (let page = 1; ; page++) {
+    const r = await trading('GetMyeBaySelling', `<ActiveList><Include>true</Include><Pagination><EntriesPerPage>200</EntriesPerPage><PageNumber>${page}</PageNumber></Pagination></ActiveList>`);
+    if (!r.ok) throw new Error(`eBay GetMyeBaySelling: ${r.errors.map((e) => e.message).join('; ')}`);
+    const list = tag(r.xml, 'ActiveList');
+    ids.push(...tags(list, 'ItemID'));
+    if (page >= Number(tag(tag(list, 'PaginationResult'), 'TotalNumberOfPages') || 1)) break;
+  }
+  const out = [];
+  for (const id of [...new Set(ids)]) out.push(await itemInfo(id));
+  return out.filter((i) => i.status === 'Active');
+}
+
+async function itemInfo(id) {
+  const r = await trading('GetItem', `<ItemID>${id}</ItemID><DetailLevel>ReturnAll</DetailLevel>`);
+  if (!r.ok) return { id, status: 'Unknown', error: r.errors.map((e) => e.message).join('; ') };
+  const x = r.xml;
+  const certDescriptor = tags(x, 'ConditionDescriptor').find((d) => tag(d, 'Name') === '5');
+  return {
+    id,
+    status: tag(x, 'ListingStatus'),
+    title: unesc(tag(x, 'Title')),
+    price: Number(tag(tag(x, 'SellingStatus'), 'CurrentPrice')),
+    sold: Number(tag(tag(x, 'SellingStatus'), 'QuantitySold') || 0),
+    bestOffer: tag(tag(x, 'BestOfferDetails'), 'BestOfferEnabled') === 'true',
+    shipService: tag(tag(x, 'ShippingServiceOptions'), 'ShippingService'),
+    cert: certDescriptor ? tag(certDescriptor, 'AdditionalInfo') : '',
+    url: tag(x, 'ViewItemURL'),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Building a new listing
+// ---------------------------------------------------------------------------
+
+const GRADER = { PCGS: '14', NGC: '15', CACG: '16' };
+const LETTER = [[/^(MS|PR|PF|SP)/, '18'], [/^AU/, '19'], [/^(XF|EF)/, '20'], [/^VF/, '46'], [/^F/, '47'], [/^VG/, '48'], [/^G/, '49']];
+const MINT = { P: 'Philadelphia', D: 'Denver', S: 'San Francisco', O: 'New Orleans', CC: 'Carson City', W: 'West Point', C: 'Charlotte' };
+const COMPOSITION = { Silver: 'Silver', Gold: 'Gold', 'Copper/Bronze': 'Copper', 'Vintage Ingot': 'Silver' };
+// Categories decided by rule, before eBay's own suggestion (which put commemoratives in Jefferson nickels and the
+// like). Bullion: Tony wants ingots and modern bullion-type coins there, not in US Coins (2026-10-17).
+const yearOf = (c) => Number(datesOf(c.name).date) || 0;
+const CATEGORY_RULES = [
+  { test: (c) => c.category === 'Vintage Ingot', id: '39489', how: 'bullion rule' },                       // Bullion > Silver > Bars & Rounds
+  { test: (c) => /palladium/i.test(c.name), id: '34943', how: 'bullion rule' },                             // Bullion > Palladium
+  { test: (c) => c.category === 'Gold' && /gold eagle|buffalo|maple|lunar|krugerrand|panda|philharmonic|britannia|kangaroo/i.test(c.name), id: '177652', how: 'bullion rule' }, // Bullion > Gold > Coins
+  { test: (c) => /silver eagle|eagle s\$1|\bS\$1\b/i.test(c.name), id: '177653', how: 'bullion rule' },      // Bullion > Silver > Coins
+  { test: (c) => /commem/i.test(c.name) && c.category === 'Gold' && yearOf(c) >= 1903 && yearOf(c) <= 1933, id: '179532', how: 'commemorative rule' }, // Commemorative > Gold (1903-1926)
+  { test: (c) => /commem|isabella/i.test(c.name) && yearOf(c) >= 1892 && yearOf(c) <= 1954, id: '179531', how: 'commemorative rule' },               // Commemorative > Silver (1892-1954)
+  { test: (c) => yearOf(c) >= 1982 && c.category === 'Gold' && /commem|library of congress|best of the mint/i.test(c.name), id: '179534', how: 'commemorative rule' }, // Commemorative > Modern Gold
+  { test: (c) => yearOf(c) >= 1982 && /commem|best of the mint/i.test(c.name), id: '179533', how: 'commemorative rule' },                         // Commemorative > Modern Silver/Clad
+];
+const STANDARD_TEXT = "I've been selling on eBay for 26 years, since 2000! If you have any questions at all, please don't hesitate to reach out. "
+  + 'Bid with confidence and be sure to look at all the pictures in the listing! The item will come securely packaged and shipped promptly!'
+  + '<br><br>Cabbage Coins is a retailer of US and World Coins located in Lancaster PA.&nbsp;';
+
+// Tony's "Cabbage Coins · follow & message" card (1080×1080): the LAST photo on every listing (Tony, 2026-10-17).
+// Served from the website (web/assets/img), like the coin photos come from Sanity: eBay refuses a listing that
+// mixes its own hosted pictures with outside ones, so the eBay-hosted copy can't be used.
+const PROMO_IMAGE = 'https://cabbagecoins.com/assets/img/ebay-promo-card.jpg';
+
+const imageUrl = (ref) => {
+  const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
+  return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
+};
+
+const categoryCache = new Map();
+async function categoryFor(coin) {
+  if (coin.ebayCategoryId) return { id: String(coin.ebayCategoryId), how: 'set in the Studio' };
+  const rule = CATEGORY_RULES.find((r) => r.test(coin));
+  if (rule) return { id: rule.id, how: rule.how };
+  const q = coin.name.replace(/\b(PCGS|NGC|CACG|CAC|OGH)\b/g, '').replace(/\b(MS|PR|PF|SP|AU|XF|VF|VG|F|G)\d{1,2}\+?\w*/g, '').replace(/\s+/g, ' ').trim();
+  const j = await rest(`https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_suggestions?q=${encodeURIComponent(q)}`);
+  const best = (j.categorySuggestions ?? []).find((s) => /Coins & Paper Money/.test((s.categoryTreeNodeAncestors ?? []).map((a) => a.categoryName).join('>')));
+  return best ? { id: best.category.categoryId, how: 'eBay suggestion' } : { id: null, how: 'no suggestion' };
+}
+async function categoryName(id) {
+  if (!id) return '—';
+  if (categoryCache.has(id)) return categoryCache.get(id);
+  const j = await rest(`https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_subtree?category_id=${id}`).catch(() => null);
+  const n = j?.categorySubtreeNode;
+  const name = n ? [...(n.categoryTreeNodeAncestors ?? []).map((a) => a.categoryName).reverse(), n.category.categoryName].filter((x) => x !== 'Root' && x !== 'Coins & Paper Money').join(' > ') : id;
+  categoryCache.set(id, name);
+  return name;
+}
+
+const conditionCache = new Map();
+/** The graded-coin condition fields eBay wants in this category: grader, letter grade, numeric grade, cert #. */
+async function conditionXml(categoryId, coin) {
+  if (!conditionCache.has(categoryId)) {
+    const j = await rest(`https://api.ebay.com/sell/metadata/v1/marketplace/EBAY_US/get_item_condition_policies?filter=categoryIds:{${categoryId}}`).catch(() => null);
+    conditionCache.set(categoryId, j?.itemConditionPolicies?.[0] ?? null);
+  }
+  const policy = conditionCache.get(categoryId);
+  const graded = policy?.itemConditions?.find((c) => c.conditionId === '2750');
+  if (!graded || !GRADER[coin.gradingCompany]) return '';   // bullion categories / ungraded: no condition
+  const grade = String(coin.grade ?? '').replace(/\s/g, '').toUpperCase();
+  const num = /^[A-Z]+(\d{1,2})/.exec(grade)?.[1];
+  const numDescriptor = graded.conditionDescriptors?.find((d) => d.conditionDescriptorId === '4');
+  const numValue = numDescriptor?.conditionDescriptorValues?.find((v) => v.conditionDescriptorValueName === String(Number(num)))?.conditionDescriptorValueId;
+  const letter = LETTER.find(([re]) => re.test(grade))?.[1];
+  const d = (name, value, extra = '') => `<ConditionDescriptor><Name>${name}</Name>${value ? `<Value>${value}</Value>` : ''}${extra}</ConditionDescriptor>`;
+  return `<ConditionID>2750</ConditionID><ConditionDescriptors>${d(1, GRADER[coin.gradingCompany])}${letter ? d(3, letter) : ''}${numValue ? d(4, numValue) : ''}${
+    hasCert(coin.gradenumber) ? d(5, '', `<AdditionalInfo>${esc(String(coin.gradenumber).replace(/_\d{1,2}$/, ''))}</AdditionalInfo>`) : ''}</ConditionDescriptors>`;
+}
+
+function specifics(coin) {
+  const { dateShown, date } = datesOf(coin.name);
+  const mint = /-(\w+)$/.exec(dateShown)?.[1];
+  const grade = String(coin.grade ?? '').replace(/\s*CAC$/, '');
+  const proof = /^(PR|PF|SP)/.test(grade.toUpperCase());
+  const s = {
+    Certification: coin.gradingCompany === 'CACG' ? 'CAC' : coin.gradingCompany !== 'Ungraded' ? coin.gradingCompany : null,
+    Grade: /^([A-Z]+)(\d{1,2}\+?)/.test(grade) ? grade.replace(/^([A-Z]+)(\d{1,2}\+?).*/, '$1 $2') : null,
+    Year: date && !date.startsWith('-') ? date : null,
+    'Mint Location': MINT[mint] ?? (date && Number(date) < 1980 && coin.category !== 'Vintage Ingot' ? 'Philadelphia' : null),
+    Composition: COMPOSITION[coin.category] ?? null,
+    Denomination: denominationOf(coin.name) || null,
+    'Strike Type': proof ? 'Proof' : 'Business',
+    'Circulated/Uncirculated': /^(MS|PR|PF|SP)/.test(grade.toUpperCase()) ? 'Uncirculated' : 'Circulated',
+    'Country of Origin': /australia|philippines|canada|mexico|britain/i.test(coin.name) ? null : 'United States',
+  };
+  return Object.entries(s).filter(([, v]) => v).map(([n, v]) => `<NameValueList><Name>${esc(n)}</Name><Value>${esc(v)}</Value></NameValueList>`).join('');
+}
+
+const shippingXml = (sitePrice) => {
+  const s = shippingFor(sitePrice);
+  return `<ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority>`
+    + `<ShippingService>${s.service}</ShippingService><ShippingServiceCost currencyID="USD">0.0</ShippingServiceCost><FreeShipping>true</FreeShipping>`
+    + `</ShippingServiceOptions></ShippingDetails>`;
+};
+
+async function newItemXml(coin) {
+  const cat = await categoryFor(coin);
+  const photos = [coin.image, ...(coin.imagesGallery ?? [])].map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
+    .filter((u, i, all) => all.indexOf(u) === i).slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
+  const caption = coin.image?.caption ? ` - ${coin.image.caption}` : '';
+  const description = `<div>${esc(coin.name)}${esc(caption)}</div><div><br></div><div>${STANDARD_TEXT}</div>`;
+  const xml = `<Item><Title>${esc(coin.name.slice(0, 80))}</Title>`
+    + `<Description><![CDATA[${description}]]></Description>`
+    + `<PrimaryCategory><CategoryID>${cat.id ?? ''}</CategoryID></PrimaryCategory>`
+    + `<Storefront><StoreCategoryID>1</StoreCategoryID></Storefront>`
+    + `<StartPrice currencyID="USD">${ebayPrice(coin.price)}</StartPrice><Quantity>1</Quantity>`
+    + `<ListingType>FixedPriceItem</ListingType><ListingDuration>GTC</ListingDuration>`
+    + `<Country>US</Country><Currency>USD</Currency><Location>Lancaster, Pennsylvania</Location><PostalCode>17602</PostalCode>`
+    + `<DispatchTimeMax>2</DispatchTimeMax>`
+    + (cat.id ? await conditionXml(cat.id, coin) : '')
+    + `<ItemSpecifics>${specifics(coin)}</ItemSpecifics>`
+    + `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`
+    + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy>`
+    + shippingXml(coin.price)
+    + `<BestOfferDetails><BestOfferEnabled>false</BestOfferEnabled></BestOfferDetails>`
+    + `<InventoryTrackingMethod>ItemID</InventoryTrackingMethod>`
+    + `</Item>`;
+  return { xml, cat, photos: photos.length };
+}
+
+const feesOf = (xml) => tags(xml, 'Fee').map((f) => ({ name: tag(f, 'Name'), amount: Number(tag(f, 'Fee')) })).filter((f) => f.amount > 0);
+
+// ---------------------------------------------------------------------------
+// Ledger (Sanity doc "ebay-ledger"): siteId -> { itemId, price, ship, title, sentAt }
+// ---------------------------------------------------------------------------
+
+async function loadLedger(client) {
+  const doc = await client.getDocument(LEDGER_ID);
+  return doc?.entries ? JSON.parse(doc.entries) : {};
+}
+async function saveLedger(client, ledger) {
+  await client.createOrReplace({
+    _id: LEDGER_ID, _type: 'ebayLedger',
+    note: 'What scripts/engine/ebay-sync.js has put on eBay. Do not edit by hand.',
+    entries: JSON.stringify(ledger),
+  });
+}
+
+// ---------------------------------------------------------------------------
+
+const money = (n) => `$${Number(n).toLocaleString()}`;
+
+async function main() {
+  const { SANITY_WRITE_TOKEN } = process.env;
+  if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from engine/.env');
+  const client = createClient({ projectId: PROJECT, dataset: 'production', apiVersion: '2024-01-01', token: SANITY_WRITE_TOKEN, useCdn: false });
+
+  const [coins, ledger, live] = await Promise.all([
+    client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]
+      {_id, name, sold, price, grade, gradenumber, gradingCompany, category, notOnEbay, ebayCategoryId, image, imagesGallery}`),
+    loadLedger(client),
+    liveListings(),
+  ]);
+  const wanted = coins.filter((c) => !c.sold && !c.notOnEbay && c.price > 0);
+  const liveById = new Map(live.map((l) => [l.id, l]));
+
+  // Match eBay listings to coins: the ledger first, then cert #, then exact title.
+  const claimed = new Set(Object.values(ledger).map((e) => e.itemId));
+  const byCert = new Map(live.filter((l) => l.cert).map((l) => [certKey(l.cert), l]));
+  const byTitle = new Map(live.map((l) => [nameKey(l.title), l]));
+  const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], unchanged: [] };
+  for (const c of wanted) {
+    const target = { price: ebayPrice(c.price), ship: shippingFor(c.price) };
+    const e = ledger[c._id];
+    if (e) {
+      const l = liveById.get(e.itemId);
+      if (!l) { const info = await itemInfo(e.itemId); (info.sold > 0 ? plan.soldOnEbay : plan.add).push({ coin: c, target, item: info }); continue; }
+      if (l.sold > 0) { plan.soldOnEbay.push({ coin: c, item: l }); continue; }
+      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer) plan.revise.push({ coin: c, target, item: l });
+      else plan.unchanged.push({ coin: c, item: l });
+      continue;
+    }
+    const match = (hasCert(c.gradenumber) && byCert.get(certKey(c.gradenumber))) || byTitle.get(nameKey(c.name));
+    if (match && !claimed.has(match.id)) { claimed.add(match.id); plan.adopt.push({ coin: c, target, item: match, how: 'cert/title' }); continue; }
+    plan.add.push({ coin: c, target });
+  }
+  // Second pass: eBay titles Tony wrote differently ("…Carson City", "#213 Serial") — same year + grade and most
+  // words shared counts as the same coin. Listing it again would make a duplicate.
+  const words = (s) => new Set(unesc(s).toLowerCase().replace(/[^a-z0-9$#.+/ ]/g, ' ').split(/\s+/).filter((w) => w.length > 1));
+  for (const l of live.filter((x) => !claimed.has(x.id))) {
+    const lw = words(l.title);
+    let best = null, bestScore = 0;
+    for (const p of plan.add) {
+      const cw = words(p.coin.name);
+      const shared = [...cw].filter((w) => lw.has(w)).length;
+      const score = shared / Math.min(cw.size, lw.size);
+      const year = datesOf(p.coin.name).date;
+      const sameYear = !year || lw.has(year) || [...lw].some((w) => w.startsWith(year));
+      if (sameYear && score > bestScore) { best = p; bestScore = score; }
+    }
+    if (best && bestScore >= 0.6) {
+      plan.add.splice(plan.add.indexOf(best), 1);
+      claimed.add(l.id);
+      plan.adopt.push({ ...best, item: l, how: `similar title (${Math.round(bestScore * 100)}% of words)` });
+    }
+  }
+  const wantedIds = new Set(wanted.map((c) => c._id));
+  for (const [siteId, e] of Object.entries(ledger)) {
+    if (wantedIds.has(siteId)) continue;
+    const l = liveById.get(e.itemId);
+    if (!l) continue;   // already gone from eBay
+    const coin = coins.find((c) => c._id === siteId) ?? { _id: siteId, name: e.title };
+    (l.sold > 0 ? plan.soldOnEbay : plan.end).push({ coin, item: l, why: coin.sold ? 'sold on the website' : coin.notOnEbay ? '"Keep off eBay" ticked' : 'no longer on the website' });
+  }
+  const unmatched = live.filter((l) => !claimed.has(l.id));
+
+  // Preview: let eBay validate each new listing (lists nothing).
+  for (const p of plan.add) {
+    const built = await newItemXml(p.coin);
+    p.cat = built.cat; p.catName = await categoryName(built.cat.id); p.photos = built.photos; p.xml = built.xml;
+    if (!SEND) {
+      const v = await trading('VerifyAddFixedPriceItem', built.xml);
+      p.verify = { ok: v.ok, errors: v.errors.filter((e) => e.severity === 'Error').map((e) => e.message), warnings: v.errors.filter((e) => e.severity === 'Warning').map((e) => e.message), fees: feesOf(v.xml) };
+    }
+  }
+
+  // Report.
+  const line = (p) => `${money(p.coin.price).padStart(8)} site → ${money(p.target.price).padStart(8)} eBay, ${p.target.ship.label}  ${p.coin.name}`;
+  console.log(`eBay sync: ${SEND ? 'SENDING' : 'PREVIEW, nothing is changed'}\n`);
+  console.log(`  Live on eBay now: ${live.length}   Website coins for eBay: ${wanted.length}\n`);
+  console.log(`+ New listings: ${plan.add.length}`);
+  for (const p of plan.add) {
+    console.log(`  ${line(p)}`);
+    console.log(`        category: ${p.catName} (${p.cat.how})  ·  ${p.photos} photos`);
+    if (p.verify) {
+      if (p.verify.errors.length) console.log(`        ✗ eBay would refuse it: ${p.verify.errors.join(' | ')}`);
+      else console.log(`        ✓ eBay accepts it${p.verify.fees.length ? ` (listing fees: ${p.verify.fees.map((f) => `${f.name} $${f.amount}`).join(', ')})` : ', no listing fee'}`);
+      for (const w of p.verify.warnings) console.log(`        ⚠ ${w}`);
+    }
+  }
+  console.log(`\n⇄ Already on eBay, taken over by the sync (price/shipping/offers set; your title, photos, description kept): ${plan.adopt.length}`);
+  for (const p of plan.adopt) console.log(`  ${line(p)}   (now ${money(p.item.price)}${p.item.bestOffer ? ', offers on' : ''}${p.how !== 'cert/title' ? `; matched by ${p.how}: eBay title "${p.item.title}"` : ''})`);
+  console.log(`\n~ Price or shipping to update: ${plan.revise.length}`);
+  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})`);
+  console.log(`\n− To end on eBay: ${plan.end.length}`);
+  for (const p of plan.end) console.log(`  ${p.coin.name}  (${p.why})`);
+  if (plan.soldOnEbay.length) {
+    console.log(`\n$ SOLD ON EBAY — mark these sold on the website: ${plan.soldOnEbay.length}`);
+    for (const p of plan.soldOnEbay) console.log(`  ${p.coin.name}`);
+  }
+  if (unmatched.length) {
+    console.log(`\n? On eBay but not matched to a website coin (left alone): ${unmatched.length}`);
+    for (const l of unmatched) console.log(`  ${money(l.price)}  ${l.title}`);
+  }
+  console.log(`\n= Unchanged: ${plan.unchanged.length}`);
+  fs.writeFileSync(OUT_FILE, JSON.stringify({ ...plan, add: plan.add.map(({ xml, ...p }) => p) }, null, 2));
+
+  if (plan.end.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) throw new Error(`This would end ${plan.end.length} listings at once. If that's right, run again with --allow-mass-removal.`);
+  if (!SEND) { console.log('\nNothing was changed. To do it: 10_Send-To-eBay (node ebay-sync.js --send).'); return; }
+
+  // Send.
+  const now = new Date().toISOString();
+  const failed = [];
+  const reviseXml = (itemId, p) => `<Item><ItemID>${itemId}</ItemID><StartPrice currencyID="USD">${p.target.price}</StartPrice>`
+    + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>false</BestOfferEnabled></BestOfferDetails>`
+    + `<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption></ReturnPolicy></Item>`;
+  for (const p of [...plan.adopt, ...plan.revise]) {
+    const r = await trading('ReviseFixedPriceItem', reviseXml(p.item.id, p));
+    if (r.ok) ledger[p.coin._id] = { itemId: p.item.id, price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now };
+    else failed.push(`${p.coin.name}: ${r.errors.map((e) => e.message).join('; ')}`);
+  }
+  for (const p of plan.add) {
+    const r = await trading('AddFixedPriceItem', p.xml);
+    if (r.ok) ledger[p.coin._id] = { itemId: tag(r.xml, 'ItemID'), price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now };
+    else failed.push(`${p.coin.name}: ${r.errors.filter((e) => e.severity === 'Error').map((e) => e.message).join('; ')}`);
+  }
+  for (const p of plan.end) {
+    const r = await trading('EndFixedPriceItem', `<ItemID>${p.item.id}</ItemID><EndingReason>NotAvailable</EndingReason>`);
+    if (r.ok || /already been closed/i.test(r.errors.map((e) => e.message).join(' '))) delete ledger[p.coin._id];
+    else failed.push(`${p.coin.name}: ${r.errors.map((e) => e.message).join('; ')}`);
+  }
+  await saveLedger(client, ledger);
+  console.log(`\nDone: ${plan.add.length + plan.adopt.length + plan.revise.length + plan.end.length - failed.length} change(s) made.`);
+  if (failed.length) { console.log(`✗ ${failed.length} failed (they'll be tried again next run):`); for (const f of failed) console.log(`  ${f}`); }
+}
+
+main().catch((err) => {
+  console.error(`\n✗ ${err.message}`);
+  process.exitCode = 1;
+});
