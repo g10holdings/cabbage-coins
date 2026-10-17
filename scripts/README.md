@@ -6,7 +6,7 @@ work. You never need to open it (except to edit `coin-designs.js`, below).
 
 | Double-click | What it does |
 |---|---|
-| `1_Preview-Import` | Shows what the CSV import would create. Writes nothing. |
+| `1_Preview-Import` | Shows the listings the import would create from the workbook. Writes nothing. |
 | `2_Run-Import` | Creates the draft listings in Sanity, then fills in PCGS population. |
 | `3_Preview-Photo-Rename` | Shows how the photos in "waiting to post" would be renamed. Changes nothing. |
 | `4_Rename-Photos` | Renames them to `<Folder>-1.jpg`, `-2` … |
@@ -15,36 +15,48 @@ work. You never need to open it (except to edit `coin-designs.js`, below).
 | *(you)* | Finish each draft in the Studio and **Publish**. |
 | `6_Preview-CAC-Marketplace` | Shows what would go to CAC's marketplace: new coins, changes, sold coins to take down. Sends nothing. |
 | `7_Send-To-CAC-Marketplace` | Sends it. Run it after publishing a batch, and after marking coins **Sold**. |
+| `8_Check-Workbook-vs-Website` | Compares the website with the workbook: prices, sold coins, Website flags, grades. Changes nothing. |
 
-The **`Extras`** folder has the occasional ones: `Undo-Import` (deletes the drafts from
-the current CSV) and `Fill-PCGS-Pop` (finishes PCGS population another day).
+The **`Extras`** folder has the occasional ones: `Undo-Import` (deletes the drafts the
+import made) and `Fill-PCGS-Pop` (finishes PCGS population another day).
 
 ---
 
+## The workbook is the source
+
+The tools read **`D:\OneDrive\G10 Holdings LLC\g10HoldingsLLC.xlsx`**, the **inventory**
+sheet only. They **never change it**: they copy the file, read the copy, delete the copy,
+and check that the original's size and save time didn't change. (Save in Excel first;
+they read the last saved version.) The `listingsData` sheet and the CSV are no longer used.
+
+How the inventory columns are read:
+- **inventoryID** = the cert # (Grade Number). A `_2` / `_3` on the end is dropped.
+- **itemDescription** = the listing name. The **date shown** (`1891-CC`, `328 BC`),
+  **date** (`1891`, `-328`), **denomination** (`$1`, `G$10`, `1/2C`) and **grade**
+  (`MS64DMPL CAC`, `PF70 UC`) are read out of it.
+- **Certification** = the grading company (`N/A` → Ungraded).
+- **CAC** = Y adds "CAC" to the grade (and so does a CACG holder).
+- **PCGS Num** = the PCGS #. `97199/7199` means 97199 is the designation # (DMPL) and
+  7199 the catalog # the site uses. A designation # written alone (e.g. `97129` on a
+  DMPL coin) is noticed and flagged in the preview.
+- **listPrice** = the website price.
+- **Website** = `Y` means it belongs on the website. A `Y` coin that's **Active** with no
+  listing yet is what the import creates. `N/A` is never listed.
+- **Category** isn't in the workbook, so it's worked out: ingots → Vintage Ingot,
+  palladium/platinum → Other, gold denominations or "Gold" → Gold, cents and
+  nickels → Copper/Bronze, everything else → Silver. Check it in the preview.
+
 ## Your monthly routine
 
-**Before step 1: update the CSV.** Export this month's coins from Excel over this file:
-
-`D:\OneDrive\G10 Holdings LLC\listings-to-import.csv`
-
-The name is deliberately generic — it's always "the batch I'm importing right now",
-whatever the month or the count. Keep the name as-is and the tools just work; if you
-want a dated record of a batch, *Save As* a copy alongside it (e.g.
-`archive\18Listings_03Aug26.csv`) — the tool ignores anything but the file above.
-
-Keep the **same column headers** — spelling matters, order doesn't. If a header is
-renamed, misspelled, or deleted, the tool **stops before writing anything** and
-tells you which column is wrong.
-
-Two rules that matter:
-- **`date`** = the plain year (e.g. `1900`).
-- **`date shown`** = the year *with* the mint mark (e.g. `1900-S`). This is the one
-  that shows on the website as "Issue".
+**Before step 1:** mark each coin you're listing **Website = Y** in the inventory sheet,
+check its listPrice, and **save** the workbook.
 
 **1. Preview the import.** Double-click **`1_Preview-Import`**.
-It prints every coin with its alt text and writes **nothing** to Sanity.
-Read it over — pay attention to any ⚠ warnings at the bottom. If something looks
-off, fix the CSV and preview again.
+It prints every coin it would create, with what it worked out (grade, dates,
+denomination, PCGS #, category, alt text), and writes **nothing** to Sanity.
+Read the ⚠ warnings at the bottom: they name anything it couldn't work out. If something
+is wrong, fix the row in the workbook (or tell Claude, if a rule is wrong), save, and
+preview again.
 
 **2. Import.** Double-click **`2_Run-Import`**.
 It creates the drafts in Sanity (with alt text), then fills in PCGS population. Safe
@@ -93,18 +105,20 @@ npm run dev
 
 ## What gets filled in automatically
 
-| From the CSV | Sanity field |
+| From the workbook (inventory) | Sanity field |
 |---|---|
-| name | Name |
-| date | Date (plain year) |
-| date shown | Date Shown (with mint mark — the "Issue" line on the site) |
-| denomination | Denomination |
-| Grade | Grade |
-| grade number | Grade Number |
-| Price | Price |
-| Grading Company | Grading Company (blank / `N/A` → `Ungraded`) |
-| PCGS Catalog Number | PCGS Catalog Number |
-| Category | Category |
+| itemDescription | Name |
+| itemDescription (year) | Date (plain year; `-328` for 328 BC) |
+| itemDescription (first word) | Date Shown (with mint mark — the "Issue" line on the site) |
+| itemDescription | Denomination |
+| itemDescription + CAC | Grade |
+| inventoryID (without `_2`) | Grade Number |
+| listPrice | Price |
+| Certification | Grading Company (`N/A` → `Ungraded`) |
+| PCGS Num (catalog #, the part after `/`) | PCGS Catalog Number |
+| *(worked out)* | Category |
+
+(A CSV with the old column headers still works: `node import-listings.js "D:\path\to\file.csv"`.)
 
 Also automatic:
 - **CAC** checkbox — ticked when the Grade contains "CAC".
@@ -140,15 +154,15 @@ nothing to write by hand.
 
 ## If you make a mistake
 
-Imported a batch, then noticed a CSV error?
+Imported a batch, then noticed an error in the workbook?
 
-1. Double-click **`Extras\Undo-Import`** — it lists the drafts matching the current
-   CSV and asks you to confirm before removing them.
-2. Fix the CSV, then double-click **`2_Run-Import`** again.
+1. Double-click **`Extras\Undo-Import`** — it lists the drafts it made for the
+   Website = Y coins and asks you to confirm before removing them.
+2. Fix the rows in the workbook, save, then double-click **`2_Run-Import`** again.
 
 Safety: undo only removes **drafts**. Anything you've already **published is never
-touched**. (One catch: if you fixed a typo in a coin's *name*, undo won't recognize
-the old draft — remove that one by hand in the Studio.)
+touched**. (One catch: undo finds a draft by its name, so do the undo *before* fixing
+a coin's itemDescription — or remove that one draft by hand in the Studio.)
 
 ---
 
@@ -159,9 +173,9 @@ the old draft — remove that one by hand in the Studio.)
 - **Cost:** the import and the photo rename are free. Only step 5 (captions) uses a
   paid service, about 10 cents per coin from your Anthropic credits. The import itself
   has no AI in it: alt text comes from the lookup table.
-- **A different CSV:** the default path above is only a default — you can point the
-  tool at any file: `node import-listings.js "D:\path\to\file.csv"`. Handy for
-  re-running an archived batch.
+- **A CSV instead of the workbook:** `node import-listings.js "D:\path\to\file.csv"`
+  (old column headers). Handy for re-running an archived batch.
+- **The workbook moved?** Put `WORKBOOK_PATH=D:\new\path\file.xlsx` in `engine\.env`.
 
 ### Command-line equivalents (if you prefer typing)
 

@@ -1,7 +1,10 @@
 /**
- * Bulk-create DRAFT coin listings in Sanity from a CSV.
+ * Bulk-create DRAFT coin listings in Sanity from the workbook (or a CSV).
  *
- * Reads a CSV, maps each row to a `listing` document, fills in the image
+ * With no file given, it reads the business workbook's "inventory" sheet, READ-ONLY (workbook.js),
+ * and takes every coin marked Website = Y that is Active and has no listing yet; grade, dates,
+ * denomination and category are worked out from the row (check them in the preview). Given a CSV
+ * path, it reads that instead, as before. Either way it maps each row to a `listing` document, fills in the image
  * Alternative Text from the known-design table, and writes each doc as a Sanity
  * draft (so it lands unpublished in the Studio for you to add photos +
  * description).
@@ -31,6 +34,7 @@ import dotenv from 'dotenv';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@sanity/client';
 import { lookupDesign } from './coin-designs.js';
+import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './workbook.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -44,8 +48,8 @@ const DELETE = args.includes('--delete');
 const YES = args.includes('--yes');
 const limitIdx = args.indexOf('--limit');
 const LIMIT = limitIdx !== -1 ? parseInt(args[limitIdx + 1], 10) : Infinity;
-const DEFAULT_CSV = 'D:/OneDrive/G10 Holdings LLC/listings-to-import.csv';
-const csvPath = args.find((a) => !a.startsWith('--') && a !== String(LIMIT)) || DEFAULT_CSV;
+// No path = read the workbook's inventory sheet (since 2026-10-17); a CSV path still works.
+const csvPath = args.find((a) => !a.startsWith('--') && a !== String(LIMIT)) || null;
 
 const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'la880an7';
 const DATASET = process.env.SANITY_DATASET || 'production';
@@ -299,18 +303,55 @@ async function runDelete(docs) {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
-async function main() {
-  if (!fs.existsSync(csvPath)) {
-    console.error(`CSV not found: ${csvPath}`);
-    process.exit(1);
-  }
+/**
+ * The workbook's "inventory" rows that should become listings: Website = Y, Active, and no listing
+ * (published or draft) with that cert # yet (or that name, for items with no cert). Returned in the
+ * same shape as CSV rows, so everything below works the same. The workbook is only ever read.
+ */
+async function rowsFromWorkbook() {
+  const { rows: inv, file, savedAt } = readInventory();
+  // --delete (Undo-Import) needs the coins whose only listing is the draft it made, so it skips drafts here.
+  const listings = await makeClient().fetch(`*[_type == "listing"${DELETE ? ' && !(_id in path("drafts.**"))' : ''}]{name, gradenumber}`);
+  const keys = new Set(listings.filter((l) => hasCert(l.gradenumber)).map((l) => certKey(l.gradenumber)));
+  const names = new Set(listings.map((l) => nameKey(l.name)));
+  const due = inv.map(listingFromRow).filter((w) => w.website === 'Y' && w.status === 'Active' && w.key && !keys.has(w.key) && !names.has(nameKey(w.name)));
+  console.log(`Workbook: ${file} (saved ${savedAt.toLocaleString()}; opened read-only)`);
+  console.log(`${due.length} coin(s) marked Website = Y with no listing yet.\n`);
+  for (const w of due) for (const f of w.flags) warn(`${w.name}: ${f}`);
+  return due.map((w) => ({
+    'grade number': w.cert === 'N/A' ? '' : w.cert,
+    name: w.name,
+    'date shown': w.dateShown,
+    date: w.date,
+    denomination: w.denomination,
+    Grade: w.grade,
+    Price: w.price == null ? '' : String(w.price),
+    'Grading Company': w.gradingCompany,
+    'PCGS Catalog Number': w.pcgsCatalogNumber == null ? '' : String(w.pcgsCatalogNumber),
+    Category: w.category,
+  }));
+}
 
-  const raw = fs.readFileSync(csvPath, 'utf8');
-  let rows = parse(raw, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+async function main() {
+  let rows;
+  if (csvPath) {
+    if (!fs.existsSync(csvPath)) {
+      console.error(`CSV not found: ${csvPath}`);
+      process.exit(1);
+    }
+    const raw = fs.readFileSync(csvPath, 'utf8');
+    rows = parse(raw, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    console.log(`Read ${rows.length} row(s) from ${csvPath}`);
+  } else {
+    rows = await rowsFromWorkbook();
+    if (!rows.length) {
+      console.log('Nothing to create.');
+      return;
+    }
+  }
   checkHeaders(rows); // stops here if a column is missing or renamed
   if (Number.isFinite(LIMIT)) rows = rows.slice(0, LIMIT);
 
-  console.log(`Read ${rows.length} row(s) from ${csvPath}`);
   console.log(`Project ${PROJECT_ID} / dataset ${DATASET}${DRY_RUN ? '  [DRY RUN]' : ''}\n`);
 
   // Build docs.
@@ -358,7 +399,7 @@ async function main() {
   for (const d of docs) {
     console.log(`  • ${d.name}`);
     console.log(`      id=${d._id}  price=${d.price ?? '—'}  grade=${d.grade ?? '—'}  cac=${d.cac}`);
-    console.log(`      date=${d.date ?? '—'}  dateshown=${d.dateshown ?? '—'}  grading=${d.gradingCompany}  cat=${d.category ?? '—'}`);
+    console.log(`      date=${d.date ?? '—'}  dateshown=${d.dateshown ?? '—'}  denomination=${d.denomination ?? '—'}  grading=${d.gradingCompany}  pcgs#=${d.pcgsCatalogNumber ?? '—'}  cat=${d.category ?? '—'}`);
     console.log(`      alt=${d.image?.alt ? `"${d.image.alt}"` : '(none)'}`);
   }
   console.log('');
