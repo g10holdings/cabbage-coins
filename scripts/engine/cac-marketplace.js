@@ -4,14 +4,13 @@
  * One run = one POST /marketplace with the whole feed:
  *   - every unsold graded listing (new ones get added, changed ones updated: CAC matches on sellerId,
  *     which is the Sanity listing id, so sending a coin again never duplicates it);
- *   - every coin sent before that has since sold, been deleted or stopped qualifying, sent with
- *     quantity 0 to take it down.
+ *   - nothing else: the feed REPLACES what's on CAC, so a coin that sold, was deleted or stopped
+ *     qualifying is taken down simply by leaving it out.
  *
- * CAC's docs have no delete call, only this POST, whose answer counts "inserted / updated / deleted".
- * CAC says sold items can be deleted; how the API does it isn't documented, so removals go as
- * quantity 0 inside the full feed (that covers both "quantity 0 deletes" and "the feed replaces
- * everything"), and the answer is checked: a removal CAC doesn't confirm stays on the list, is sent
- * again next run, and is reported so it can be deleted by hand on CAC's site.
+ * Learned on the first sale (2026-10-17): CAC rejects quantity 0 ("`quantity` can't be less than 1"),
+ * yet both sold coins vanished from the marketplace, and the answer counted them under "deleted"
+ * (only 1 of the 2, so that count isn't exact). The ledger still lists what was sent, so take-downs
+ * show in the preview and a run can refuse to wipe many coins at once.
  *
  * What has been sent is remembered in Sanity (document "cac-marketplace-ledger"), not on this
  * computer, so a sold coin can still be taken down after its listing is deleted.
@@ -107,7 +106,7 @@ async function buildFeed(client) {
   return { items, skipped };
 }
 
-/** What's on CAC, as far as we know: sellerId -> {item (as last sent), sentAt, removing?}. */
+/** What's on CAC, as far as we know: sellerId -> {item (as last sent), sentAt}. */
 async function loadLedger(client) {
   const doc = await client.getDocument(LEDGER_ID);
   return doc?.entries ? JSON.parse(doc.entries) : {};
@@ -131,10 +130,10 @@ async function main() {
 
   const [{ items, skipped }, ledger] = await Promise.all([buildFeed(client), loadLedger(client)]);
   const inFeed = new Set(items.map((i) => i.sellerId));
-  const added = items.filter((i) => !ledger[i.sellerId] || ledger[i.sellerId].removing);
-  const changed = items.filter((i) => ledger[i.sellerId] && !ledger[i.sellerId].removing && !same(ledger[i.sellerId].item, i));
-  const removals = Object.entries(ledger).filter(([id]) => !inFeed.has(id)).map(([, e]) => ({ ...e.item, quantity: 0 }));
-  const feed = [...items, ...removals];
+  const added = items.filter((i) => !ledger[i.sellerId]);
+  const changed = items.filter((i) => ledger[i.sellerId] && !same(ledger[i.sellerId].item, i));
+  const removals = Object.entries(ledger).filter(([id]) => !inFeed.has(id)).map(([, e]) => e.item);
+  const feed = items;   // leaving a coin out is what takes it down
 
   console.log(`CAC marketplace${CAC_ONLY ? ' (CAC coins only)' : ''}: ${SEND ? 'SENDING' : 'PREVIEW, nothing is sent'}\n`);
   console.log(`  On the website and going to CAC:  ${items.length}`);
@@ -147,7 +146,7 @@ async function main() {
     const what = Object.keys(i).filter((k) => !same(i[k], was[k])).map((k) => (k === 'price' ? `price ${money(was.price)} → ${money(i.price)}` : k));
     console.log(`  ~ ${money(i.price).padStart(8)}  ${i.title}  (${what.join(', ')})`);
   }
-  for (const i of removals) console.log(`  − ${money(i.price).padStart(8)}  ${i.title}${ledger[i.sellerId].removing ? '  (removal not confirmed by CAC last time; trying again)' : ''}`);
+  for (const i of removals) console.log(`  − ${money(i.price).padStart(8)}  ${i.title}`);
   if (skipped.length) {
     console.log(`\n  Not sent (${skipped.length}):`);
     for (const s of skipped) console.log(`    - ${s.name}: ${s.why}`);
@@ -161,7 +160,8 @@ async function main() {
     console.log(`\nNothing was sent. To send it, run: node cac-marketplace.js --send${CAC_ONLY ? ' --cac-only' : ''}`);
     return;
   }
-  if (!feed.length) { console.log('\nNothing to send.'); return; }
+  // An empty feed would take every coin off CAC.
+  if (!feed.length) throw new Error('No coins to send, which would take everything off CAC. Nothing was sent.');
 
   const res = await fetch(API, {
     method: 'POST',
@@ -187,22 +187,15 @@ async function main() {
   console.log(`\nCAC: ${r.inserted ?? '?'} added, ${r.updated ?? '?'} updated, ${r.deleted ?? '?'} deleted, ${r.errors ?? errorItems.length} with errors.`);
   for (const [id, err] of failed) console.log(`  ✗ ${feed.find((f) => f.sellerId === id)?.title ?? id}: ${err}`);
 
-  // Removals count as done only when CAC's own "deleted" count covers them all.
-  const removedOk = removals.filter((i) => !failed.has(i.sellerId));
-  const removalsConfirmed = removedOk.length > 0 && Number(r.deleted) >= removedOk.length;
   const now = new Date().toISOString();
   for (const i of items) if (!failed.has(i.sellerId)) ledger[i.sellerId] = { item: i, sentAt: now };
-  for (const i of removals) {
-    if (removalsConfirmed && !failed.has(i.sellerId)) delete ledger[i.sellerId];
-    else ledger[i.sellerId] = { ...ledger[i.sellerId], removing: true, lastTried: now };
-  }
+  for (const i of removals) delete ledger[i.sellerId];
   await saveLedger(client, ledger);
 
-  const pending = Object.values(ledger).filter((e) => e.removing);
-  if (pending.length) {
-    console.log(`\n⚠ CAC didn't confirm taking down ${pending.length} coin(s). They'll be sent again next run, but`);
-    console.log('  please check them on CAC\'s site and delete them there by hand if they are still showing:');
-    for (const e of pending) console.log(`    - ${e.item.title}`);
+  if (removals.length && !(Number(r.deleted) > 0)) {
+    console.log(`\n⚠ CAC reported 0 deleted, but ${removals.length} coin(s) were left out to take them down. Please check`);
+    console.log('  that these are gone from CAC\'s marketplace, and delete them there by hand if not:');
+    for (const i of removals) console.log(`    - ${i.title}`);
   }
   console.log('\nDone. CAC\'s full answer is in engine\\cac-marketplace-last-response.json.');
 }
