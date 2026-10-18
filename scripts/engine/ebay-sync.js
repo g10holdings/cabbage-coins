@@ -33,11 +33,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
+import { slabsFirst } from './photo-order.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -197,31 +197,11 @@ const imageUrl = (ref) => {
   return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
 };
 
-// eBay buyers expect the slab shots first, then the close-ups (Tony, 2026-10-18); the website shows close-ups
-// first. Tony's close-ups carry the gold Cabbage Coins logo bottom-left and the slab shots don't: the logo's gold
-// head averages about rgb(97,82,62) on every close-up, while slab shots read black or grey there (all 77 coins
-// checked, 2026-10-18). Sanity crops that spot and shrinks it to one pixel; a 1×1 PNG is easy to read by hand.
-async function isCloseUp(url) {
-  const [, w, h] = /-(\d+)x(\d+)\.\w+$/.exec(url) ?? [];
-  if (!w || w !== h) return false;
-  const rect = [115, 905, 45, 70].map((n) => Math.round((n * Number(w)) / 1044)).join(',');
-  const res = await fetch(`${url}?rect=${rect}&w=1&h=1&fm=png`);
-  if (!res.ok) return false;
-  const png = Buffer.from(await res.arrayBuffer());
-  const idat = [];
-  for (let o = 8; o + 8 <= png.length; o += 12 + png.readUInt32BE(o)) {
-    if (png.toString('ascii', o + 4, o + 8) === 'IDAT') idat.push(png.subarray(o + 8, o + 8 + png.readUInt32BE(o)));
-  }
-  const [, r, g, b] = zlib.inflateSync(Buffer.concat(idat));   // byte 0 is the row filter, a no-op on a lone pixel
-  return Math.abs(r - 97) < 15 && Math.abs(g - 82) < 15 && Math.abs(b - 62) < 15;
-}
-
-/** The coin's eBay photos: everything without the logo (slab shots) first, then the close-ups, then the promo card. */
+/** The coin's eBay photos: slab shots first, then the close-ups (photo-order.js), then the promo card. */
 async function photosFor(coin) {
   const urls = [coin.image, ...(coin.imagesGallery ?? [])].map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
     .filter((u, i, all) => all.indexOf(u) === i);
-  const close = await Promise.all(urls.map(isCloseUp));
-  return [...urls.filter((u, i) => !close[i]), ...urls.filter((u, i) => close[i])].slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
+  return (await slabsFirst(urls)).slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
 }
 const pictureXml = (photos) => `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`;
 

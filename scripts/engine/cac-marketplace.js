@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import slugify from 'slugify';
+import { slabsFirst } from './photo-order.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -84,9 +85,10 @@ async function buildFeed(client) {
       !l.image?.asset?._ref ? 'no main photo' : null;
     if (why) { skipped.push({ name: l.name, why }); continue; }
 
-    const photos = [l.image, ...(l.imagesGallery ?? [])]
+    // Slab shots first, then the close-ups (photo-order.js); CAC takes 4.
+    const photos = (await slabsFirst([l.image, ...(l.imagesGallery ?? [])]
       .map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
-      .filter((u, i, all) => all.indexOf(u) === i).slice(0, 4);
+      .filter((u, i, all) => all.indexOf(u) === i))).slice(0, 4);
     items.push({
       sellerId: l._id,
       gradingService: service,
