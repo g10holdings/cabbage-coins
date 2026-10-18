@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './workbook.js';
 import { photoFolders, findPhotos, splitCert } from './listing-photos.js';
 import { settings, sanity, ENGINE } from './settings.js';
@@ -154,7 +155,7 @@ async function main() {
 }
 
 /** The one thing to do next for a coin, naming the launcher; null when it's all done. */
-function nextStep(c) {
+export function nextStep(c) {
   const { w, photos } = c;
   if (c.state === 'ready') {
     if (photos.where === 'inProgress' && !photos.ready) return 'Make its photos: 1_Prep-Photos';
@@ -269,7 +270,10 @@ ${ignored.length ? `<details><summary>Not checked on purpose (${ignored.length})
 </main></body></html>`;
 }
 
-main().catch((err) => {
-  console.error(`\n✗ ${err.message}`);
-  process.exitCode = 1;
-});
+// Run only when started directly (tests import nextStep without running anything).
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(`\n✗ ${err.message}`);
+    process.exitCode = 1;
+  });
+}

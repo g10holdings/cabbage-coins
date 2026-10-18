@@ -22,7 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import dotenv from 'dotenv';
 import { readInventory, listingFromRow } from './workbook.js';
 import { PHOTO_ROOT, fileBase, splitCert } from './listing-photos.js';
@@ -48,7 +48,7 @@ const mintOf = (s) => (/(?:^|\D)(?:1[5-9]\d\d|20\d\d)-?([A-Z]{1,3})(?=[-_ ]|$)/.
 const gradeOf = (s) => (/(?:^|[^A-Za-z])(?:MS|PR|PF|SP|AU|XF|EF|VF|VG|AG|FR)[-_ ]?(\d{1,2})(?!\d)/i.exec(s) ?? [])[1] ?? null;
 
 /** What disagrees between Tony's folder name and the workbook row: [blocking problems, notes]. */
-function compare(typed, w) {
+export function compare(typed, w) {
   const block = [], notes = [];
   const ty = yearOf(typed), wy = yearOf(w.dateShown || w.name);
   if (ty && wy && ty !== wy) block.push(`year ${ty}, but the workbook says ${wy}`);
@@ -115,4 +115,7 @@ function main() {
   else console.log('\nPreview only: nothing renamed. (1_Prep-Photos does the renaming.)');
 }
 
-try { main(); } catch (err) { console.error(`\n✗ ${err.message}`); process.exitCode = 1; }
+// Run only when started directly (tests import compare without running anything).
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try { main(); } catch (err) { console.error(`\n✗ ${err.message}`); process.exitCode = 1; }
+}

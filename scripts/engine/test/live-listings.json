@@ -1,0 +1,1892 @@
+{
+ "about": "Workbook rows of live listings (2026-10-18) and what the site shows for them. workbook.js must keep producing these. Fields the rules did not reproduce on that date (data quirks) are left out of \"expect\".",
+ "cases": [
+  {
+   "row": {
+    "inventoryID": "2625432-001",
+    "Type": "US Coins",
+    "itemDescription": "1796 $1 Draped Bust Dollar Small Date Large Letters BB-61, B-4 NGC VF30",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": "40000/6860",
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF30",
+    "dateShown": "1796",
+    "date": "1796",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6860,
+    "pcgsDesignationNumber": 40000
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "6502245-002",
+    "Type": "US Coins",
+    "itemDescription": "1803 50C Draped Bust Half Dollar NGC XF40 CAC",
+    "Certification": "NGC",
+    "CAC": "Y",
+    "PCGS Num": 6066,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40 CAC",
+    "dateShown": "1803",
+    "date": "1803",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6066,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 59465368,
+    "Type": "US Coins",
+    "itemDescription": "1804 1/2C Draped Bust Half Cent PCGS XF45",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 1069,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF45",
+    "dateShown": "1804",
+    "date": "1804",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 1069,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "3573842-007",
+    "Type": "US Coins",
+    "itemDescription": "1806 50C Draped Bust Half Dollar Pointed 6, Stem NGC VF25 CAC",
+    "Certification": "NGC",
+    "CAC": "Y",
+    "PCGS Num": 6071,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF25 CAC",
+    "dateShown": "1806",
+    "date": "1806",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6071,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 65881864,
+    "Type": "US Coins",
+    "itemDescription": "1815/2 50C Capped Bust Half Dollar PCGS XF40",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6108,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40",
+    "dateShown": "1815/2",
+    "date": "1815",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6108,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 61249074,
+    "Type": "US Coins",
+    "itemDescription": "1821 50C Capped Bust Half Dollar O-101a PCGS MS65 San Diego Collection",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": "39576/6128",
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1821",
+    "date": "1821",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6128,
+    "pcgsDesignationNumber": 39576
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 71667956,
+    "Type": "US Coins",
+    "itemDescription": "1825 50C Capped Bust Half Dollar CAC AU50 Witterbrick",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 6142,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "AU50 CAC",
+    "dateShown": "1825",
+    "date": "1825",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6142,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 36671506,
+    "Type": "US Coins",
+    "itemDescription": "1830 50C Capped Bust Half Dollar Small 0 PCGS AU58 (Toned)",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 6156,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "AU58",
+    "dateShown": "1830",
+    "date": "1830",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6156,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 55967506,
+    "Type": "US Coins",
+    "itemDescription": "1831 25C Capped Bust Quarter PCGS MS64+ (B-4, Small Letters)",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": "38983/5348",
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64+",
+    "dateShown": "1831",
+    "date": "1831",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5348,
+    "pcgsDesignationNumber": 38983
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "208230-003",
+    "Type": "US Coins",
+    "itemDescription": "1835 1C Large Cent NGC MS65 BN CAC",
+    "Certification": "NGC",
+    "CAC": "Y",
+    "PCGS Num": 1714,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65 BN CAC",
+    "dateShown": "1835",
+    "date": "1835",
+    "gradingCompany": "NGC",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 1714,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 58313365,
+    "Type": "US Coins",
+    "itemDescription": "1835 25C Capped Bust Quarter PCGS XF40 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5354,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40 CAC",
+    "dateShown": "1835",
+    "date": "1835",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5354,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 50737992,
+    "Type": "US Coins",
+    "itemDescription": "1854 25C Liberty Seated Quarter PCGS MS63 (arrows)",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 5432,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63",
+    "dateShown": "1854",
+    "date": "1854",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5432,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "1714648-003",
+    "Type": "US Coins",
+    "itemDescription": "1854 G$1 Princess Head Gold Dollar Type 2 NGC AU55",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 7531,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "AU55",
+    "dateShown": "1854",
+    "date": "1854",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsCatalogNumber": 7531,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 61249079,
+    "Type": "US Coins",
+    "itemDescription": "1854-O 50C Liberty Seated Half Dollar (with arrows) PCGS MS66",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6280,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66",
+    "dateShown": "1854-O",
+    "date": "1854",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6280,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 56072150,
+    "Type": "US Coins",
+    "itemDescription": "1857 $1 Seated Liberty Dollar PCGS VF25",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6945,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF25",
+    "dateShown": "1857",
+    "date": "1857",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6945,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 57235698,
+    "Type": "US Coins",
+    "itemDescription": "1857-O H10C Liberty Seated Half Dime PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 4366,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1857-O",
+    "date": "1857",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 4366,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 50448967,
+    "Type": "US Coins",
+    "itemDescription": "1862 $1 Liberty Seated Dollar Proof PCGS PR63",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7005,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR63",
+    "dateShown": "1862",
+    "date": "1862",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7005,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "51354567_2",
+    "Type": "US Coins",
+    "itemDescription": "1872 $1 Seated Liberty Dollar PCGS XF45",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6968,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF45",
+    "dateShown": "1872",
+    "date": "1872",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6968,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 45655548,
+    "Type": "US Coins",
+    "itemDescription": "1876 10C Liberty Seated Dime PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 4679,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1876",
+    "date": "1876",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 4679,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 84752640,
+    "Type": "US Coins",
+    "itemDescription": "1876 T$1 US Trade Dollar PCGS MS65 ex: DL Hansen",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7041,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1876",
+    "date": "1876",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7041,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 45723781,
+    "Type": "US Coins",
+    "itemDescription": "1878 25C Seated Liberty Quarter Proof PCGS PR63CAM CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 85579,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR63 CAM CAC",
+    "dateShown": "1878",
+    "date": "1878",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5579,
+    "pcgsDesignationNumber": 85579
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 42087840,
+    "Type": "US Coins",
+    "itemDescription": "1878-CC $1 Morgan Silver Dollar PCGS MS62DMPL CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 97081,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS62DMPL CAC",
+    "dateShown": "1878-CC",
+    "date": "1878",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7081,
+    "pcgsDesignationNumber": 97081
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 976979102,
+    "Type": "US Coins",
+    "itemDescription": "1878-S T$1 Trade Dollar CACG AU50",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 7048,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "AU50 CAC",
+    "dateShown": "1878-S",
+    "date": "1878",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7048,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "8447876-001",
+    "Type": "US Coins",
+    "itemDescription": "1881 T$1 Trade Dollar Proof NGC PF65 CAMEO",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 87061,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "dateShown": "1881",
+    "date": "1881",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 527064008,
+    "Type": "US Coins",
+    "itemDescription": "1881-CC $1 Morgan Silver Dollar CACG MS64DMPL",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": "97127/7127",
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 DMPL CAC",
+    "dateShown": "1881-CC",
+    "date": "1881",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7127,
+    "pcgsDesignationNumber": 97127
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 15370662,
+    "Type": "US Coins",
+    "itemDescription": "1881-O $1 Morgan Silver Dollar PCGS MS64DMPL CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 97129,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64DMPL CAC",
+    "dateShown": "1881-O",
+    "date": "1881",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7129,
+    "pcgsDesignationNumber": 97129
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 5171901,
+    "Type": "US Coins",
+    "itemDescription": "1881-S $1 Morgan Silver Dollar PCGS MS66 CAC OGH",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7130,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66 CAC",
+    "dateShown": "1881-S",
+    "date": "1881",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7130,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 28458039,
+    "Type": "US Coins",
+    "itemDescription": "1882-S $1 Morgan Silver Dollar PCGS MS66 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7140,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66 CAC",
+    "dateShown": "1882-S",
+    "date": "1882",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7140,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 25290718,
+    "Type": "US Coins",
+    "itemDescription": "1883 5C Liberty Head Nickel No Cents PCGS PR65CAM CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 83878,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR65 CAM CAC",
+    "dateShown": "1883",
+    "date": "1883",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 3878,
+    "pcgsDesignationNumber": 83878
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 219496143,
+    "Type": "US Coins",
+    "itemDescription": "1885 $1 Morgan Silver Dollar CAC MS63 DMPL Witterbrick",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 97159,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63 DMPL CAC",
+    "dateShown": "1885",
+    "date": "1885",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7159,
+    "pcgsDesignationNumber": 97159
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 48966398,
+    "Type": "US Coins",
+    "itemDescription": "1887 1C Indian Head Cent Proof PCGS PR65BN (Eagle Eye)",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 2348,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR65 BN",
+    "dateShown": "1887",
+    "date": "1887",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 2348,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 12822863,
+    "Type": "US Coins",
+    "itemDescription": "1889-CC $1 Morgan Silver Dollar PCGS XF40 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7190,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40 CAC",
+    "dateShown": "1889-CC",
+    "date": "1889",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7190,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "4492315-004",
+    "Type": "US Coins",
+    "itemDescription": "1890-CC $1 Morgan Silver Dollar NGC MS61 DPL",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": "97199/7199",
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS61 DPL",
+    "dateShown": "1890-CC",
+    "date": "1890",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7199,
+    "pcgsDesignationNumber": 97199
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 52636327,
+    "Type": "US Coins",
+    "itemDescription": "1891-CC $1 Morgan Silver Dollar PCGS MS63 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7206,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63 CAC",
+    "dateShown": "1891-CC",
+    "date": "1891",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7206,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 59354325,
+    "Type": "US Coins",
+    "itemDescription": "1891-CC $1 Morgan Silver Dollar PCGS VF30 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7206,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF30 CAC",
+    "dateShown": "1891-CC",
+    "date": "1891",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7206,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 37003065,
+    "Type": "US Coins",
+    "itemDescription": "1892 $1 Proof Morgan Silver Dollar PCGS PR62CAM CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 87327,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR62CAM CAC",
+    "dateShown": "1892",
+    "date": "1892",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7327,
+    "pcgsDesignationNumber": 87327
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 34955108,
+    "Type": "US Coins",
+    "itemDescription": "1892-CC $1 Morgan Silver Dollar PCGS MS64PL",
+    "Certification": "CACG",
+    "CAC": "",
+    "PCGS Num": 7215,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "dateShown": "1892-CC",
+    "date": "1892",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7215,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 50418053,
+    "Type": "US Coins",
+    "itemDescription": "1892-O $1 Morgan Silver Dollar PCGS MS63 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7216,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63 CAC",
+    "dateShown": "1892-O",
+    "date": "1892",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7216,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 50145276,
+    "Type": "US Coins",
+    "itemDescription": "1893 25C Isabella Commemorative Quarter PCGS MS65",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 9220,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1893",
+    "date": "1893",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 9220,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 686855542,
+    "Type": "US Coins",
+    "itemDescription": "1893-CC $5 Liberty Head Half Eagle CAC AU55",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 8384,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "AU55 CAC",
+    "dateShown": "1893-CC",
+    "date": "1893",
+    "gradingCompany": "CACG",
+    "category": "Gold",
+    "pcgsCatalogNumber": 8384,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 56079314,
+    "Type": "US Coins",
+    "itemDescription": "1893-S $1 Morgan Silver Dollar PCGS VG08 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7226,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VG08 CAC",
+    "dateShown": "1893-S",
+    "date": "1893",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7226,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 61820107,
+    "Type": "US Coins",
+    "itemDescription": "1894 $1 Morgan Silver Dollar PCGS VF30 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7228,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF30 CAC",
+    "dateShown": "1894",
+    "date": "1894",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7228,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 12372148,
+    "Type": "US Coins",
+    "itemDescription": "1897 25C Barber Quarter Proof PCGS PR65 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5683,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PR65 CAC",
+    "dateShown": "1897",
+    "date": "1897",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5683,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 56170922,
+    "Type": "US Coins",
+    "itemDescription": "1898-O 25C Barber Quarter Dollar PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5620,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1898-O",
+    "date": "1898",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5620,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 36060490,
+    "Type": "US Coins",
+    "itemDescription": "1898-S 25C Barber Quarter PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5621,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1898-S",
+    "date": "1898",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5621,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 35557249,
+    "Type": "US Coins",
+    "itemDescription": "1898-S 50C Barber Half Dollar PCGS MS65",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6482,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1898-S",
+    "date": "1898",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6482,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 43899139,
+    "Type": "US Coins",
+    "itemDescription": "1899-S $1 Morgan Silver Dollar PCGS MS63 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7262,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63 CAC",
+    "dateShown": "1899-S",
+    "date": "1899",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7262,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 20914725,
+    "Type": "US Coins",
+    "itemDescription": "1900 $1 Lafayette Silver Dollar Commemorative PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 9222,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1900",
+    "date": "1900",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 9222,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 15386256,
+    "Type": "US Coins",
+    "itemDescription": "1901-O 25C Barber Quarter Dollar PCGS XF40 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5629,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40 CAC",
+    "dateShown": "1901-O",
+    "date": "1901",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5629,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 43269993,
+    "Type": "US Coins",
+    "itemDescription": "1901-S $1 Morgan Silver Dollar PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7276,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1901-S",
+    "date": "1901",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7276,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 41419267,
+    "Type": "US Coins",
+    "itemDescription": "1902-S $1 Morgan Silver Dollar PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7282,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1902-S",
+    "date": "1902",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7282,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 35693898,
+    "Type": "US Coins",
+    "itemDescription": "1902-S 50C Barber Half Dollar PCGS MS66+ CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 6494,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66+ CAC",
+    "dateShown": "1902-S",
+    "date": "1902",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6494,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "209808-002",
+    "Type": "US Coins",
+    "itemDescription": "1903 G$1 LA Purchase Jefferson Commemorative NGC MS64 CAC",
+    "Certification": "NGC",
+    "CAC": "Y",
+    "PCGS Num": 7443,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1903",
+    "date": "1903",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsCatalogNumber": 7443,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 57541089,
+    "Type": "US Coins",
+    "itemDescription": "1904-S $1 Morgan Silver Dollar PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7294,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1904-S",
+    "date": "1904",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7294,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 45437496,
+    "Type": "World Coins",
+    "itemDescription": "1908-S Peso US Philippines Peso PCGS MS62",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 90394,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS62",
+    "dateShown": "1908-S",
+    "date": "1908",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 90394,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 53903867,
+    "Type": "US Coins",
+    "itemDescription": "1909-S 1C Indian Head Cent PCGS XF45 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 2238,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF45 CAC",
+    "dateShown": "1909-S",
+    "date": "1909",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 2238,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 9487246,
+    "Type": "US Coins",
+    "itemDescription": "1909-S 1C Lincoln Cent PCGS MS65BN CAC OGH",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 2432,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65BN CAC",
+    "dateShown": "1909-S",
+    "date": "1909",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 2432,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 80791351,
+    "Type": "World Coins",
+    "itemDescription": "1909-S Peso PCGS MS62 U.S. Philippines",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 90395,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS62",
+    "dateShown": "1909-S",
+    "date": "1909",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 90395,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 36081151,
+    "Type": "US Coins",
+    "itemDescription": "1909-S VDB 1C Lincoln Cent PCGS MS62BN CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 2426,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS62BN CAC",
+    "dateShown": "1909-S",
+    "date": "1909",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 2426,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 83589204,
+    "Type": "US Coins",
+    "itemDescription": "1910 10C Barber Dime PCGS MS65",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 4854,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1910",
+    "date": "1910",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 4854,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 894243330,
+    "Type": "US Coins",
+    "itemDescription": "1913 10C Barber Dime CAC MS65 Witterbrick",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 4863,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65 CAC",
+    "dateShown": "1913",
+    "date": "1913",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 4863,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 64671061,
+    "Type": "US Coins",
+    "itemDescription": "1913-S 25C Barber Quarter Dollar PCGS F15 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5666,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "F15 CAC",
+    "dateShown": "1913-S",
+    "date": "1913",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5666,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 21318483,
+    "Type": "US Coins",
+    "itemDescription": "1914 25C Barber Quarter PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5667,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1914",
+    "date": "1914",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5667,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 30196464,
+    "Type": "US Coins",
+    "itemDescription": "1914-S 25C Barber Quarter Dollar PCGS VF20 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5669,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF20 CAC",
+    "dateShown": "1914-S",
+    "date": "1914",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5669,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 30318732,
+    "Type": "US Coins",
+    "itemDescription": "1916-D 25C Barber Quarter PCGS MS66 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 5674,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66 CAC",
+    "dateShown": "1916-D",
+    "date": "1916",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5674,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 38699643,
+    "Type": "US Coins",
+    "itemDescription": "1919 50C Walking Liberty Half Dollar PCGS XF40",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 6577,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "XF40",
+    "dateShown": "1919",
+    "date": "1919",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6577,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 42385789,
+    "Type": "US Coins",
+    "itemDescription": "1921 $1 Peace Dollar High Relief PCGS MS63+ CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7356,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS63+ CAC",
+    "dateShown": "1921",
+    "date": "1921",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7356,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 46624069,
+    "Type": "US Coins",
+    "itemDescription": "1921-D 50C Walking Liberty Half Dollar PCGS F12 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 6584,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "F12 CAC",
+    "dateShown": "1921-D",
+    "date": "1921",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6584,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "06840170",
+    "Type": "US Coins",
+    "itemDescription": "1922 G$1 Grant, w/Star Gold Commemorative PCGS MS66 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7459,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66 CAC",
+    "dateShown": "1922",
+    "date": "1922",
+    "gradingCompany": "PCGS",
+    "category": "Gold",
+    "pcgsCatalogNumber": 7459,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 58778433,
+    "Type": "US Coins",
+    "itemDescription": "1923-D $1 Peace Silver Dollar PCGS MS66",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 7361,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66",
+    "dateShown": "1923-D",
+    "date": "1923",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7361,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 58315270,
+    "Type": "US Coins",
+    "itemDescription": "1923-S 50C Walking Liberty Half Dollar PCGS VF35 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 6586,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF35 CAC",
+    "dateShown": "1923-S",
+    "date": "1923",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6586,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 61264919,
+    "Type": "US Coins",
+    "itemDescription": "1923-S 5C Buffalo Nickel PCGS MS65",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 3950,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS65",
+    "dateShown": "1923-S",
+    "date": "1923",
+    "gradingCompany": "PCGS",
+    "category": "Copper/Bronze",
+    "pcgsCatalogNumber": 3950,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 42438031,
+    "Type": "US Coins",
+    "itemDescription": "1924-D 25C Standing Liberty Quarter PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 5748,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1924-D",
+    "date": "1924",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5748,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 10930287,
+    "Type": "US Coins",
+    "itemDescription": "1926 $2.5 Sesquicentennial Gold Commemorative PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7466,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1926",
+    "date": "1926",
+    "gradingCompany": "PCGS",
+    "category": "Gold",
+    "pcgsCatalogNumber": 7466,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 41351157,
+    "Type": "US Coins",
+    "itemDescription": "1927-D $1 Peace Silver Dollar PCGS MS64 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 7371,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64 CAC",
+    "dateShown": "1927-D",
+    "date": "1927",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7371,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "35387810_1",
+    "Type": "US Coins",
+    "itemDescription": "1933-S 50C Walking Liberty Half Dollar PCGS MS66 CAC",
+    "Certification": "PCGS",
+    "CAC": "Y",
+    "PCGS Num": 6591,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS66 CAC",
+    "dateShown": "1933-S",
+    "date": "1933",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 6591,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 81701865,
+    "Type": "US Coins",
+    "itemDescription": "1934-D $1 Peace Silver Dollar PCGS MS64",
+    "Certification": "PCGS",
+    "CAC": "",
+    "PCGS Num": 7376,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS64",
+    "dateShown": "1934-D",
+    "date": "1934",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 7376,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 37846081,
+    "Type": "US Coins",
+    "itemDescription": "1939-S 10C Mercury Dime PCGS MS67FB Grand Cru Collection",
+    "Certification": "PCGS",
+    "CAC": "N",
+    "PCGS Num": 5021,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS67 FB",
+    "dateShown": "1939-S",
+    "date": "1939",
+    "gradingCompany": "PCGS",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5021,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": 858641459,
+    "Type": "US Coins",
+    "itemDescription": "1942/1 10C Mercury Dime CAC VF30 Witterbrick",
+    "Certification": "CACG",
+    "CAC": "Y",
+    "PCGS Num": 5036,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "VF30 CAC",
+    "dateShown": "1942/1",
+    "date": "1942",
+    "gradingCompany": "CACG",
+    "category": "Silver",
+    "pcgsCatalogNumber": 5036,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "4873725-002",
+    "Type": "Bullion",
+    "itemDescription": "2000-W $10 Library of Congress NGC PF70 Ultra Cameo",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 99784,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PF70 UC",
+    "dateShown": "2000-W",
+    "date": "2000",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsCatalogNumber": 99784,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "339937-082",
+    "Type": "US Coins",
+    "itemDescription": "2001 G$10 American Gold Eagle NGC MS69",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 9956,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS69",
+    "dateShown": "2001",
+    "date": "2001",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsCatalogNumber": 9956,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "2834797-006",
+    "Type": "Bullion",
+    "itemDescription": "2002 Australia Lunar \"Year of the Horse\" 1oz Gold NGC MS69",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 0,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS69",
+    "dateShown": "2002",
+    "date": "2002",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "6750750-003",
+    "Type": "US Coins",
+    "itemDescription": "2019-S S$1 Enhanced Reverse Proof NGC PF 70 w/box and COA",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 807000,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "PF70",
+    "dateShown": "2019-S",
+    "date": "2019",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 807000,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "6042153-049",
+    "Type": "Bullion",
+    "itemDescription": "2020-W Burnished Palladium Eagle Pd$25 High Relief NGC MS70",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 830854,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "MS70",
+    "dateShown": "2020-W",
+    "date": "2020",
+    "gradingCompany": "NGC",
+    "category": "Other",
+    "pcgsCatalogNumber": 830854,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "2192433-001",
+    "Type": "US Coins",
+    "itemDescription": "2026 Best of the Mint 1804(2026) G$1 250 Anniv Privy NGC SP 70",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 1020246,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "SP70",
+    "dateShown": "2026",
+    "date": "2026",
+    "gradingCompany": "NGC",
+    "category": "Gold",
+    "pcgsCatalogNumber": 1020246,
+    "pcgsDesignationNumber": null
+   }
+  },
+  {
+   "row": {
+    "inventoryID": "2192437-001",
+    "Type": "US Coins",
+    "itemDescription": "2026 Best of the Mint 1804(2026) Silver Medal Flowing Hair Privy NGC SP 70",
+    "Certification": "NGC",
+    "CAC": "",
+    "PCGS Num": 981298,
+    "listPrice": 1,
+    "Website": "Y",
+    "Status": "Active"
+   },
+   "expect": {
+    "grade": "SP70",
+    "dateShown": "2026",
+    "date": "2026",
+    "gradingCompany": "NGC",
+    "category": "Silver",
+    "pcgsCatalogNumber": 981298,
+    "pcgsDesignationNumber": null
+   }
+  }
+ ]
+}

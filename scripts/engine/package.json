@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Bulk-create draft coin listings in Sanity from a CSV.",
+  "description": "Cabbage Coins monthly tools: photo prep, listing import, captions, CAC/eBay sync, status report.",
   "scripts": {
-    "import": "node import-listings.js"
+    "import": "node import-listings.js",
+    "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.128.0",
