@@ -9,6 +9,11 @@ Everything you double-click is in this folder, numbered in the order you use it.
 | [`HOW-TO.md`](HOW-TO.md) | "How do I…": taking a coin off eBay, redoing photos, a coin that sold on eBay, undoing an import, and more. |
 | [`REFERENCE.md`](REFERENCE.md) | How everything works: workbook rules, photos, CAC, eBay, PCGS, settings, safety. |
 
+All three are also one shareable page, the **Cabbage Coins Playbook**:
+https://claude.ai/artifact/2vwWo2HwdsRFDkm3qKaz1M (private until you share it from the page's
+Share menu). It's built from these files by `engine\docs-page.js`, so when the docs change,
+ask Claude to rebuild and republish it.
+
 **Two promises the tools keep:**
 - **They never write to your workbook.** They read a copy and check that the original didn't change. A rule check (`Extras\Check-Rules`) fails if any script ever contains code that could write a spreadsheet.
 - **Anything that changes the website, CAC, eBay or your photo folders shows you what it will do first, and asks.** Answer `y` to go ahead; anything else changes nothing.

@@ -237,4 +237,5 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `connect-ebay.js` | One-time eBay sign-in (`Extras\Connect-eBay`) |
 | `Rename-Photos.ps1` | The old hand-photo renamer (`Extras`) |
 | `test\` | The rule checks (`Extras\Check-Rules`, or `npm test`) |
+| `docs-page.js` | Builds the shareable Playbook page from README, HOW-TO and REFERENCE |
 | `clean-sitesettings.js`, `seed-coinshows.js` | One-off maintenance scripts |
