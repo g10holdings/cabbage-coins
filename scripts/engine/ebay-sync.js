@@ -12,8 +12,9 @@
  * One run:
  *   - coins already on eBay that the script hasn't seen before are ADOPTED (matched by cert #, else exact title):
  *     only price, shipping, offers and the return policy are changed on those; Tony's title, photos and description stay.
- *   - new coins are listed (AddFixedPriceItem) with the website photos + promo card, the title, and Tony's standard text.
- *   - coins whose price/shipping changed are revised (ReviseFixedPriceItem).
+ *   - new coins are listed (AddFixedPriceItem) with the website photos (slab shots first) + promo card, the title,
+ *     and Tony's standard text.
+ *   - coins whose price/shipping/photo order changed are revised (ReviseFixedPriceItem).
  *   - coins sold or removed on the website are ended on eBay (EndFixedPriceItem).
  *   - coins that SOLD ON EBAY are reported, so Tony can mark them sold on the website.
  *   - eBay listings that match no website coin are reported and left alone.
@@ -32,6 +33,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
@@ -146,6 +148,10 @@ async function itemInfo(id) {
     sold: Number(tag(tag(x, 'SellingStatus'), 'QuantitySold') || 0),
     bestOffer: tag(tag(x, 'BestOfferDetails'), 'BestOfferEnabled') === 'true',
     shipService: tag(tag(x, 'ShippingServiceOptions'), 'ShippingService'),
+    // "Vendor" = photos the sync sent from the website; eBay reports only the first one's original address.
+    // Tony's own uploads (adopted listings) are left alone.
+    photoSource: tag(tag(x, 'PictureDetails'), 'PictureSource'),
+    firstPhoto: unesc(tag(tag(x, 'PictureDetails'), 'ExternalPictureURL')),
     cert: certDescriptor ? tag(certDescriptor, 'AdditionalInfo') : '',
     url: tag(x, 'ViewItemURL'),
   };
@@ -190,6 +196,34 @@ const imageUrl = (ref) => {
   const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
   return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
 };
+
+// eBay buyers expect the slab shots first, then the close-ups (Tony, 2026-10-18); the website shows close-ups
+// first. Tony's close-ups carry the gold Cabbage Coins logo bottom-left and the slab shots don't: the logo's gold
+// head averages about rgb(97,82,62) on every close-up, while slab shots read black or grey there (all 77 coins
+// checked, 2026-10-18). Sanity crops that spot and shrinks it to one pixel; a 1×1 PNG is easy to read by hand.
+async function isCloseUp(url) {
+  const [, w, h] = /-(\d+)x(\d+)\.\w+$/.exec(url) ?? [];
+  if (!w || w !== h) return false;
+  const rect = [115, 905, 45, 70].map((n) => Math.round((n * Number(w)) / 1044)).join(',');
+  const res = await fetch(`${url}?rect=${rect}&w=1&h=1&fm=png`);
+  if (!res.ok) return false;
+  const png = Buffer.from(await res.arrayBuffer());
+  const idat = [];
+  for (let o = 8; o + 8 <= png.length; o += 12 + png.readUInt32BE(o)) {
+    if (png.toString('ascii', o + 4, o + 8) === 'IDAT') idat.push(png.subarray(o + 8, o + 8 + png.readUInt32BE(o)));
+  }
+  const [, r, g, b] = zlib.inflateSync(Buffer.concat(idat));   // byte 0 is the row filter, a no-op on a lone pixel
+  return Math.abs(r - 97) < 15 && Math.abs(g - 82) < 15 && Math.abs(b - 62) < 15;
+}
+
+/** The coin's eBay photos: everything without the logo (slab shots) first, then the close-ups, then the promo card. */
+async function photosFor(coin) {
+  const urls = [coin.image, ...(coin.imagesGallery ?? [])].map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
+    .filter((u, i, all) => all.indexOf(u) === i);
+  const close = await Promise.all(urls.map(isCloseUp));
+  return [...urls.filter((u, i) => !close[i]), ...urls.filter((u, i) => close[i])].slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
+}
+const pictureXml = (photos) => `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`;
 
 // The whole "Coins & Paper Money" category tree, id -> "Coins: US > Dollars > Morgan (1878-1921)" (loaded once a run).
 let treePaths;
@@ -297,8 +331,7 @@ const shippingXml = (sitePrice) => {
 
 async function newItemXml(coin) {
   const cat = await categoryFor(coin);
-  const photos = [coin.image, ...(coin.imagesGallery ?? [])].map((i) => imageUrl(i?.asset?._ref)).filter(Boolean)
-    .filter((u, i, all) => all.indexOf(u) === i).slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
+  const photos = await photosFor(coin);
   const description = `<div>${esc(coin.name)}</div><div><br></div><div>${STANDARD_TEXT}</div>`;
   const xml = `<Item><Title>${esc(coin.name.slice(0, 80))}</Title>`
     + `<Description><![CDATA[${description}]]></Description>`
@@ -310,13 +343,13 @@ async function newItemXml(coin) {
     + `<DispatchTimeMax>2</DispatchTimeMax>`
     + (cat.id ? await conditionXml(cat.id, coin) : '')
     + `<ItemSpecifics>${specifics(coin)}</ItemSpecifics>`
-    + `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`
+    + pictureXml(photos)
     + RETURN_POLICY
     + shippingXml(coin.price)
     + `<BestOfferDetails><BestOfferEnabled>${coin.ebayOffers ? 'true' : 'false'}</BestOfferEnabled></BestOfferDetails>`
     + `<InventoryTrackingMethod>ItemID</InventoryTrackingMethod>`
     + `</Item>`;
-  return { xml, cat, photos: photos.length };
+  return { xml, cat, photos };
 }
 
 const feesOf = (xml) => tags(xml, 'Fee').map((f) => ({ name: tag(f, 'Name'), amount: Number(tag(f, 'Fee')) })).filter((f) => f.amount > 0);
@@ -367,7 +400,10 @@ async function main() {
       const l = liveById.get(e.itemId);
       if (!l) { const info = await itemInfo(e.itemId); (info.sold > 0 ? plan.soldOnEbay : plan.add).push({ coin: c, target, item: info }); continue; }
       if (l.sold > 0) { plan.soldOnEbay.push({ coin: c, item: l }); continue; }
-      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer !== target.offers) plan.revise.push({ coin: c, target, item: l });
+      // Photo order: the ledger remembers the full order sent; before it did (first send), only the first photo is known.
+      if (l.photoSource === 'Vendor') target.photos = await photosFor(c);
+      const newPhotos = !!target.photos && (e.photos ? e.photos.join(' ') !== target.photos.join(' ') : l.firstPhoto !== target.photos[0]);
+      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer !== target.offers || newPhotos) plan.revise.push({ coin: c, target, item: l, newPhotos });
       else plan.unchanged.push({ coin: c, item: l });
       continue;
     }
@@ -422,7 +458,7 @@ async function main() {
   console.log(`+ New listings: ${plan.add.length}`);
   for (const p of plan.add) {
     console.log(`  ${line(p)}`);
-    console.log(`        category: ${p.catName} (${p.cat.how})  ·  ${p.photos} photos`);
+    console.log(`        category: ${p.catName} (${p.cat.how})  ·  ${p.photos.length} photos`);
     if (p.verify) {
       if (p.verify.errors.length) console.log(`        ✗ eBay would refuse it: ${p.verify.errors.join(' | ')}`);
       else console.log(`        ✓ eBay accepts it${p.verify.fees.length ? ` (listing fees: ${p.verify.fees.map((f) => `${f.name} $${f.amount}`).join(', ')})` : ', no listing fee'}`);
@@ -431,8 +467,8 @@ async function main() {
   }
   console.log(`\n⇄ Already on eBay, taken over by the sync (price, shipping, offers, returns set; your title, photos, description kept): ${plan.adopt.length}`);
   for (const p of plan.adopt) console.log(`  ${line(p)}   (now ${money(p.item.price)}${p.item.bestOffer ? ', offers on' : ''}${p.how !== 'cert/title' ? `; matched by ${p.how}: eBay title "${p.item.title}"` : ''})`);
-  console.log(`\n~ Price or shipping to update: ${plan.revise.length}`);
-  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})`);
+  console.log(`\n~ Price, shipping or photo order to update: ${plan.revise.length}`);
+  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})${p.newPhotos ? '  · photos: slabs first' : ''}`);
   console.log(`\n− To end on eBay: ${plan.end.length}`);
   for (const p of plan.end) console.log(`  ${p.coin.name}  (${p.why})`);
   if (plan.soldOnEbay.length) {
@@ -454,15 +490,18 @@ async function main() {
   const failed = [];
   const reviseXml = (itemId, p) => `<Item><ItemID>${itemId}</ItemID><StartPrice currencyID="USD">${p.target.price}</StartPrice>`
     + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>${p.target.offers}</BestOfferEnabled></BestOfferDetails>`
+    + (p.newPhotos ? pictureXml(p.target.photos) : '')
     + RETURN_POLICY + '</Item>';
   for (const p of [...plan.adopt, ...plan.revise]) {
     const r = await trading('ReviseFixedPriceItem', reviseXml(p.item.id, p));
-    if (r.ok) ledger[p.coin._id] = { itemId: p.item.id, price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now };
-    else failed.push(`${p.coin.name}: ${r.errors.map((e) => e.message).join('; ')}`);
+    if (r.ok) {
+      const photos = p.newPhotos ? p.target.photos : ledger[p.coin._id]?.photos;
+      ledger[p.coin._id] = { itemId: p.item.id, price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now, ...(photos && { photos }) };
+    } else failed.push(`${p.coin.name}: ${r.errors.map((e) => e.message).join('; ')}`);
   }
   for (const p of plan.add) {
     const r = await trading('AddFixedPriceItem', p.xml);
-    if (r.ok) ledger[p.coin._id] = { itemId: tag(r.xml, 'ItemID'), price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now };
+    if (r.ok) ledger[p.coin._id] = { itemId: tag(r.xml, 'ItemID'), price: p.target.price, ship: p.target.ship.service, title: p.coin.name, sentAt: now, photos: p.photos };
     else failed.push(`${p.coin.name}: ${r.errors.filter((e) => e.severity === 'Error').map((e) => e.message).join('; ')}`);
   }
   for (const p of plan.end) {
