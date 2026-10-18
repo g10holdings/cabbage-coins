@@ -26,6 +26,7 @@
  * Usage:
  *   node ebay-sync.js                    Preview.
  *   node ebay-sync.js --send             Do it.
+ *   node ebay-sync.js --ask              Preview, then ask before doing it (4_After-Publishing-or-Selling).
  *   --allow-mass-removal                 Needed when a run would end more than 10 listings.
  * Env (engine/.env): SANITY_WRITE_TOKEN, EBAY_APP_ID, EBAY_CERT_ID, EBAY_REFRESH_TOKEN (Extras\Connect-eBay).
  */
@@ -38,13 +39,15 @@ import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
 import { slabsFirst } from './photo-order.js';
+import { askYes } from './ask.js';
 import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const args = process.argv.slice(2);
-const SEND = args.includes('--send');
+let SEND = args.includes('--send');
+const ASK = args.includes('--ask');   // preview, then ask before changing anything (4_After-Publishing-or-Selling)
 const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
 const MASS_REMOVAL = 10;
 const PROJECT = settings.sanity.projectId;
@@ -373,7 +376,7 @@ async function main() {
   const claimed = new Set(Object.values(ledger).map((e) => e.itemId));
   const byCert = new Map(live.filter((l) => l.cert).map((l) => [certKey(l.cert), l]));
   const byTitle = new Map(live.map((l) => [nameKey(l.title), l]));
-  const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], unchanged: [] };
+  const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], unchanged: [], gone: [] };
   for (const c of wanted) {
     const target = { price: c.ebayPrice > 0 ? c.ebayPrice : ebayPrice(c.price), fixed: c.ebayPrice > 0, offers: !!c.ebayOffers, ship: shippingFor(c.price) };
     const e = ledger[c._id];
@@ -416,7 +419,7 @@ async function main() {
   for (const [siteId, e] of Object.entries(ledger)) {
     if (wantedIds.has(siteId)) continue;
     const l = liveById.get(e.itemId);
-    if (!l) continue;   // already gone from eBay
+    if (!l) { plan.gone.push(siteId); continue; }   // already gone from eBay: just forget it (on the next send)
     const coin = coins.find((c) => c._id === siteId) ?? { _id: siteId, name: e.title };
     (l.sold > 0 ? plan.soldOnEbay : plan.end).push({ coin, item: l, why: coin.sold ? 'sold on the website' : coin.notOnEbay ? '"Keep off eBay" ticked' : 'no longer on the website' });
   }
@@ -464,7 +467,13 @@ async function main() {
   fs.writeFileSync(OUT_FILE, JSON.stringify({ ...plan, add: plan.add.map(({ xml, ...p }) => p) }, null, 2));
 
   if (plan.end.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) throw new Error(`This would end ${plan.end.length} listings at once. If that's right, run again with --allow-mass-removal.`);
-  if (!SEND) { console.log('\nNothing was changed. To do it: 8_Send-To-eBay (node ebay-sync.js --send).'); return; }
+  if (plan.gone.length) console.log(`\n(${plan.gone.length} coin(s) already sold or ended on eBay: the sync's record of them is cleared on the next send.)`);
+  const work = [plan.add.length && `list ${plan.add.length}`, plan.adopt.length && `take over ${plan.adopt.length}`, plan.revise.length && `update ${plan.revise.length}`,
+    plan.end.length && `end ${plan.end.length}`, plan.gone.length && `clear ${plan.gone.length} old record(s)`].filter(Boolean);
+  if (!SEND) {
+    if (ASK && work.length && await askYes(`\neBay: ${work.join(', ')}. Go ahead? (y/N) `)) SEND = true;
+    else { console.log(work.length ? '\nNothing was changed on eBay.' : '\nNothing to change on eBay.'); return; }
+  }
 
   // Send.
   const now = new Date().toISOString();
@@ -490,6 +499,7 @@ async function main() {
     if (r.ok || /already been closed/i.test(r.errors.map((e) => e.message).join(' '))) delete ledger[p.coin._id];
     else failed.push(`${p.coin.name}: ${r.errors.map((e) => e.message).join('; ')}`);
   }
+  for (const siteId of plan.gone) delete ledger[siteId];   // sold or ended on eBay already; the record was stale
   await saveLedger(client, ledger);
   console.log(`\nDone: ${plan.add.length + plan.adopt.length + plan.revise.length + plan.end.length - failed.length} change(s) made.`);
   if (failed.length) { console.log(`✗ ${failed.length} failed (they'll be tried again next run):`); for (const f of failed) console.log(`  ${f}`); }

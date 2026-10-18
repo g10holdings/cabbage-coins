@@ -6,7 +6,7 @@
     <Name>-1.jpg  obverse slab        <Name>-3.jpg  reverse slab
     <Name>-2.jpg  obverse close-up    <Name>-4.jpg  reverse close-up
 
-  3_Run-Import finds a listing's photos by that cert number and puts them on its draft.
+  2_Import-Listings finds a listing's photos by that cert number and puts them on its draft.
 
   All 1044 x 1044. NO post-processing: no brightening, sharpening or colour changes - only turning, cropping,
   resizing, the black mask and the logos.

@@ -18,6 +18,7 @@
  * Usage:
  *   node cac-marketplace.js                Preview: what would be added, updated, removed. Sends nothing.
  *   node cac-marketplace.js --send         Send it to CAC.
+ *   node cac-marketplace.js --ask          Preview, then ask before sending (4_After-Publishing-or-Selling).
  *   node cac-marketplace.js --cac-only     Only CAC-stickered and CACG coins (works with --send too).
  *   --allow-mass-removal                   Needed when a run would take down more than 10 coins at once.
  *
@@ -32,13 +33,15 @@ import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import slugify from 'slugify';
 import { slabsFirst } from './photo-order.js';
+import { askYes } from './ask.js';
 import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const args = process.argv.slice(2);
-const SEND = args.includes('--send');
+let SEND = args.includes('--send');
+const ASK = args.includes('--ask');   // preview, then ask before sending (4_After-Publishing-or-Selling)
 const CAC_ONLY = args.includes('--cac-only');
 const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
 const MASS_REMOVAL = 10;
@@ -128,7 +131,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 async function main() {
   const { SANITY_WRITE_TOKEN, CAC_API_KEY, CAC_API_TOKEN } = process.env;
   if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from scripts/engine/.env');
-  if (SEND && (!CAC_API_KEY || !CAC_API_TOKEN)) throw new Error('CAC_API_KEY / CAC_API_TOKEN are missing from scripts/engine/.env');
+  if ((SEND || ASK) && (!CAC_API_KEY || !CAC_API_TOKEN)) throw new Error('CAC_API_KEY / CAC_API_TOKEN are missing from scripts/engine/.env');
   const client = createClient({ projectId: PROJECT, dataset: settings.sanity.dataset, apiVersion: settings.sanity.apiVersion, token: SANITY_WRITE_TOKEN, useCdn: false });
 
   const [{ items, skipped }, ledger] = await Promise.all([buildFeed(client), loadLedger(client)]);
@@ -159,9 +162,14 @@ async function main() {
   if (removals.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) {
     throw new Error(`This would take down ${removals.length} coins at once. If that's right, run again with --allow-mass-removal.`);
   }
+  const work = [added.length && `add ${added.length}`, changed.length && `update ${changed.length}`, removals.length && `take down ${removals.length}`].filter(Boolean);
   if (!SEND) {
-    console.log(`\nNothing was sent. To send it, run: node cac-marketplace.js --send${CAC_ONLY ? ' --cac-only' : ''}`);
-    return;
+    if (ASK && work.length && await askYes(`\nCAC: ${work.join(', ')}. Send? (y/N) `)) SEND = true;
+    else {
+      console.log(!work.length ? '\nNothing to change on CAC.' : ASK ? '\nNothing was sent to CAC.'
+        : `\nNothing was sent. To send it, run: node cac-marketplace.js --send${CAC_ONLY ? ' --cac-only' : ''}`);
+      return;
+    }
   }
   // An empty feed would take every coin off CAC.
   if (!feed.length) throw new Error('No coins to send, which would take everything off CAC. Nothing was sent.');

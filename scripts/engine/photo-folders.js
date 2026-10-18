@@ -83,7 +83,7 @@ function main() {
     const [block, notes] = compare(typed, w);
     if (block.length) { problems.push(`${folder}\n      left alone: the name says ${block.join('; ')}. Is cert ${w.cert} right? (workbook: ${w.name})`); continue; }
 
-    if (w.website !== 'R') notes.push(`Website is "${w.website || 'blank'}" in the workbook, not R, so 3_Run-Import won't list it`);
+    if (w.website !== 'R') notes.push(`Website is "${w.website || 'blank'}" in the workbook, not R, so 2_Import-Listings won't list it`);
     const base = fileBase(w.name);
     const target = `${base}-${w.cert}`;
     if (target !== folder) {

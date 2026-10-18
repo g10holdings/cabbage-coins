@@ -2,8 +2,8 @@
  * The one place the scripts learn where things are (settings.json) and get their secrets (.env).
  *
  * settings.json holds the paths, the Sanity project and the like. Relative paths are relative to this folder.
- * A few environment variables still override it, for testing or a moved file: WORKBOOK_PATH, PHOTO_ROOT,
- * SANITY_PROJECT_ID, SANITY_DATASET.
+ * A few environment variables still override it, for testing or a moved file: WORKBOOK_PATH, PHOTO_ROOT
+ * (in-progress photos), PHOTO_LISTED, PHOTO_SOLD, SANITY_PROJECT_ID, SANITY_DATASET.
  */
 
 import fs from 'node:fs';
@@ -23,8 +23,8 @@ export const settings = {
   workbook: process.env.WORKBOOK_PATH || abs(raw.workbook),
   photos: {
     inProgress: process.env.PHOTO_ROOT || abs(raw.photos.inProgress),
-    listed: abs(raw.photos.listed),
-    sold: abs(raw.photos.sold),
+    listed: process.env.PHOTO_LISTED || abs(raw.photos.listed),
+    sold: process.env.PHOTO_SOLD || abs(raw.photos.sold),
     logo: abs(raw.photos.logo),
     cacLogo: abs(raw.photos.cacLogo),
   },

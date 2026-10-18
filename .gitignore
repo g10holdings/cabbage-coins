@@ -23,3 +23,4 @@ scripts/engine/cac-marketplace-preview.json
 scripts/engine/ebay-preview.json
 scripts/engine/cac-marketplace-last-response.json
 scripts/engine/.photo-folders.json
+scripts/engine/.status-report.html
