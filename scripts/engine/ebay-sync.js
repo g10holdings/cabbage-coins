@@ -463,7 +463,7 @@ async function main() {
   fs.writeFileSync(OUT_FILE, JSON.stringify({ ...plan, add: plan.add.map(({ xml, ...p }) => p) }, null, 2));
 
   if (plan.end.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) throw new Error(`This would end ${plan.end.length} listings at once. If that's right, run again with --allow-mass-removal.`);
-  if (!SEND) { console.log('\nNothing was changed. To do it: 10_Send-To-eBay (node ebay-sync.js --send).'); return; }
+  if (!SEND) { console.log('\nNothing was changed. To do it: 8_Send-To-eBay (node ebay-sync.js --send).'); return; }
 
   // Send.
   const now = new Date().toISOString();

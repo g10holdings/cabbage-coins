@@ -13,7 +13,8 @@
  *   Certification   the grading company (PCGS / NGC / CACG; N/A = Ungraded).
  *   PCGS Num        "97199/7199" = designation # (pop data) / catalog # (sorting); a single number = both.
  *   listPrice       the website price.
- *   Website         "Y" = belongs on the website ("N/A" = never). Status says Active or Sold.
+ *   Website         "R" = ready: photos and listing to be made (the import takes these); "Y" = live on the
+ *                   website (Tony sets it once published); "N/A" = never. Status says Active or Sold.
  *
  * Path: WORKBOOK_PATH in engine/.env, else the default below.
  */

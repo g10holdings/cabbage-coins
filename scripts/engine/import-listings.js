@@ -2,12 +2,15 @@
  * Bulk-create DRAFT coin listings in Sanity from the workbook (or a CSV).
  *
  * With no file given, it reads the business workbook's "inventory" sheet, READ-ONLY (workbook.js),
- * and takes every coin marked Website = Y that is Active and has no listing yet; grade, dates,
+ * and takes every coin marked Website = R (ready to list; Tony changes it to Y himself once the listing
+ * is live) that is Active and has no listing yet; grade, dates,
  * denomination and category are worked out from the row (check them in the preview). Given a CSV
  * path, it reads that instead, as before. Either way it maps each row to a `listing` document, fills in the image
  * Alternative Text from the known-design table, and writes each doc as a Sanity
- * draft (so it lands unpublished in the Studio for you to add photos +
- * description).
+ * draft (so it lands unpublished in the Studio for Tony's description).
+ *
+ * Then it puts the 4 photos made by 1_Prep-Photos on every draft that has none yet, finding them by
+ * cert # (listing-photos.js). A coin whose photos aren't ready gets them on a later run.
  *
  * A coin whose series isn't in coin-designs.js gets NO alt text and a warning
  * naming it, so you can write that one by hand in the Studio. Nothing guesses.
@@ -35,6 +38,7 @@ import { parse } from 'csv-parse/sync';
 import { createClient } from '@sanity/client';
 import { lookupDesign } from './coin-designs.js';
 import { readInventory, certKey, nameKey, hasCert, listingFromRow, pcgsOf, denominationOf } from './workbook.js';
+import { photoFolders, findPhotos, putPhotos, photoStatus } from './listing-photos.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -306,7 +310,7 @@ async function runDelete(docs) {
 // Main
 // ---------------------------------------------------------------------------
 /**
- * The workbook's "inventory" rows that should become listings: Website = Y, Active, and no listing
+ * The workbook's "inventory" rows that should become listings: Website = R, Active, and no listing
  * (published or draft) with that cert # yet (or that name, for items with no cert). Returned in the
  * same shape as CSV rows, so everything below works the same. The workbook is only ever read.
  */
@@ -316,9 +320,9 @@ async function rowsFromWorkbook() {
   const listings = await makeClient().fetch(`*[_type == "listing"${DELETE ? ' && !(_id in path("drafts.**"))' : ''}]{name, gradenumber}`);
   const keys = new Set(listings.filter((l) => hasCert(l.gradenumber)).map((l) => certKey(l.gradenumber)));
   const names = new Set(listings.map((l) => nameKey(l.name)));
-  const due = inv.map(listingFromRow).filter((w) => w.website === 'Y' && w.status === 'Active' && w.key && !keys.has(w.key) && !names.has(nameKey(w.name)));
+  const due = inv.map(listingFromRow).filter((w) => w.website === 'R' && w.status === 'Active' && w.key && !keys.has(w.key) && !names.has(nameKey(w.name)));
   console.log(`Workbook: ${file} (saved ${savedAt.toLocaleString()}; opened read-only)`);
-  console.log(`${due.length} coin(s) marked Website = Y with no listing yet.\n`);
+  console.log(`${due.length} coin(s) marked Website = R (ready) with no listing yet.\n`);
   for (const w of due) for (const f of w.flags) warn(`${w.name}: ${f}`);
   return due.map((w) => ({
     'grade number': w.cert === 'N/A' ? '' : w.cert,
@@ -347,7 +351,8 @@ async function main() {
   } else {
     rows = await rowsFromWorkbook();
     if (!rows.length) {
-      console.log('Nothing to create.');
+      console.log('No new listings to create.\n');
+      if (!DELETE) await photoPass([]);
       return;
     }
   }
@@ -416,7 +421,9 @@ async function main() {
   docs.forEach((d) => delete d.__meta);
 
   if (DRY_RUN) {
-    console.log(`Dry run complete — nothing written. ${docs.length} draft(s) would be created.`);
+    console.log(`${docs.length} draft(s) would be created.\n`);
+    await photoPass(docs);
+    console.log('Dry run complete — nothing written.');
     return;
   }
 
@@ -439,8 +446,34 @@ async function main() {
     console.log(`  ✓ ${doc.name}`);
   });
 
-  console.log(`\nDone. Created ${created} draft listing(s) in Sanity.`);
-  console.log('Open the Studio (npm run dev in studio/, then localhost:3333) to add photos, captions, and descriptions, then publish.');
+  console.log(`\nDone. Created ${created} draft listing(s) in Sanity.\n`);
+  await photoPass([]);
+}
+
+/**
+ * Photos: every draft listing with no photos yet gets the 4 from its cert-numbered folder, if they're made.
+ * Published listings and drafts that already have photos are never touched. In a dry run, `newDocs` (the drafts
+ * that would be created) are included and nothing is uploaded.
+ */
+async function photoPass(newDocs) {
+  const client = makeClient();
+  const bare = await client.fetch(`*[_type == "listing" && _id in path("drafts.**") && !defined(image.asset) && count(coalesce(imagesGallery, [])) == 0]{_id, name, gradenumber, image}`);
+  const known = new Set(bare.map((d) => d._id));
+  const drafts = [...bare, ...newDocs.filter((d) => !known.has(d._id))];
+  if (!drafts.length) { console.log('Photos: every draft already has its photos.'); return; }
+  const folders = photoFolders();
+  console.log(`Photos for ${drafts.length} draft(s) without any:`);
+  let put = 0;
+  for (const d of drafts) {
+    const found = findPhotos(d.gradenumber, folders);
+    if (DRY_RUN || !found?.ready) { console.log(`  ${found?.ready ? '✓' : '·'} ${d.name}: ${photoStatus(d.gradenumber, found)}`); continue; }
+    await putPhotos(client, d, found);
+    put++;
+    console.log(`  ✓ ${d.name}: 4 photos added from "${found.folder}"`);
+  }
+  if (DRY_RUN) console.log('  (dry run: nothing uploaded; ✓ = would be added)');
+  else console.log(`\nPhotos added to ${put} draft(s). Next: 4_Choose-Captions, then write the description in the Studio and publish.`);
+  console.log('');
 }
 
 main().catch((err) => {

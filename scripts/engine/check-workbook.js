@@ -7,8 +7,10 @@
  *
  * Reported:
  *   - for sale on the site, but Sold in the workbook
- *   - workbook says Website = Y and Active, but there's no listing yet (the import creates these)
- *   - for sale on the site, but the workbook doesn't say Website = Y
+ *   - workbook says Website = R (ready) and Active, but there's no listing yet (the import creates these)
+ *   - workbook says Website = Y (live) and Active, but there's no listing at all
+ *   - for sale on the site, but the workbook still says R (a reminder to change it to Y)
+ *   - for sale on the site, but the workbook says neither Y nor R
  *   - on the site, with no workbook row at all
  *   - matched coins whose price, grade, grading company, date or PCGS #s differ
  *   - names worded differently (FYI only)
@@ -57,13 +59,14 @@ async function main() {
   const listedNames = new Set(listings.map((l) => nameKey(l.name)));
   const hasListing = (w) => listedKeys.has(w.key) || listedNames.has(nameKey(w.name));
 
-  const soldInBook = [], notFlagged = [], noRow = [], diffs = [], names = [];
+  const soldInBook = [], stillReady = [], notFlagged = [], noRow = [], diffs = [], names = [];
   const ignored = published.filter((x) => !x.sold && IGNORE.has(certKey(x.gradenumber)));
   for (const l of published.filter((x) => !x.sold && !IGNORE.has(certKey(x.gradenumber)))) {
     const r = rowFor(l);
     if (!r) { noRow.push(l); continue; }
     const w = listingFromRow(r);
     if (w.status === 'Sold') soldInBook.push([l, w]);
+    else if (w.website === 'R') stillReady.push([l, w]);
     else if (w.website !== 'Y') notFlagged.push([l, w]);
     const d = [];
     // A sold row's listPrice is the sale amount, already shown above.
@@ -77,7 +80,9 @@ async function main() {
     if (d.length) diffs.push([l, d]);
     if (loose(l.name) !== loose(w.name)) names.push([l, w]);
   }
-  const toCreate = rows.map(listingFromRow).filter((w) => w.website === 'Y' && w.status === 'Active' && w.key && !hasListing(w));
+  const active = rows.map(listingFromRow).filter((w) => w.status === 'Active' && w.key && !hasListing(w));
+  const toCreate = active.filter((w) => w.website === 'R');
+  const liveMissing = active.filter((w) => w.website === 'Y');
 
   const section = (title, list, line) => {
     console.log(`${list.length ? '✗' : '✓'} ${title}: ${list.length}`);
@@ -85,8 +90,10 @@ async function main() {
     console.log('');
   };
   section('For sale on the site, but SOLD in the workbook', soldInBook, ([l, w]) => `${l.name}  (site ${money(l.price)}, sold for ${money(w.price)})`);
-  section('Workbook says Website = Y, but there is no listing yet (the import creates these)', toCreate, (w) => `${w.name}  ${money(w.price)}  cert ${w.cert}`);
-  section('For sale on the site, but the workbook does not say Website = Y', notFlagged, ([l, w]) => `${l.name}  (Website column: "${w.website || 'blank'}")`);
+  section('Workbook says Website = R (ready), but there is no listing yet (3_Run-Import creates these)', toCreate, (w) => `${w.name}  ${money(w.price)}  cert ${w.cert}`);
+  section('Workbook says Website = Y (live), but there is no listing at all', liveMissing, (w) => `${w.name}  ${money(w.price)}  cert ${w.cert}`);
+  section('Live on the site, but the workbook still says R: change it to Y', stillReady, ([l]) => l.name);
+  section('For sale on the site, but the workbook says neither Y nor R', notFlagged, ([l, w]) => `${l.name}  (Website column: "${w.website || 'blank'}")`);
   section('On the site, with no workbook row for its cert #', noRow, (l) => `${l.name}  (Grade Number "${l.gradenumber ?? ''}")`);
   section('Coins whose details differ', diffs, ([l, d]) => `${l.name}\n        ${d.join('\n        ')}`);
   console.log(`  FYI: ${names.length} name(s) are worded differently on the site (not an error):`);

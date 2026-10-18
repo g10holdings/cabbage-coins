@@ -6,19 +6,22 @@ work. You never need to open it (except to edit `coin-designs.js`, below).
 
 | Double-click | What it does |
 |---|---|
-| `1_Preview-Import` | Shows the listings the import would create from the workbook. Writes nothing. |
-| `2_Run-Import` | Creates the draft listings in Sanity, then fills in PCGS population. |
-| `3_Preview-Photo-Rename` | Shows how the photos in "waiting to post" would be renamed. Changes nothing. |
-| `4_Rename-Photos` | Renames them to `<Folder>-1.jpg`, `-2` … |
-| *(you)* | Upload the photos to the drafts in the Studio. |
-| `5_Choose-Captions` | Suggests captions from the photos and opens the chooser. |
-| *(you)* | Finish each draft in the Studio and **Publish**. |
-| `6_Preview-CAC-Marketplace` | Shows what would go to CAC's marketplace: new coins, changes, sold coins to take down. Sends nothing. |
-| `7_Send-To-CAC-Marketplace` | Sends it. Run it after publishing a batch, and after marking coins **Sold**. |
-| `8_Check-Workbook-vs-Website` | Compares the website with the workbook: prices, sold coins, Website flags, grades. Changes nothing. |
+| *(you)* | Workbook up to date: each coin to list marked **Website = R** (ready), with its details and listPrice right. Save it. |
+| *(you)* | Shoot the coins, pick the semi-finalists in Lightroom, export each coin to its own folder in `waiting_website` whose name **ends with the cert #**. |
+| `1_Prep-Photos` | Names each folder from the workbook, then makes the coin's 4 website photos: crops, a window to check the coin's edge, logos, `-1` … `-4`. |
+| `2_Preview-Import` | Shows the listings the import would create (Website = R coins) and whether each one's photos are ready. Writes nothing. |
+| `3_Run-Import` | Creates the draft listings, puts the 4 photos on each, fills in PCGS population. |
+| `4_Choose-Captions` | Suggests captions from the photos and opens the chooser. |
+| *(you)* | Write the "Tony says…" description in the Studio and **Publish**. Then set the coin to **Website = Y** in the workbook. |
+| `5_Preview-CAC-Marketplace` | Shows what would go to CAC's marketplace: new coins, changes, sold coins to take down. Sends nothing. |
+| `6_Send-To-CAC-Marketplace` | Sends it. Run it after publishing a batch, and after marking coins **Sold**. |
+| `7_Preview-eBay` | Shows what the eBay sync would do. Changes nothing. |
+| `8_Send-To-eBay` | Does it. |
+| `9_Check-Workbook-vs-Website` | Compares the website with the workbook: prices, sold coins, Website R/Y flags, grades. Changes nothing. |
 
 The **`Extras`** folder has the occasional ones: `Undo-Import` (deletes the drafts the
-import made) and `Fill-PCGS-Pop` (finishes PCGS population another day).
+import made), `Fill-PCGS-Pop` (finishes PCGS population another day), `Connect-eBay`, and
+`Preview-Photo-Rename` / `Rename-Photos` (only for photos you made by hand in Photoshop).
 
 ---
 
@@ -40,37 +43,102 @@ How the inventory columns are read:
   7199 the catalog #. The listing shows 97199; sorting by PCGS # uses 7199. A designation # written alone (e.g. `97129` on a
   DMPL coin) is noticed and flagged in the preview.
 - **listPrice** = the website price.
-- **Website** = `Y` means it belongs on the website. A `Y` coin that's **Active** with no
-  listing yet is what the import creates. `N/A` is never listed.
+- **Website**:
+  - `R` = ready: the coin's photos and listing are to be made. An **Active** `R` coin with
+    no listing yet is what the import creates.
+  - `Y` = live on the website. You set this yourself once the listing is published, and
+    `9_Check-Workbook-vs-Website` reminds you about any live coin still marked `R`.
+  - `N/A` = never listed.
 - **Category** isn't in the workbook, so it's worked out: ingots → Vintage Ingot,
   palladium/platinum → Other, gold denominations or "Gold" → Gold, cents and
   nickels → Copper/Bronze, everything else → Silver. Check it in the preview.
 
 ## Your monthly routine
 
-**Before step 1:** mark each coin you're listing **Website = Y** in the inventory sheet,
-check its listPrice, and **save** the workbook.
+**Before you start:** mark each coin you're listing **Website = R** in the inventory sheet,
+check its details and listPrice, and **save** the workbook.
 
-**1. Preview the import.** Double-click **`1_Preview-Import`**.
+**Photos.** Shoot each coin, obverse shots first, then the reverse. In Lightroom, pick the
+semi-finalists for exposure and export each coin to its own folder under
+`D:\OneDrive\Cabbage Coins\Inventory Photos\waiting_website`. **End the folder name with
+the cert #**, after a dash: `1895-O-10-Dollar-MS62-59080489`. What comes before the cert
+is up to you, since the script renames the folder anyway. Keep the camera file names
+(`DSC….jpg`).
+
+**1. Prep the photos.** Double-click **`1_Prep-Photos`**.
+
+First it **names each folder from the workbook**. It finds the cert's row and renames the
+folder to the row's itemDescription plus the cert:
+`1895-O-10-Dollar-Liberty-Head-Eagle-PCGS-MS62-59080489`. The 4 photos get the same name
+without the cert (`1895-O-10-Dollar-Liberty-Head-Eagle-PCGS-MS62-1.jpg` …), so the file
+names always match the listing title. That matters for search engines, and a typo can't
+reach the website.
+
+Before renaming, it compares your folder name with the row:
+- **A different year, mint mark or grade** means the cert # is probably mistyped. That
+  folder is **left alone** and listed at the end. Fix the cert # and run it again.
+- **A series word the workbook doesn't have** (say "Morgan" on a Peace dollar) is just
+  corrected, and named in a note.
+- **A folder with no cert # at the end**, or whose coin is Sold in the workbook, is skipped
+  with a message.
+
+Then, for each coin, it:
+1. **Splits obverse from reverse** by the DSC numbers (the jump between the two runs).
+2. **Turns and crops** each raw shot: stands the slab upright and crops to its edges plus
+   20 px. Obverse shots get the label on top. Reverse shots get the coin on top for US coins
+   (coin turn), and the label on top for world coins, which are medal turn: Reales, Pesos,
+   Crowns, Thalers and so on, recognized from the workbook name. Shots you already cropped by
+   hand (portrait) are left as they are.
+3. **Picks the best exposure** of each side (the least blown-out coin) and guesses the
+   coin's true edge.
+4. **Opens a check window** for each side. Blue circle = the coin's edge. If it's right, press
+   **Enter**. If not:
+   - **Click 3 points** on the true edge. Right-click undoes a point.
+   - **Arrow keys** move the circle; **+ / −** or the mouse wheel resize it (hold Shift for
+     bigger steps).
+   - **T** turns the shot 180° if the slab or coin is upside down.
+   - **PgUp / PgDn** switches to another shot of the same side.
+   - **[ / ]** makes the coin smaller or bigger inside the mask.
+   - **Esc** stops for now. Finished coins are kept.
+5. **Writes** `<Name>-1.jpg` (obverse slab), `-2` (obverse close-up), `-3` (reverse slab),
+   `-4` (reverse close-up), all 1044 × 1044. The camera shots move into an `originals`
+   subfolder, and your choices are saved there in `photo-prep.txt`.
+
+**Nothing is brightened, sharpened or color-corrected.** The only changes are turning,
+cropping, resizing, the black mask and the logos. Close-ups get the Cabbage Coins logo at 80%
+bottom-left, plus the CAC oval bottom-right when the workbook grade has CAC (CACG holders too, as on the site). On most coins
+the coin sits 10 px inside the 900 px mask, so the edge shows. **Small coins** (half dimes,
+gold dollars, three-cent pieces) are capped at 50 px per mm, so the insert shows around them
+instead of the coin being over-magnified.
+
+The coin's size comes from the workbook name (`H10C`, `$10`, `G$1`, `Peace`…; the table is
+`Get-CoinMM` in `engine\Prep-Photos.ps1`). If the name doesn't say, the window asks you to
+click 3 points.
+
+Coins that already have all 4 photos are skipped. To check one again, run from `engine`:
+`powershell -File Prep-Photos.ps1 -Redo -Only 1895-O`. It starts from your saved choices.
+
+**2. Preview the import.** Double-click **`2_Preview-Import`**.
 It prints every coin it would create, with what it worked out (grade, dates,
 denomination, PCGS #, category, alt text), and writes **nothing** to Sanity.
-Read the ⚠ warnings at the bottom: they name anything it couldn't work out. If something
-is wrong, fix the row in the workbook (or tell Claude, if a rule is wrong), save, and
-preview again.
+At the end, **Photos** lists each coin and its folder:
+- **✓** means the 4 photos are ready.
+- **·** means the folder isn't found or the photos aren't made yet. That's expected for
+  ingots and other one-offs: add their photos in the Studio yourself.
 
-**2. Import.** Double-click **`2_Run-Import`**.
-It creates the drafts in Sanity (with alt text), then fills in PCGS population. Safe
-to run twice — coins that already exist are skipped.
+Read the ⚠ warnings: they name anything it couldn't work out. If something is wrong, fix
+the row in the workbook (or tell Claude, if a rule is wrong), save, and preview again.
 
-**3 and 4. Rename the photos.** Put each coin's photos in its own folder under
-`D:\OneDrive\Cabbage Coins\Inventory Photos\waiting_website\waiting to post`.
-Double-click **`3_Preview-Photo-Rename`** to check, then **`4_Rename-Photos`**. Each
-folder's photos become `<FolderName>-1.jpg`, `-2` … in their current name order.
-Folders already renamed are skipped.
+**3. Import.** Double-click **`3_Run-Import`**.
+It creates the drafts in Sanity (with alt text), puts each coin's 4 photos on its draft,
+then fills in PCGS population. The photos go in the same slots as on every listing: the
+obverse close-up is the main image, then the reverse close-up, obverse slab and reverse
+slab. Safe to run again:
+- Coins that already exist are skipped.
+- A draft that's still missing photos gets them once they're made.
+- A draft that already has photos is never touched, and neither is a published listing.
 
-**Upload the photos** to each draft in the Studio.
-
-**5. Captions.** Double-click **`5_Choose-Captions`**. For every draft that has all 4
+**4. Captions.** Double-click **`4_Choose-Captions`**. For every draft that has all 4
 photos and no caption, Claude looks at the photos (slab label and CAC sticker
 included) and suggests captions. A page then opens in your browser:
 
@@ -93,13 +161,24 @@ The suggester learns from you. What you flag, pick and write is saved in
 A **"Check:"** note under a suggestion means it states a fact you should confirm first.
 A **"Label check"** warning means the slab label disagrees with the listing's data.
 
-**Finish in the Studio:** click **Generate** on the slug, write the description, check
-the alt text and caption, then **Publish**. To run the Studio on this computer:
+**Finish in the Studio:**
+1. Click **Generate** on the slug.
+2. Write the "Tony says…" description.
+3. Check the alt text and caption.
+4. **Publish**.
+5. Set the coin to **Website = Y** in the workbook.
+
+To run the Studio on this computer:
 ```
 cd "C:\Users\Tony Gryckiewicz\cabbage-coins\studio"
 npm run dev
 ```
 → http://localhost:3333
+
+**5–8. Marketplaces.** After publishing, run `5_Preview-CAC-Marketplace` and then
+`6_Send-To-CAC-Marketplace`, then `7_Preview-eBay` and then `8_Send-To-eBay`. Details are below.
+
+**9. Check.** `9_Check-Workbook-vs-Website` any time. It changes nothing.
 
 ---
 
@@ -157,8 +236,8 @@ nothing to write by hand.
 Imported a batch, then noticed an error in the workbook?
 
 1. Double-click **`Extras\Undo-Import`** — it lists the drafts it made for the
-   Website = Y coins and asks you to confirm before removing them.
-2. Fix the rows in the workbook, save, then double-click **`2_Run-Import`** again.
+   Website = R coins and asks you to confirm before removing them.
+2. Fix the rows in the workbook, save, then double-click **`3_Run-Import`** again.
 
 Safety: undo only removes **drafts**. Anything you've already **published is never
 touched**. (One catch: undo finds a draft by its name, so do the undo *before* fixing
@@ -181,8 +260,8 @@ a coin's itemDescription — or remove that one draft by hand in the Studio.)
 
 From the `engine` folder:
 ```
-npm run import -- --dry-run     # preview (same as 1_Preview-Import)
-npm run import                  # import (same as 2_Run-Import)
+npm run import -- --dry-run     # preview (same as 2_Preview-Import)
+npm run import                  # import (same as 3_Run-Import)
 node import-listings.js --delete            # delete drafts (asks to confirm)
 node import-listings.js --limit 3 --dry-run # preview just the first 3 rows
 node choose-captions.js --fresh             # throw away saved caption suggestions and ask again
@@ -200,7 +279,7 @@ CACG listings don't get one, and it disappears when a coin is marked **Sold**.
 The numbers come from the PCGS API and are saved on the listing (read-only field
 **PCGS Population** in the Studio), so visitors never cause PCGS calls.
 
-- **`2_Run-Import`** fills it in for the new listings right after creating them.
+- **`3_Run-Import`** fills it in for the new listings right after creating them.
 - **`Extras\Fill-PCGS-Pop`** fills in whatever is still missing. PCGS allows
   **100 calls a day** for your account (shared with The Cabbage Patch), and each coin
   takes about **6 calls**, so a big batch takes a few days: when it hits the limit it
@@ -227,7 +306,7 @@ cabbagecoins.com. CAC takes PCGS, NGC and CACG coins, so every graded, unsold co
 Ungraded items, like the ingot, are left out.
 
 **When to run it:** after you **publish** a batch, and after you mark coins **Sold**. Run
-`6_Preview-CAC-Marketplace` first, then `7_Send-To-CAC-Marketplace`. Running it more often
+`5_Preview-CAC-Marketplace` first, then `6_Send-To-CAC-Marketplace`. Running it more often
 does no harm.
 
 **What one send does.** It sends CAC the whole list in a single call. A coin it sent
@@ -261,8 +340,8 @@ CAC allows 1,000 calls a day, and one send uses one call. It needs `CAC_API_KEY`
 
 | Double-click | What it does |
 |---|---|
-| `9_Preview-eBay` | Shows what the sync would do: new listings (eBay checks each one, nothing is posted), price/shipping updates, coins to end, coins that sold on eBay. Changes nothing. |
-| `10_Send-To-eBay` | Does it. Run it after publishing coins, changing prices, or marking coins **Sold**. |
+| `7_Preview-eBay` | Shows what the sync would do: new listings (eBay checks each one, nothing is posted), price/shipping updates, coins to end, coins that sold on eBay. Changes nothing. |
+| `8_Send-To-eBay` | Does it. Run it after publishing coins, changing prices, or marking coins **Sold**. |
 
 Every unsold website coin goes on eBay. eBay follows the website (Sanity), not the workbook.
 
