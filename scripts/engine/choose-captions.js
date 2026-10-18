@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import Anthropic from '@anthropic-ai/sdk';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -51,8 +52,8 @@ for (const key of ['SANITY_WRITE_TOKEN', 'ANTHROPIC_API_KEY']) {
 }
 
 const sanity = createClient({
-  projectId: process.env.SANITY_PROJECT_ID || 'la880an7',
-  dataset: process.env.SANITY_DATASET || 'production',
+  projectId: settings.sanity.projectId,
+  dataset: settings.sanity.dataset,
   apiVersion: '2023-01-01',
   token: process.env.SANITY_WRITE_TOKEN,
   useCdn: false,

@@ -1,0 +1,22 @@
+{
+  "_about": "Where everything lives. Every script reads this one file; change a path here and they all follow. Keys and passwords are NOT here: they're in .env. Use forward slashes in paths.",
+
+  "workbook": "D:/OneDrive/G10 Holdings LLC/g10HoldingsLLC.xlsx",
+
+  "photos": {
+    "_about": "A coin's folder starts in inProgress, moves to listed (4 photos only) once its listing is published, and to sold once it's marked Sold.",
+    "inProgress": "D:/OneDrive/Cabbage Coins/Inventory Photos/waiting_website",
+    "listed": "D:/OneDrive/Cabbage Coins/Inventory Photos/doneUnsold",
+    "sold": "D:/OneDrive/Cabbage Coins/Inventory Photos/doneSOLD",
+    "logo": "D:/OneDrive/Cabbage Coins/Logo/CabbageCoins_Main_White.png",
+    "cacLogo": "../../web/assets/img/caccoin.png"
+  },
+
+  "sanity": {
+    "projectId": "la880an7",
+    "dataset": "production",
+    "apiVersion": "2024-01-01"
+  },
+
+  "ebayPromoImage": "https://cabbagecoins.com/assets/img/ebay-promo-card.jpg"
+}

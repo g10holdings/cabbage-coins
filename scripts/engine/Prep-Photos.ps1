@@ -26,7 +26,7 @@
   .\Prep-Photos.ps1 -Redo           check finished coins again too (starts from the saved choices)
 #>
 param(
-  [string]$Root = 'D:\OneDrive\Cabbage Coins\Inventory Photos\waiting_website',
+  [string]$Root = '',          # the in-progress photo folder; default from settings.json
   [string]$Only = '',
   [switch]$Redo,
   [string]$TestSnapshots = ''   # testing only: accept every guess and save a picture of each window here instead
@@ -35,8 +35,12 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 Add-Type -Path "$PSScriptRoot\CoinPhoto.cs", "$PSScriptRoot\CoinReview.cs" -ReferencedAssemblies System.Drawing, System.Windows.Forms, System.Core
 
-$Emblem = 'D:\OneDrive\Cabbage Coins\Logo\CabbageCoins_Main_White.png'
-$CacLogo = (Resolve-Path "$PSScriptRoot\..\..\web\assets\img\caccoin.png").Path
+# Paths come from settings.json (shared with the Node scripts); relative ones are relative to this folder.
+$Settings = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'settings.json') | ConvertFrom-Json
+function Resolve-Setting([string]$p) { if ([IO.Path]::IsPathRooted($p)) { [IO.Path]::GetFullPath($p) } else { [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $p)) } }
+if (-not $Root) { $Root = Resolve-Setting $Settings.photos.inProgress }
+$Emblem = Resolve-Setting $Settings.photos.logo
+$CacLogo = Resolve-Setting $Settings.photos.cacLogo
 $PX_PER_MM = 66.3      # the copy stand's fixed scale, camera px per mm of coin
 $MAX_PX_PER_MM = 50    # close-up cap so small coins aren't over-magnified (Tony's half dimes / gold dollars, 2026-10)
 $SLAB_MARGIN = 20      # px of background kept around the slab when cropping a raw frame

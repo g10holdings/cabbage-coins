@@ -32,6 +32,7 @@ import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import slugify from 'slugify';
 import { slabsFirst } from './photo-order.js';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -42,7 +43,7 @@ const CAC_ONLY = args.includes('--cac-only');
 const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
 const MASS_REMOVAL = 10;
 const SITE = 'https://cabbagecoins.com';
-const PROJECT = 'la880an7';
+const PROJECT = settings.sanity.projectId;
 const API = process.env.CAC_MARKETPLACE_URL || 'https://api.cacgrading.com/marketplace';   // overridable for testing
 const LEDGER_ID = 'cac-marketplace-ledger';
 const OUT_FILE = path.join(__dirname, 'cac-marketplace-preview.json');
@@ -53,7 +54,7 @@ const SERVICE = { PCGS: 'PCGS', NGC: 'NGC', CACG: 'CAC' };
 // "image-<hash>-1044x1044-jpg" -> the original file on Sanity's CDN (CAC gets the full master, untouched).
 const imageUrl = (ref) => {
   const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
-  return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
+  return m ? `https://cdn.sanity.io/images/${PROJECT}/${settings.sanity.dataset}/${m[1]}-${m[2]}.${m[3]}` : null;
 };
 // "MS66 CAC" -> "MS66", "PR65 CAM CAC" -> "PR65CAM", "VG08" -> "VG8": CAC wants the grade alone, written like
 // its examples (it rejects the leading zero: "Invalid `grade`").
@@ -128,7 +129,7 @@ async function main() {
   const { SANITY_WRITE_TOKEN, CAC_API_KEY, CAC_API_TOKEN } = process.env;
   if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from scripts/engine/.env');
   if (SEND && (!CAC_API_KEY || !CAC_API_TOKEN)) throw new Error('CAC_API_KEY / CAC_API_TOKEN are missing from scripts/engine/.env');
-  const client = createClient({ projectId: PROJECT, dataset: 'production', apiVersion: '2024-01-01', token: SANITY_WRITE_TOKEN, useCdn: false });
+  const client = createClient({ projectId: PROJECT, dataset: settings.sanity.dataset, apiVersion: settings.sanity.apiVersion, token: SANITY_WRITE_TOKEN, useCdn: false });
 
   const [{ items, skipped }, ledger] = await Promise.all([buildFeed(client), loadLedger(client)]);
   const inFeed = new Set(items.map((i) => i.sellerId));

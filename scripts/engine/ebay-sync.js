@@ -38,6 +38,7 @@ import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
 import { slabsFirst } from './photo-order.js';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -46,7 +47,7 @@ const args = process.argv.slice(2);
 const SEND = args.includes('--send');
 const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
 const MASS_REMOVAL = 10;
-const PROJECT = 'la880an7';
+const PROJECT = settings.sanity.projectId;
 const LEDGER_ID = 'ebay-ledger';
 const OUT_FILE = path.join(__dirname, 'ebay-preview.json');
 
@@ -190,11 +191,11 @@ const RETURN_POLICY = '<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</
 // Tony's "Cabbage Coins · follow & message" card (1080×1080): the LAST photo on every listing (Tony, 2026-10-17).
 // Served from the website (web/assets/img), like the coin photos come from Sanity: eBay refuses a listing that
 // mixes its own hosted pictures with outside ones, so the eBay-hosted copy can't be used.
-const PROMO_IMAGE = 'https://cabbagecoins.com/assets/img/ebay-promo-card.jpg';
+const PROMO_IMAGE = settings.ebayPromoImage;
 
 const imageUrl = (ref) => {
   const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
-  return m ? `https://cdn.sanity.io/images/${PROJECT}/production/${m[1]}-${m[2]}.${m[3]}` : null;
+  return m ? `https://cdn.sanity.io/images/${PROJECT}/${settings.sanity.dataset}/${m[1]}-${m[2]}.${m[3]}` : null;
 };
 
 /** The coin's eBay photos: slab shots first, then the close-ups (photo-order.js), then the promo card. */
@@ -357,7 +358,7 @@ const money = (n) => `$${Number(n).toLocaleString()}`;
 async function main() {
   const { SANITY_WRITE_TOKEN } = process.env;
   if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from engine/.env');
-  const client = createClient({ projectId: PROJECT, dataset: 'production', apiVersion: '2024-01-01', token: SANITY_WRITE_TOKEN, useCdn: false });
+  const client = createClient({ projectId: PROJECT, dataset: settings.sanity.dataset, apiVersion: settings.sanity.apiVersion, token: SANITY_WRITE_TOKEN, useCdn: false });
 
   const [coins, ledger, live] = await Promise.all([
     client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]

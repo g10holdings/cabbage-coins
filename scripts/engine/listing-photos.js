@@ -13,8 +13,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { settings } from './settings.js';
 
-export const PHOTO_ROOT = process.env.PHOTO_ROOT || 'D:/OneDrive/Cabbage Coins/Inventory Photos/waiting_website';
+export const PHOTO_ROOT = settings.photos.inProgress;
 const SLOTS = [2, 4, 1, 3];   // file number for: main image, then the 3 gallery images
 
 export function photoFolders(root = PHOTO_ROOT) {

@@ -32,6 +32,7 @@ import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -40,8 +41,8 @@ const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 const YES = args.includes('--yes');
 
-const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'la880an7';
-const DATASET = process.env.SANITY_DATASET || 'production';
+const PROJECT_ID = settings.sanity.projectId;
+const DATASET = settings.sanity.dataset;
 
 // Transcribed from the old hardcoded coinshows.njk. Note the two shows whose
 // `data-end` values were not zero-padded there (2026-08-8, 2026-10-3) — they
@@ -171,7 +172,7 @@ async function main() {
   const client = createClient({
     projectId: PROJECT_ID,
     dataset: DATASET,
-    apiVersion: '2024-01-01',
+    apiVersion: settings.sanity.apiVersion,
     token: process.env.SANITY_WRITE_TOKEN,
     useCdn: false,
   });

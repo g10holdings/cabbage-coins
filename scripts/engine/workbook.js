@@ -16,20 +16,20 @@
  *   Website         "R" = ready: photos and listing to be made (the import takes these); "Y" = live on the
  *                   website (Tony sets it once published); "N/A" = never. Status says Active or Sold.
  *
- * Path: WORKBOOK_PATH in engine/.env, else the default below.
+ * Path: "workbook" in settings.json (WORKBOOK_PATH in .env still overrides it).
  */
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import * as XLSX from 'xlsx';
+import { settings } from './settings.js';
 
-export const DEFAULT_WORKBOOK = 'D:/OneDrive/G10 Holdings LLC/g10HoldingsLLC.xlsx';
 const SHEET = 'inventory';
 const NEEDED = ['inventoryID', 'Type', 'itemDescription', 'Certification', 'CAC', 'PCGS Num', 'Website', 'Status', 'listPrice'];
 
 /** All rows of the inventory sheet, read from a throwaway copy. */
-export function readInventory(file = process.env.WORKBOOK_PATH || DEFAULT_WORKBOOK) {
+export function readInventory(file = settings.workbook) {
   if (!fs.existsSync(file)) throw new Error(`Workbook not found: ${file}`);
   const before = fs.statSync(file);
   const copy = path.join(os.tmpdir(), `cabbage-workbook-${process.pid}-${Date.now()}.xlsx`);

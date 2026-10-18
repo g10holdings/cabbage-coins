@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { fetchPopGrid, PcgsLimitError } from './pcgs-pop.js';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -90,9 +91,9 @@ async function main() {
   if (!PCGS_API_TOKEN && !DRY_RUN) throw new Error('PCGS_API_TOKEN is missing from scripts/engine/.env');
 
   const client = createClient({
-    projectId: process.env.SANITY_PROJECT_ID || 'la880an7',
-    dataset: process.env.SANITY_DATASET || 'production',
-    apiVersion: '2024-01-01',
+    projectId: settings.sanity.projectId,
+    dataset: settings.sanity.dataset,
+    apiVersion: settings.sanity.apiVersion,
     token: SANITY_WRITE_TOKEN,
     useCdn: false,
     perspective: 'raw',

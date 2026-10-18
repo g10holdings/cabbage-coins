@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './workbook.js';
+import { settings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -39,7 +40,7 @@ const loose = (s) => String(s ?? '').toUpperCase().replace(/\s+/g, '');
 
 async function main() {
   const { rows, file, savedAt } = readInventory();
-  const client = createClient({ projectId: 'la880an7', dataset: 'production', apiVersion: '2024-01-01', useCdn: false, token: process.env.SANITY_WRITE_TOKEN });
+  const client = createClient({ projectId: settings.sanity.projectId, dataset: settings.sanity.dataset, apiVersion: settings.sanity.apiVersion, useCdn: false, token: process.env.SANITY_WRITE_TOKEN });
   const listings = await client.fetch(`*[_type == "listing"]{_id, name, sold, price, gradenumber, date, dateshown, grade, gradingCompany, pcgsCatalogNumber, pcgsDesignationNumber}`);
 
   console.log(`Workbook: ${file}  (saved ${savedAt.toLocaleString()}, ${rows.length} inventory rows; opened read-only)`);
