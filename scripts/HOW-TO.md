@@ -146,6 +146,18 @@ and `doneSOLD`.
 
 All should say **pass**. Run it after any change to the scripts.
 
+### Make name banners for a YouTube video
+**`Extras\Make-Video-Graphics`** lists every coin for sale on the website (newest first), then the
+Website = R coins that aren't up yet. Type the numbers of the coins in the video, in the order they
+appear, e.g. `12 3 7-9`. You get one 3840×2160 (4K) transparent PNG per coin, with the banner in the top
+left, in `D:\OneDrive\Cabbage Coins\Video Graphics\<today>`. Drop each one on the timeline above the
+footage.
+
+The name is shortened from the listing name, and long names shrink to fit. To word one yourself, add
+it to `engine\video-titles.json` by cert (or by the full listing name for an item with no cert):
+`"2625432-001": { "title": "1796 Draped Bust Dollar" }`. A `subtitle` (the grade line) and `price`
+can be set the same way.
+
 ### What can be deleted
 - **Camera shots:** step 4 deletes them for you when it files a published coin. OneDrive keeps deleted files in its online Recycle Bin for about 30 days.
 - **Ready photo folders:** leave folders in `waiting_website` until step 4 files them.

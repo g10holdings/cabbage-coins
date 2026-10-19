@@ -1,0 +1,7 @@
+{
+  "_about": "Your own wording for a coin's video banner, by cert (the website's Grade Number, or the workbook inventoryID for a coin not on the website yet). Any of title / subtitle / price can be given; the rest still comes from the listing. Delete an entry to go back to the automatic name.",
+
+  "#213 San Francisco Mint Ingot Type 3 Logo 40.95ozs 999.75 FINE": { "title": "San Francisco Mint 40.95 oz Ingot", "subtitle": "Type 3 Logo · .99975 Fine · #213" },
+  "535": { "title": "San Francisco Mint 9.99 oz Ingot", "subtitle": "Type 2 · .99975 Fine · #535" },
+  "02592": { "title": "Engelhard 4 oz Top Logo Ingot", "subtitle": ".999+ Fine · #02592" }
+}
