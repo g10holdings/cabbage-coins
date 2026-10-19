@@ -238,4 +238,5 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `Rename-Photos.ps1` | The old hand-photo renamer (`Extras`) |
 | `test\` | The rule checks (`Extras\Check-Rules`, or `npm test`) |
 | `docs-page.js` | Builds the shareable Playbook page from README, HOW-TO and REFERENCE |
+| `video-graphics.js`, `video-titles.json` | 4K name banners for YouTube videos (`Extras\Make-Video-Graphics`), and your own wording for them |
 | `clean-sitesettings.js`, `seed-coinshows.js` | One-off maintenance scripts |
