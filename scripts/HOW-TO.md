@@ -158,6 +158,20 @@ it to `engine\video-titles.json` by cert (or by the full listing name for an ite
 `"2625432-001": { "title": "1796 Draped Bust Dollar" }`. A `subtitle` (the grade line) and `price`
 can be set the same way.
 
+**The YouTube thumbnail** is the last question. Answer `y`, then give:
+- the big words, e.g. `PAN Show` or `Whitman Expo`;
+- the second line (Enter = `Inventory Preview`);
+- the date tag (Enter = this month; `-` = none).
+
+It then lists the video's coins with the photos each one has. Pick **3 slab shots**, then **3
+close-ups**; the first close-up is the big one. Enter picks the priciest. Website photos are used,
+obverses only, or the prepped photos in `waiting_website` for coins not on the website yet.
+
+You get **4 thumbnails** (1280×720 JPEG), each in a different color theme and layout; use the
+one you like. Answer `y` to "Make more" for 4 more. The looks already made are remembered
+(`engine\.thumbnail-history.json`), so each video gets ones not used before. There are 9 themes
+and 4 layouts, and they're listed at the top of `engine\video-thumbnail.js`.
+
 ### What can be deleted
 - **Camera shots:** step 4 deletes them for you when it files a published coin. OneDrive keeps deleted files in its online Recycle Bin for about 30 days.
 - **Ready photo folders:** leave folders in `waiting_website` until step 4 files them.

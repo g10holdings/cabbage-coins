@@ -17,6 +17,8 @@
  * notes in brackets dropped). To word one differently, add it to video-titles.json by cert:
  *   "13798817": { "title": "1837 Capped Bust Half Dime", "subtitle": "PCGS MS65 CAC" }
  *
+ * Last, it offers the video's YouTube thumbnail (video-thumbnail.js).
+ *
  * Drawn by Microsoft Edge in headless mode (already on every Windows PC). Reads the website and the
  * workbook; changes nothing in either.
  */
@@ -25,24 +27,20 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import readline from 'node:readline/promises';
+import readline from 'node:readline';
 import { ENGINE, sanity } from './settings.js';
 import { readInventory, certKey, nameKey, hasCert, gradeOf, denominationOf } from './workbook.js';
+import { EDGE, screenshot, obversePhotos, makeThumbnails, thisMonth } from './video-thumbnail.js';
 
 const raw = JSON.parse(fs.readFileSync(path.join(ENGINE, 'settings.json'), 'utf8'));
 const vg = raw.videoGraphics ?? {};
-const OUT_ROOT = path.resolve(ENGINE, vg.folder ?? 'D:/OneDrive/Cabbage Coins/Video Graphics');
+const OUT_ROOT = process.env.VIDEO_GRAPHICS_DIR || path.resolve(ENGINE, vg.folder ?? 'D:/OneDrive/Cabbage Coins/Video Graphics');
 const EMAIL = vg.email ?? 'tony@cabbagecoins.com';
 const WEBSITE = vg.website ?? 'cabbagecoins.com';
 const HEAD = path.resolve(ENGINE, vg.logo ?? 'D:/OneDrive/Cabbage Coins/Logo/CabbageCoins_Main_White.png');
 const TITLES = path.join(ENGINE, 'video-titles.json');
-
-const EDGE = [
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-].find((p) => fs.existsSync(p));
 
 const str = (v) => (v == null ? '' : String(v).trim());
 const COMPANY_CUT = /\s+(?:PCGS|NGC|CACG|CAC|ANACS|ICG)\b.*$/;
@@ -87,8 +85,8 @@ const slug = (s) => str(s).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').
  */
 async function candidates() {
   const listings = await sanity().fetch(`*[_type == "listing" && !(_id in path("drafts.**")) && sold != true]
-    | order(_createdAt desc){name, price, grade, gradenumber, gradingCompany}`);
-  const coins = listings.map((l) => ({ cert: str(l.gradenumber), name: l.name, company: l.gradingCompany, grade: l.grade, price: l.price, onSite: true }));
+    | order(_createdAt desc){name, price, grade, gradenumber, gradingCompany, "photos": [image.asset->url] + imagesGallery[].asset->url}`);
+  const coins = listings.map((l) => ({ cert: str(l.gradenumber), name: l.name, company: l.gradingCompany, grade: l.grade, price: l.price, photos: l.photos, onSite: true }));
   const onSite = new Set(listings.flatMap((l) => [certKey(l.gradenumber), nameKey(l.name)]));
   for (const r of readInventory().rows) {
     if (!/^active$/i.test(str(r.Status)) || !/^R$/i.test(str(r.Website))) continue;
@@ -112,7 +110,6 @@ export function parsePicks(answer, max) {
   return out;
 }
 
-/** Shows the numbered list and asks which ones. Certs given on the command line skip the question. */
 /**
  * The banner's words for each coin: title, subtitle and price, from video-titles.json where you've
  * written your own (keyed by cert, or by the full listing name for items with no cert), else made here.
@@ -124,6 +121,7 @@ function withWording(coins) {
     const o = (hasCert(c.cert) && own.get(certKey(c.cert))) || own.get(nameKey(c.name)) || {};
     return {
       ...c,
+      amount: Number(c.price) || 0,
       title: o.title ?? shortName(c.name),
       subtitle: o.subtitle ?? subtitleOf(c.company, c.grade),
       price: o.price ?? price(c.price),
@@ -131,7 +129,38 @@ function withWording(coins) {
   });
 }
 
-async function choose(coins, args) {
+/**
+ * One reader for every question in a run. Lines typed (or piped) ahead of a question are kept for it, which
+ * readline's own question() would drop. At the end of input every answer is blank.
+ */
+function asker() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const queued = [];
+  let waiting = null, closed = false;
+  rl.on('line', (l) => (waiting ? (waiting(l), (waiting = null)) : queued.push(l)));
+  rl.on('close', () => { closed = true; if (waiting) waiting(''); });
+  const ask = (q) => {
+    process.stdout.write(q);
+    if (queued.length) { const a = queued.shift(); console.log(a); return Promise.resolve(a); }
+    return closed ? Promise.resolve('') : new Promise((r) => { waiting = r; });
+  };
+  ask.close = () => rl.close();
+  return ask;
+}
+
+/** Asks for numbers until they're valid; [] on Enter. */
+async function askNumbers(ask, question, max, { exactly } = {}) {
+  for (;;) {
+    const answer = await ask(question);
+    if (!answer.trim()) return [];
+    const picks = parsePicks(answer, max);
+    if (picks && (!exactly || picks.length === exactly)) return picks;
+    console.log(exactly ? `  Give exactly ${exactly} numbers from 1 to ${max}.` : `  Use numbers from 1 to ${max}, with spaces, commas or ranges like 7-10.`);
+  }
+}
+
+/** Shows the numbered list and asks which ones. Certs given on the command line skip the question. */
+async function choose(coins, args, ask) {
   const ids = args.filter((a) => !a.startsWith('--')).map(certKey);
   if (ids.length) return coins.filter((c) => ids.includes(certKey(c.cert)));
   const w = String(coins.length).length;
@@ -139,17 +168,61 @@ async function choose(coins, args) {
     const where = c.onSite ? '' : '   (not on website yet)';
     console.log(`  ${String(i + 1).padStart(w)}. ${c.title.padEnd(42)} ${c.price.padStart(8)}   ${c.subtitle}${where}`);
   });
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  try {
+  const picks = await askNumbers(ask, '\nWhich coins are in this video? Numbers, e.g. 1 4 7-10 (Enter = none): ', coins.length);
+  return picks.map((n) => coins[n - 1]);
+}
+
+// ---------------------------------------------------------------------------
+// The thumbnail (last step)
+// ---------------------------------------------------------------------------
+
+async function thumbnailStep(coins, ask, outDir, tmp) {
+  const yes = /^y(es)?$/i.test((await ask('\nMake a YouTube thumbnail too? (y/N): ')).trim());
+  if (!yes) return;
+  const big = (await ask('  Big words, e.g. PAN Show or Whitman Expo: ')).trim();
+  if (!big) { console.log('  No words given; no thumbnail.'); return; }
+  const line2 = (await ask('  Second line [Inventory Preview]: ')).trim() || 'Inventory Preview';
+  const tagAnswer = (await ask(`  Date tag [${thisMonth()}] (- for none): `)).trim();
+  const tag = tagAnswer === '-' ? '' : tagAnswer || thisMonth();
+
+  console.log('\n  Getting the photos...');
+  const dir = path.join(tmp, 'photos');
+  fs.mkdirSync(dir, { recursive: true });
+  const shots = [];
+  for (const c of coins) shots.push(await obversePhotos(c, dir));
+  const w = String(coins.length).length;
+  coins.forEach((c, i) => {
+    const has = [shots[i].slab && 'slab', shots[i].close && 'close-up'].filter(Boolean).join(' + ') || 'no photos';
+    console.log(`  ${String(i + 1).padStart(w)}. ${c.title.padEnd(42)} ${has}`);
+  });
+
+  // Enter = the priciest coins, slabs first, then close-ups of other coins where there are enough.
+  const byPrice = coins.map((c, i) => i).sort((a, b) => coins[b].amount - coins[a].amount);
+  const pick = async (kind, question, avoid = []) => {
     for (;;) {
-      const answer = await rl.question('\nWhich coins are in this video? Numbers, e.g. 1 4 7-10 (Enter = none): ');
-      if (!answer.trim()) return [];
-      const picks = parsePicks(answer, coins.length);
-      if (picks) return picks.map((n) => coins[n - 1]);
-      console.log(`  Use numbers from 1 to ${coins.length}, with spaces, commas or ranges like 7-10.`);
+      let nums = await askNumbers(ask, question, coins.length, { exactly: 3 });
+      if (!nums.length) {
+        const ok = byPrice.filter((i) => shots[i][kind]);
+        nums = [...ok.filter((i) => !avoid.includes(i)), ...ok.filter((i) => avoid.includes(i))].slice(0, 3).map((i) => i + 1);
+      }
+      const missing = nums.filter((n) => !shots[n - 1][kind]);
+      if (!missing.length && nums.length) return nums.map((n) => n - 1);
+      console.log(missing.length ? `  No ${kind === 'slab' ? 'slab' : 'close-up'} photo for ${missing.join(', ')}. Pick others.` : '  Not enough photos to choose from.');
+      if (!nums.length) return null;
     }
-  } finally {
-    rl.close();
+  };
+  const slabs = await pick('slab', '\n  3 slab shots, e.g. 1 2 3 (Enter = the priciest): ');
+  if (!slabs) return;
+  const closes = await pick('close', '  3 close-ups, the FIRST is the big one (Enter = the priciest others): ', slabs);
+  if (!closes) return;
+  const photos = { slabs: slabs.map((i) => shots[i].slab), closes: closes.map((i) => shots[i].close) };
+
+  for (;;) {
+    console.log('\n  Making thumbnails, each in a different look...');
+    const made = await makeThumbnails({ words: { big, line2, tag }, photos, outDir, tmp, logo: HEAD });
+    for (const f of made) console.log(`    ${path.basename(f)}`);
+    const more = /^y(es)?$/i.test((await ask('\n  Make more, in other looks? (y/N): ')).trim());
+    if (!more) return;
   }
 }
 
@@ -213,42 +286,37 @@ function page(coins) {
 </script></body></html>`;
 }
 
-function render(html, i, out, profile) {
-  const url = `${pathToFileURL(html).href}?i=${i}`;
-  const r = spawnSync(EDGE, [
-    '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--allow-file-access-from-files',
-    `--user-data-dir=${profile}`, '--default-background-color=00000000', '--window-size=1920,1080', '--force-device-scale-factor=2',   // laid out at 1080p, drawn at 4K
-    '--virtual-time-budget=6000', `--screenshot=${out}`, url,
-  ], { encoding: 'utf8', timeout: 60000 });
-  if (!fs.existsSync(out)) throw new Error(`Edge didn't make ${path.basename(out)}: ${r.stderr || r.error || 'no output'}`);
-}
-
 async function main() {
   if (!EDGE) { console.error('Microsoft Edge was not found, and it is what draws the graphics.'); process.exit(1); }
   if (!fs.existsSync(HEAD)) { console.error(`Logo not found: ${HEAD} (videoGraphics.logo in settings.json)`); process.exit(1); }
   const args = process.argv.slice(2);
-  const coins = await choose(withWording(await candidates()), args);
-  if (!coins.length) { console.log('No coins picked; nothing made.'); return; }
-
-  const day = new Date().toLocaleDateString('en-CA');
-  const outDir = path.join(OUT_ROOT, day);
-  fs.mkdirSync(outDir, { recursive: true });
+  const ask = asker();
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cabbage-video-'));
-  const html = path.join(tmp, 'banner.html');
-  fs.writeFileSync(html, page(coins));
-
-  console.log(`\nMaking ${coins.length} graphic(s) in ${outDir}\n`);
   try {
+    const coins = await choose(withWording(await candidates()), args, ask);
+    if (!coins.length) { console.log('No coins picked; nothing made.'); return; }
+
+    const day = new Date().toLocaleDateString('en-CA');
+    const outDir = path.join(OUT_ROOT, day);
+    fs.mkdirSync(outDir, { recursive: true });
+    const html = path.join(tmp, 'banner.html');
+    fs.writeFileSync(html, page(coins));
+
+    console.log(`\nMaking ${coins.length} graphic(s) in ${outDir}\n`);
     coins.forEach((c, i) => {
       const file = path.join(outDir, `${String(i + 1).padStart(2, '0')}-${slug(c.title)}.png`);
-      render(html, i, file, path.join(tmp, 'edge'));
+      // Laid out at 1080p, drawn at 4K: the videos are 3840×2160.
+      screenshot(`${pathToFileURL(html).href}?i=${i}`, file, path.join(tmp, 'edge'), { width: 1920, height: 1080, scale: 2, transparent: true });
       console.log(`  ${path.basename(file)}   ${c.title}  |  ${c.price}  |  ${c.subtitle}`);
     });
+    console.log(`\nBanners done. To reword a name, add it to engine\\video-titles.json and run again.`);
+
+    await thumbnailStep(coins, ask, outDir, tmp);
+    if (!args.includes('--no-open')) spawn('explorer.exe', [outDir], { detached: true, stdio: 'ignore' }).unref();
   } finally {
+    ask.close();
     fs.rmSync(tmp, { recursive: true, force: true });
   }
-  console.log(`\nDone. To reword a name, add it to engine\\video-titles.json and run again.`);
-  if (!args.includes('--no-open')) spawn('explorer.exe', [outDir], { detached: true, stdio: 'ignore' }).unref();
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
