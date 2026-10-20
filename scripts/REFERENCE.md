@@ -185,11 +185,13 @@ A price in the Studio's **eBay price (fixed)** field overrides the formula.
 
 **Shipping** (by website price, insurance included):
 
-| Website price | Service |
-|---|---|
-| under $1,000 | USPS Ground Advantage ($6) |
-| $1,000–$4,999 | USPS Priority ($20) |
-| $5,000+ | FedEx 2Day ($40) |
+| Website price | Service | Package (fills in eBay's label form) |
+|---|---|---|
+| under $1,000 | USPS Ground Advantage ($6) | 4 oz, 9×6×1 |
+| $1,000–$4,999 | USPS Priority ($20) | 6 oz, 9×6×1 |
+| $5,000+ | FedEx 2Day ($40) | 8 oz, 13×11×2 |
+
+Ingots are the exception: the sync never touches their package, so set it by hand on eBay.
 
 **Always the same on every listing:**
 - Buy It Now, Good 'Til Cancelled;

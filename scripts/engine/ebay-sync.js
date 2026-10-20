@@ -4,6 +4,8 @@
  * Every unsold website coin goes on eBay (unless its "Keep off eBay" box is ticked), priced so Tony nets
  * the same as a website sale, with free shipping whose cost is built into the price:
  *   ship cost   under $1,000 → USPS Ground Advantage $6 · $1,000–$4,999 → USPS Priority $20 · $5,000+ → FedEx 2Day $40
+ *   package     Ground 4 oz 9×6×1 · Priority 6 oz 9×6×1 · FedEx 8 oz 13×11×2 (Tony buys labels through eBay, which fills
+ *               them in from the listing; without these eBay shows 1 oz 1×1×1 and the carrier bills the difference). Ingots: left as set on eBay.
  *   eBay fees   9% of the sale up to $4,000 + 2.35% above + $0.40 per order (store seller, Coins & Paper Money)
  *   eBay price  the smallest whole dollar where price − fees ≥ website price + ship cost
  * No returns, Buy It Now, Good 'Til Cancelled. Offers off unless the coin's "Accept offers on eBay" box is ticked; a filled-in
@@ -11,10 +13,10 @@
  *
  * One run:
  *   - coins already on eBay that the script hasn't seen before are ADOPTED (matched by cert #, else exact title):
- *     only price, shipping, offers and the return policy are changed on those; Tony's title, photos and description stay.
+ *     only price, shipping (incl. package), offers and the return policy are changed on those; Tony's title, photos and description stay.
  *   - new coins are listed (AddFixedPriceItem) with the website photos (slab shots first) + promo card, the title,
  *     and Tony's standard text.
- *   - coins whose price/shipping/photo order changed are revised (ReviseFixedPriceItem).
+ *   - coins whose price/shipping/package/photo order changed are revised (ReviseFixedPriceItem).
  *   - coins sold or removed on the website are ended on eBay (EndFixedPriceItem).
  *   - coins that SOLD ON EBAY are reported, so Tony can mark them sold on the website.
  *   - eBay listings that match no website coin are reported and left alone.
@@ -59,10 +61,12 @@ const OUT_FILE = path.join(__dirname, 'ebay-preview.json');
 // ---------------------------------------------------------------------------
 
 export function shippingFor(sitePrice) {
-  if (sitePrice >= 5000) return { service: 'FedEx2Day', label: 'FedEx 2Day', cost: 40 };
-  if (sitePrice >= 1000) return { service: 'USPSPriority', label: 'USPS Priority', cost: 20 };
-  return { service: 'USPSParcel', label: 'USPS Ground Advantage', cost: 6 };
+  if (sitePrice >= 5000) return { service: 'FedEx2Day', label: 'FedEx 2Day', cost: 40, oz: 8, size: [13, 11, 2] };
+  if (sitePrice >= 1000) return { service: 'USPSPriority', label: 'USPS Priority', cost: 20, oz: 6, size: [9, 6, 1] };
+  return { service: 'USPSParcel', label: 'USPS Ground Advantage', cost: 6, oz: 4, size: [9, 6, 1] };
 }
+// Package as one comparable string, e.g. "4 oz 9x6x1" (what's on eBay vs. what should be).
+export const packageKey = (s) => `${s.oz} oz ${s.size.join('x')}`;
 // eBay charges its fee on the whole order total, INCLUDING the sales tax it collects from the buyer, so the fee
 // is figured on price + tax. 8% covers the combined rate in nearly every state (PA is 6%); Tony, 2026-10-17.
 export const SALES_TAX = 0.08;
@@ -139,6 +143,11 @@ async function liveListings() {
   return out.filter((i) => i.status === 'Active');
 }
 
+function packageOf(p) {
+  const n = (t) => Number(tag(p, t) || 0);
+  return packageKey({ oz: n('WeightMajor') * 16 + n('WeightMinor'), size: [n('PackageLength'), n('PackageWidth'), n('PackageDepth')] });
+}
+
 async function itemInfo(id) {
   const r = await trading('GetItem', `<ItemID>${id}</ItemID><DetailLevel>ReturnAll</DetailLevel>`);
   if (!r.ok) return { id, status: 'Unknown', error: r.errors.map((e) => e.message).join('; ') };
@@ -152,6 +161,7 @@ async function itemInfo(id) {
     sold: Number(tag(tag(x, 'SellingStatus'), 'QuantitySold') || 0),
     bestOffer: tag(tag(x, 'BestOfferDetails'), 'BestOfferEnabled') === 'true',
     shipService: tag(tag(x, 'ShippingServiceOptions'), 'ShippingService'),
+    pkg: packageOf(tag(x, 'ShippingPackageDetails')),
     // "Vendor" = photos the sync sent from the website; eBay reports only the first one's original address.
     // Tony's own uploads (adopted listings) are left alone.
     photoSource: tag(tag(x, 'PictureDetails'), 'PictureSource'),
@@ -306,11 +316,16 @@ function specifics(coin) {
   return Object.entries(s).filter(([, v]) => v).map(([n, v]) => `<NameValueList><Name>${esc(n)}</Name><Value>${esc(v)}</Value></NameValueList>`).join('');
 }
 
-const shippingXml = (sitePrice) => {
-  const s = shippingFor(sitePrice);
+// Ingots weigh more than any standard package: their package is left as Tony set it on eBay.
+const ownPackage = (coin) => coin.category === 'Vintage Ingot';
+const shippingXml = (coin) => {
+  const s = shippingFor(coin.price);
   return `<ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority>`
     + `<ShippingService>${s.service}</ShippingService><ShippingServiceCost currencyID="USD">0.0</ShippingServiceCost><FreeShipping>true</FreeShipping>`
-    + `</ShippingServiceOptions></ShippingDetails>`;
+    + `</ShippingServiceOptions></ShippingDetails>`
+    + (ownPackage(coin) ? '' : `<ShippingPackageDetails><MeasurementUnit>English</MeasurementUnit>`
+    + `<PackageLength unit="in">${s.size[0]}</PackageLength><PackageWidth unit="in">${s.size[1]}</PackageWidth><PackageDepth unit="in">${s.size[2]}</PackageDepth>`
+    + `<WeightMajor unit="lbs">${Math.floor(s.oz / 16)}</WeightMajor><WeightMinor unit="oz">${s.oz % 16}</WeightMinor></ShippingPackageDetails>`);
 };
 
 async function newItemXml(coin) {
@@ -329,7 +344,7 @@ async function newItemXml(coin) {
     + `<ItemSpecifics>${specifics(coin)}</ItemSpecifics>`
     + pictureXml(photos)
     + RETURN_POLICY
-    + shippingXml(coin.price)
+    + shippingXml(coin)
     + `<BestOfferDetails><BestOfferEnabled>${coin.ebayOffers ? 'true' : 'false'}</BestOfferEnabled></BestOfferDetails>`
     + `<InventoryTrackingMethod>ItemID</InventoryTrackingMethod>`
     + `</Item>`;
@@ -387,7 +402,8 @@ async function main() {
       // Photo order: the ledger remembers the full order sent; before it did (first send), only the first photo is known.
       if (l.photoSource === 'Vendor') target.photos = await photosFor(c);
       const newPhotos = !!target.photos && (e.photos ? e.photos.join(' ') !== target.photos.join(' ') : l.firstPhoto !== target.photos[0]);
-      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer !== target.offers || newPhotos) plan.revise.push({ coin: c, target, item: l, newPhotos });
+      const newPackage = !ownPackage(c) && l.pkg !== packageKey(target.ship);
+      if (l.price !== target.price || l.shipService !== target.ship.service || l.bestOffer !== target.offers || newPhotos || newPackage) plan.revise.push({ coin: c, target, item: l, newPhotos, newPackage });
       else plan.unchanged.push({ coin: c, item: l });
       continue;
     }
@@ -451,8 +467,8 @@ async function main() {
   }
   console.log(`\n⇄ Already on eBay, taken over by the sync (price, shipping, offers, returns set; your title, photos, description kept): ${plan.adopt.length}`);
   for (const p of plan.adopt) console.log(`  ${line(p)}   (now ${money(p.item.price)}${p.item.bestOffer ? ', offers on' : ''}${p.how !== 'cert/title' ? `; matched by ${p.how}: eBay title "${p.item.title}"` : ''})`);
-  console.log(`\n~ Price, shipping or photo order to update: ${plan.revise.length}`);
-  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})${p.newPhotos ? '  · photos: slabs first' : ''}`);
+  console.log(`\n~ Price, shipping, package or photo order to update: ${plan.revise.length}`);
+  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})${p.newPhotos ? '  · photos: slabs first' : ''}${p.newPackage ? `  · package: ${p.item.pkg} → ${packageKey(p.target.ship)}` : ''}`);
   console.log(`\n− To end on eBay: ${plan.end.length}`);
   for (const p of plan.end) console.log(`  ${p.coin.name}  (${p.why})`);
   if (plan.soldOnEbay.length) {
@@ -479,7 +495,7 @@ async function main() {
   const now = new Date().toISOString();
   const failed = [];
   const reviseXml = (itemId, p) => `<Item><ItemID>${itemId}</ItemID><StartPrice currencyID="USD">${p.target.price}</StartPrice>`
-    + `${shippingXml(p.coin.price)}<BestOfferDetails><BestOfferEnabled>${p.target.offers}</BestOfferEnabled></BestOfferDetails>`
+    + `${shippingXml(p.coin)}<BestOfferDetails><BestOfferEnabled>${p.target.offers}</BestOfferEnabled></BestOfferDetails>`
     + (p.newPhotos ? pictureXml(p.target.photos) : '')
     + RETURN_POLICY + '</Item>';
   for (const p of [...plan.adopt, ...plan.revise]) {
