@@ -42,7 +42,8 @@ photos → doneSOLD; off CAC; off eBay
 - **The workbook is never written.** `engine\workbook.js` copies it to a temp file, reads the copy, deletes the copy, and checks that the original's size and save time didn't change. If Excel or OneDrive saves it mid-read, the read stops and says to run again. The rule checks fail if any script contains spreadsheet-writing code, or touches the workbook's path outside `workbook.js`.
 - **Every change asks first.** The import, photo filing, CAC and eBay each show a preview and then ask "(y/N)". Anything but `y` changes nothing.
 - **Published listings are never touched** by the import or Undo-Import; only drafts.
-- **Safety catches:** CAC and eBay each refuse to take down more than 10 coins in one run (the `--allow-mass-removal` flag overrides). CAC also refuses an empty feed, which would wipe the marketplace.
+- **Safety catches:** when CAC or eBay would take down more than 10 coins in one run, step 4 warns ("more than usual, are they all sold?") and the y/N covers it. Run by hand with `--send`, they refuse instead, unless you add `--allow-mass-removal`. CAC also refuses an empty feed, which would wipe the marketplace. eBay never lists a coin again after you ended it there by hand unless you say yes (`--relist` with `--send`).
+- **Sold** means Sold in the workbook **or** the Studio's Sold box (`engine\sold.js`), for all three parts of step 4. The Palladium stand-in is the exception.
 - **Deleting:** the only automatic deletion is a published coin's camera shots (`originals\`), when step 4 files its folder, after you say yes. Anything else in a folder moves with it and is named on screen.
 
 ## The workbook
@@ -110,8 +111,9 @@ title, which helps search engines. Example:
 
 **Filing (step 4).** Matched by the cert # at the end of the folder name:
 - **Published listing** with its photos on it → the folder moves to `doneUnsold`; `originals\` and any loose camera shots are deleted.
-- **Sold** → moves to `doneSOLD`, from either place.
+- **Sold** (workbook or Studio) → moves to `doneSOLD`, from either place.
 - **Drafts** stay put.
+- **Older `doneUnsold` folders with no cert #** are matched to workbook rows by year + mint + grade number, with denomination and shared words to break ties. Rows whose listing was deleted still count. If the candidates disagree (some sold, some not) and none fits best, the folder stays and is named on screen. A tie that includes a coin still for sale on the site stays quietly.
 
 ## Listings
 
@@ -206,6 +208,10 @@ and commemoratives. **eBay category #** in the Studio corrects it.
 The record of what's on eBay is in Sanity (`ebay-ledger`). Listings that already sold or
 ended on eBay are cleared from it on the next run.
 
+**Ended on eBay by hand** while the coin is still for sale on the website: it is listed under
+"Ended on eBay by hand" and NOT listed again unless you answer `y` to "list … again?". Once the
+coin is Sold in the workbook, its record is just cleared.
+
 ## Status report
 
 `5_Status-Report` opens a page in your browser. It changes nothing anywhere. It shows:
@@ -231,6 +237,7 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `fill-pcgs-pop.js`, `pcgs-pop.js` | PCGS population |
 | `choose-captions.js` / `.html` | Step 3 |
 | `file-photos.js`, `cac-marketplace.js`, `ebay-sync.js` | Step 4 |
+| `sold.js` | What counts as sold (workbook or Studio), shared by step 4 and the status report |
 | `status-report.js` | Step 5 |
 | `workbook.js` | Reads the workbook (read-only) and its column rules |
 | `coin-designs.js` | The alt-text design table |

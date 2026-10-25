@@ -20,7 +20,9 @@
  *   node cac-marketplace.js --send         Send it to CAC.
  *   node cac-marketplace.js --ask          Preview, then ask before sending (4_After-Publishing-or-Selling).
  *   node cac-marketplace.js --cac-only     Only CAC-stickered and CACG coins (works with --send too).
- *   --allow-mass-removal                   Needed when a run would take down more than 10 coins at once.
+ *   --allow-mass-removal                   Needed with --send when a run would take down more than 10 coins at once
+ *                                          (with --ask it warns and asks instead).
+ * A coin counts as sold when the workbook says Sold or the website's Sold box is ticked (sold.js).
  *
  * Env (scripts/engine/.env): SANITY_WRITE_TOKEN; CAC_API_KEY and CAC_API_TOKEN for --send.
  */
@@ -35,6 +37,7 @@ import slugify from 'slugify';
 import { slabsFirst } from './photo-order.js';
 import { askYes } from './ask.js';
 import { settings } from './settings.js';
+import { workbookSales } from './sold.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -72,10 +75,12 @@ const money = (n) => `$${Number(n).toLocaleString()}`;
 
 /** The feed: one item per unsold listing CAC can take, plus why the others were left out. */
 async function buildFeed(client) {
-  const listings = await client.fetch(
+  const soldInWorkbook = workbookSales();
+  const all = await client.fetch(
     `*[_type == "listing" && sold != true && !(_id in path("drafts.**"))] | order(price desc)
       {_id, name, slug, grade, gradenumber, gradingCompany, cac, price, pcgsCatalogNumber, image, imagesGallery}`,
   );
+  const listings = all.filter((l) => !soldInWorkbook(l));   // Sold in the workbook counts even before the site's box is ticked
   const items = [];
   const skipped = [];
   for (const l of listings) {
@@ -159,12 +164,15 @@ async function main() {
   }
   fs.writeFileSync(OUT_FILE, JSON.stringify(feed, null, 2));
 
-  if (removals.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) {
+  // Many take-downs at once could mean a bad read rather than a busy week: asked about plainly, never done unasked.
+  const mass = removals.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL;
+  if (mass && !ASK) {
     throw new Error(`This would take down ${removals.length} coins at once. If that's right, run again with --allow-mass-removal.`);
   }
+  if (mass) console.log(`\n⚠ That's ${removals.length} coins coming down at once, more than usual. Check the − list above: are they all sold?`);
   const work = [added.length && `add ${added.length}`, changed.length && `update ${changed.length}`, removals.length && `take down ${removals.length}`].filter(Boolean);
   if (!SEND) {
-    if (ASK && work.length && await askYes(`\nCAC: ${work.join(', ')}. Send? (y/N) `)) SEND = true;
+    if (ASK && work.length && await askYes(`\nCAC: ${work.join(', ')}${mass ? ' (all those take-downs are right)' : ''}. Send? (y/N) `)) SEND = true;
     else {
       console.log(!work.length ? '\nNothing to change on CAC.' : ASK ? '\nNothing was sent to CAC.'
         : `\nNothing was sent. To send it, run: node cac-marketplace.js --send${CAC_ONLY ? ' --cac-only' : ''}`);

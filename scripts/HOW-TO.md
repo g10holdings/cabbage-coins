@@ -19,6 +19,16 @@ Situations beyond the monthly steps in [`README.md`](README.md). When in doubt, 
 2. **Workbook:** update the row as you normally do (Status = Sold). The scripts only read it.
 3. **`4_After-Publishing-or-Selling`:** answer `y` to each part. It moves the coin's photo folder to `doneSOLD`, takes it off CAC, and ends it on eBay.
 
+Step 4 goes by **either** one: Sold in the workbook or Sold in the Studio. So a sale marked only
+in the workbook still comes off CAC and eBay. But the website keeps showing the coin for sale until
+you tick Sold in the Studio, and `5_Status-Report` flags it until you do.
+
+### A coin sold at a show while it was on eBay
+If you end the eBay listing yourself, mark the coin **Sold in the workbook** before the next step 4.
+Step 4 never lists a coin again just because you ended it on eBay. While the coin is still for sale
+on the website it shows under **"Ended on eBay by hand"** and asks *"list … again? (y/N)"*. Answer
+`n` (or just Enter) and it stays off eBay.
+
 ### A coin sold on eBay
 Step 4's eBay part lists it under **"SOLD ON EBAY: mark these sold on the website"**.
 1. **Studio:** tick **Sold** and Publish. **Workbook:** Status = Sold.
@@ -88,9 +98,11 @@ photos in the Studio, then run `3_Choose-Captions` (it covers drafts with 4 phot
 write the caption yourself.
 
 ### Older photo folders without a cert #
-Folders filed before October 2026 (in `doneUnsold` / `doneSOLD`) have no cert # at the
-end, so step 4 can't match them to listings. It leaves them alone. Move those by hand
-when a coin sells, or add the cert # to the end of their names so step 4 can take over.
+Folders filed before October 2026 (in `doneUnsold`) have no cert # at the end. Step 4
+matches those to the workbook by **year + mint + grade** (`1881S_1_P66CAC` = 1881-S MS66),
+then by denomination and shared words, and shows "matched by year, mint and grade" on each.
+If a folder could be two coins, one sold and one not, it stays put and is named on screen
+("could be … or …"). Move that one by hand, or add the cert # to the end of its name.
 
 ### "The photo paths are over 240 characters"
 Windows Explorer struggles past 260 characters. The names come from the workbook's
@@ -122,7 +134,7 @@ Nothing special to do: the `_2` is dropped, so it matches its cert. Mark it **R*
 
 ### The 2020-W Palladium Eagle
 A stand-in listing: you have several and show one at a time. The workbook check skips it
-on purpose (`IGNORE` in `engine\status-report.js`).
+on purpose, and so does step 4 (`STAND_INS` in `engine\sold.js`).
 
 ---
 
@@ -139,7 +151,7 @@ and `doneSOLD`.
 3. For eBay, double-click **`Extras\Connect-eBay`**. It walks you through signing in and saves the token.
 
 ### Check that everything still works by the rules
-**`Extras\Check-Rules`** runs 16 checks:
+**`Extras\Check-Rules`** runs 19 checks:
 - the workbook rules against every live listing;
 - that nothing can write the workbook;
 - photo naming, the folder checks, the importer, the status report's next steps, and the photo rules.

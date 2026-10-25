@@ -29,7 +29,10 @@
  *   node ebay-sync.js                    Preview.
  *   node ebay-sync.js --send             Do it.
  *   node ebay-sync.js --ask              Preview, then ask before doing it (4_After-Publishing-or-Selling).
- *   --allow-mass-removal                 Needed when a run would end more than 10 listings.
+ *   --allow-mass-removal                 Needed with --send when a run would end more than 10 listings (--ask warns and asks).
+ *   --relist                             With --send: also list again coins Tony ended on eBay by hand (--ask asks).
+ * Sold = Sold in the workbook or the website's Sold box (sold.js). A coin whose eBay listing was ended by hand
+ * (not sold on eBay) while it's still for sale on the website is NOT listed again unless Tony says so.
  * Env (engine/.env): SANITY_WRITE_TOKEN, EBAY_APP_ID, EBAY_CERT_ID, EBAY_REFRESH_TOKEN (Extras\Connect-eBay).
  */
 
@@ -43,6 +46,7 @@ import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.j
 import { slabsFirst } from './photo-order.js';
 import { askYes } from './ask.js';
 import { settings } from './settings.js';
+import { workbookSales } from './sold.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -51,6 +55,7 @@ const args = process.argv.slice(2);
 let SEND = args.includes('--send');
 const ASK = args.includes('--ask');   // preview, then ask before changing anything (4_After-Publishing-or-Selling)
 const ALLOW_MASS_REMOVAL = args.includes('--allow-mass-removal');
+const RELIST = args.includes('--relist');   // with --send: list again the coins Tony ended on eBay by hand
 const MASS_REMOVAL = 10;
 const PROJECT = settings.sanity.projectId;
 const LEDGER_ID = 'ebay-ledger';
@@ -384,6 +389,9 @@ async function main() {
     loadLedger(client),
     liveListings(),
   ]);
+  // Sold = the workbook says Sold, or the website's Sold box (sold.js): a sale marked only in the workbook still ends it here.
+  const soldInWorkbook = workbookSales();
+  for (const c of coins) if (!c.sold && soldInWorkbook(c)) c.soldInWorkbook = c.sold = true;
   const wanted = coins.filter((c) => !c.sold && !c.notOnEbay && c.price > 0);
   const liveById = new Map(live.map((l) => [l.id, l]));
 
@@ -391,13 +399,14 @@ async function main() {
   const claimed = new Set(Object.values(ledger).map((e) => e.itemId));
   const byCert = new Map(live.filter((l) => l.cert).map((l) => [certKey(l.cert), l]));
   const byTitle = new Map(live.map((l) => [nameKey(l.title), l]));
-  const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], unchanged: [], gone: [] };
+  const plan = { add: [], adopt: [], revise: [], end: [], soldOnEbay: [], relist: [], unchanged: [], gone: [] };
   for (const c of wanted) {
     const target = { price: c.ebayPrice > 0 ? c.ebayPrice : ebayPrice(c.price), fixed: c.ebayPrice > 0, offers: !!c.ebayOffers, ship: shippingFor(c.price) };
     const e = ledger[c._id];
     if (e) {
       const l = liveById.get(e.itemId);
-      if (!l) { const info = await itemInfo(e.itemId); (info.sold > 0 ? plan.soldOnEbay : plan.add).push({ coin: c, target, item: info }); continue; }
+      // Gone from eBay without selling there: Tony ended it by hand (it sold at a show, say). Never relisted unasked.
+      if (!l) { const info = await itemInfo(e.itemId); (info.sold > 0 ? plan.soldOnEbay : plan.relist).push({ coin: c, target, item: info }); continue; }
       if (l.sold > 0) { plan.soldOnEbay.push({ coin: c, item: l }); continue; }
       // Photo order: the ledger remembers the full order sent; before it did (first send), only the first photo is known.
       if (l.photoSource === 'Vendor') target.photos = await photosFor(c);
@@ -437,12 +446,12 @@ async function main() {
     const l = liveById.get(e.itemId);
     if (!l) { plan.gone.push(siteId); continue; }   // already gone from eBay: just forget it (on the next send)
     const coin = coins.find((c) => c._id === siteId) ?? { _id: siteId, name: e.title };
-    (l.sold > 0 ? plan.soldOnEbay : plan.end).push({ coin, item: l, why: coin.sold ? 'sold on the website' : coin.notOnEbay ? '"Keep off eBay" ticked' : 'no longer on the website' });
+    (l.sold > 0 ? plan.soldOnEbay : plan.end).push({ coin, item: l, why: coin.soldInWorkbook ? 'Sold in the workbook' : coin.sold ? 'sold on the website' : coin.notOnEbay ? '"Keep off eBay" ticked' : 'no longer on the website' });
   }
   const unmatched = live.filter((l) => !claimed.has(l.id));
 
   // Preview: let eBay validate each new listing (lists nothing).
-  for (const p of plan.add) {
+  for (const p of [...plan.add, ...plan.relist]) {
     const built = await newItemXml(p.coin);
     p.cat = built.cat; p.catName = await categoryName(built.cat.id); p.photos = built.photos; p.xml = built.xml;
     if (!SEND) {
@@ -468,12 +477,17 @@ async function main() {
   console.log(`\n⇄ Already on eBay, taken over by the sync (price, shipping, offers, returns set; your title, photos, description kept): ${plan.adopt.length}`);
   for (const p of plan.adopt) console.log(`  ${line(p)}   (now ${money(p.item.price)}${p.item.bestOffer ? ', offers on' : ''}${p.how !== 'cert/title' ? `; matched by ${p.how}: eBay title "${p.item.title}"` : ''})`);
   console.log(`\n~ Price, shipping, package or photo order to update: ${plan.revise.length}`);
-  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})${p.newPhotos ? '  · photos: slabs first' : ''}${p.newPackage ? `  · package: ${p.item.pkg} → ${packageKey(p.target.ship)}` : ''}`);
+  for (const p of plan.revise) console.log(`  ${line(p)}   (now ${money(p.item.price)})${p.item.bestOffer !== p.target.offers ? `  · offers: ${p.item.bestOffer ? 'on → off' : 'off → on'}` : ''}${p.newPhotos ? '  · photos: slabs first' : ''}${p.newPackage ? `  · package: ${p.item.pkg} → ${packageKey(p.target.ship)}` : ''}`);
   console.log(`\n− To end on eBay: ${plan.end.length}`);
   for (const p of plan.end) console.log(`  ${p.coin.name}  (${p.why})`);
   if (plan.soldOnEbay.length) {
     console.log(`\n$ SOLD ON EBAY — mark these sold on the website: ${plan.soldOnEbay.length}`);
     for (const p of plan.soldOnEbay) console.log(`  ${p.coin.name}`);
+  }
+  if (plan.relist.length) {
+    console.log(`\n! Ended on eBay by hand, but still for sale on the website: ${plan.relist.length}`);
+    for (const p of plan.relist) console.log(`  ${line(p)}`);
+    console.log('  If it sold, mark it Sold in the workbook and it drops off this list. If not, you\'ll be asked below whether to list it again.');
   }
   if (unmatched.length) {
     console.log(`\n? On eBay but not matched to a website coin (left alone): ${unmatched.length}`);
@@ -482,14 +496,22 @@ async function main() {
   console.log(`\n= Unchanged: ${plan.unchanged.length}`);
   fs.writeFileSync(OUT_FILE, JSON.stringify({ ...plan, add: plan.add.map(({ xml, ...p }) => p) }, null, 2));
 
-  if (plan.end.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL) throw new Error(`This would end ${plan.end.length} listings at once. If that's right, run again with --allow-mass-removal.`);
+  // Many endings at once could mean a bad read rather than a busy week: asked about plainly, never done unasked.
+  const mass = plan.end.length > MASS_REMOVAL && !ALLOW_MASS_REMOVAL;
+  if (mass && !ASK) throw new Error(`This would end ${plan.end.length} listings at once. If that's right, run again with --allow-mass-removal.`);
+  if (mass) console.log(`\n⚠ That's ${plan.end.length} eBay listings ending at once, more than usual. Check the − list above: are they all right?`);
   if (plan.gone.length) console.log(`\n(${plan.gone.length} coin(s) already sold or ended on eBay: the sync's record of them is cleared on the next send.)`);
   const work = [plan.add.length && `list ${plan.add.length}`, plan.adopt.length && `take over ${plan.adopt.length}`, plan.revise.length && `update ${plan.revise.length}`,
     plan.end.length && `end ${plan.end.length}`, plan.gone.length && `clear ${plan.gone.length} old record(s)`].filter(Boolean);
   if (!SEND) {
-    if (ASK && work.length && await askYes(`\neBay: ${work.join(', ')}. Go ahead? (y/N) `)) SEND = true;
-    else { console.log(work.length ? '\nNothing was changed on eBay.' : '\nNothing to change on eBay.'); return; }
+    if (ASK && work.length && await askYes(`\neBay: ${work.join(', ')}${mass ? ' (all those endings are right)' : ''}. Go ahead? (y/N) `)) SEND = true;
+    else if (!(ASK && plan.relist.length)) { console.log(work.length ? '\nNothing was changed on eBay.' : '\nNothing to change on eBay.'); return; }
+    else { if (work.length) console.log('\nNone of that will be changed on eBay.'); for (const k of ['add', 'adopt', 'revise', 'end', 'gone']) plan[k] = []; }
   }
+  // Coins Tony ended on eBay himself go back up only when he says so: one question for the lot, default no.
+  if (plan.relist.length && (RELIST || (ASK && await askYes(`\neBay: list the ${plan.relist.length} coin(s) you ended by hand again? (y/N) `)))) plan.add.push(...plan.relist);
+  else if (plan.relist.length) console.log(`\n(${plan.relist.length} coin(s) ended by hand stay off eBay.)`);
+  if (![plan.add, plan.adopt, plan.revise, plan.end, plan.gone].some((x) => x.length)) { console.log('\nNothing was changed on eBay.'); return; }
 
   // Send.
   const now = new Date().toISOString();

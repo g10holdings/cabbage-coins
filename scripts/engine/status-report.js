@@ -21,14 +21,13 @@ import { pathToFileURL } from 'node:url';
 import { readInventory, certKey, nameKey, hasCert, listingFromRow } from './workbook.js';
 import { photoFolders, findPhotos, splitCert } from './listing-photos.js';
 import { settings, sanity, ENGINE } from './settings.js';
+import { STAND_INS } from './sold.js';
 
 const OUT = path.join(ENGINE, '.status-report.html');
 const NO_OPEN = process.argv.includes('--no-open');
 
 // Listings the workbook check leaves alone, by cert # (Tony, 2026-10-17).
-const IGNORE = new Map([
-  ['6042153-049', '2020-W Palladium Eagle: a stand-in listing; Tony shows one of several at a time'],
-]);
+const IGNORE = STAND_INS;
 // The grading services CAC's marketplace takes (cac-marketplace.js).
 const CAC_SERVICES = new Set(['PCGS', 'NGC', 'CACG']);
 
