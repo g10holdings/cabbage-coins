@@ -54,6 +54,7 @@ test('grading company and CAC: a CACG holder counts as CAC (as on the site)', ()
 test('denomination and category', () => {
   assert.equal(denominationOf('1926 $2.5 Sesquicentennial Gold Commemorative'), '$2.50');
   assert.equal(denominationOf('1804 1/2C Draped Bust Half Cent'), '1/2C');
+  assert.equal(denominationOf('1854 1/2 Matron Head Half Cent PCGS MS64BN'), '1/2C');
   assert.equal(categoryOf({ description: '#213 San Francisco Mint Ingot', denomination: '', type: '' }), 'Vintage Ingot');
   assert.equal(categoryOf({ description: '2020-W Palladium Eagle', denomination: 'Pd$25', type: '' }), 'Other');
   assert.equal(categoryOf({ description: '1854 G$1 Princess Head', denomination: 'G$1', type: '' }), 'Gold');

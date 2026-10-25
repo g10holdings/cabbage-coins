@@ -40,9 +40,17 @@
  * @type {{match: RegExp, denoms?: string[], years?: [number, number], alt: string|null}[]}
  */
 const DESIGNS = [
-  // --- Modern bullion: left blank on purpose ------------------------------
-  // Their designs borrow older ones (Walking Liberty, Saint-Gaudens) and changed in 2021, so the older
-  // lines below would mislabel them.
+  // --- Modern bullion ------------------------------------------------------
+  // Their designs borrow older ones (Walking Liberty, Saint-Gaudens), so they come first. The reverses changed
+  // partway through 2021 (both types that year, so 2021 stays blank), and Platinum Eagles change every year.
+  { match: /(American )?Gold Eagle|\bAGE\b/i, denoms: ['$5', '$10', '$25', '$50'], years: [1986, 2020],
+    alt: 'gold coin with liberty striding with a torch and olive branch and a family of eagles at a nest' },
+  { match: /(American )?Gold Eagle|\bAGE\b/i, denoms: ['$5', '$10', '$25', '$50'], years: [2022, 2099],
+    alt: "gold coin with liberty striding with a torch and olive branch and an eagle's head in profile" },
+  { match: /Silver Eagle|\bASE\b/i, years: [1986, 2020],
+    alt: 'silver coin with liberty walking draped in the flag and a heraldic eagle with a shield' },
+  { match: /Silver Eagle|\bASE\b/i, years: [2022, 2099],
+    alt: 'silver coin with liberty walking draped in the flag and an eagle landing with an oak branch' },
   { match: /American (Silver|Gold|Platinum) Eagle|\bASE\b|\bAGE\b/i, alt: null },
 
   // --- Commemoratives (each has its own design) ---------------------------
@@ -95,6 +103,9 @@ const DESIGNS = [
   // commemorative pesos are a different design, hence the years.
   { match: /Philippine/i, denoms: ['PESO'], years: [1903, 1912],
     alt: 'silver peso with a filipina woman at an anvil before a smoking volcano and an eagle atop a shield' },
+  // The silver centavos have a seated man with a hammer instead; the eagle reverse ran to 1935 (Commonwealth after).
+  { match: /Philippine/i, denoms: ['10C', '20C', '50C'], years: [1903, 1935],
+    alt: 'silver coin with a man seated at an anvil before a smoking volcano and an eagle atop a shield' },
 
   // --- Dollars -------------------------------------------------------------
   // Trade dollar first: it is a $1 coin too.

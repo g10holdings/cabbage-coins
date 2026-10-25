@@ -106,7 +106,7 @@ const DENOM = /^(\d+\/\d+C|\d+C|H10C|3CN|3CS|[A-Z][a-z]?\$\d+(\.\d+)?|\$\d+(\.\d
 /** The first word after the date that's a denomination: "50C", "$1", "T$1", "G$10", "1/2C", "Pd$25". */
 export function denominationOf(description) {
   const w = str(description).split(/\s+/);
-  const d = w.find((x, i) => i > 0 && DENOM.test(x)) ?? '';
+  const d = w.find((x, i) => i > 0 && DENOM.test(x)) ?? (/\bhalf cent\b/i.test(str(description)) ? '1/2C' : '');   // "1854 1/2 … Half Cent"
   return d.replace(/\$(\d+)\.5$/, '$$$1.50');   // "$2.5" -> "$2.50", as the site writes it
 }
 
