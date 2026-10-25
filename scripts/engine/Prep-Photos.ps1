@@ -60,7 +60,17 @@ function Get-CoinMM([string]$name) {
   if ($n -match '\b(gold|platinum)\b' -and $n -match '\b1 ?oz\b') { return 32.7 }
   switch -Regex ($n) {
     # Many sizes changed over the years: the early (pre-1840ish) sizes come first in each line, from the Red Book.
-    'philippines' { if ($n -match '\b20C\b') { return 20.8 } }    # 1907-29 size, measured on the 1913-S
+    # U.S.-Philippines centavos and pesos are their own sizes: large 1903-06, reduced from 1907 (20C measured on the 1913-S)
+    'philippines' {
+      $early = $year -and $year -le 1906
+      if ($n -match '\bpeso\b')                 { if ($early) { return 38.0 } return 35.0 }
+      if ($n -match '\b50C\b|50 centavos')      { if ($early) { return 30.0 } return 27.0 }
+      if ($n -match '\b20C\b|20 centavos|twenty') { if ($early) { return 23.0 } return 20.8 }
+      if ($n -match '\b10C\b|10 centavos')      { if ($early) { return 17.5 } return 16.7 }
+      if ($n -match '\b5C\b|5 centavos')        { if ($year -and $year -le 1928) { return 20.5 } return 19.0 }
+      if ($n -match '\b1C\b|centavo')           { return 24.0 }
+      return 0
+    }
     'silver eagle'                                   { return 40.6 }
     'flying eagle'                                   { return 19.0 }
     'half cent'                                      { if ($year -eq 1793) { return 22.0 } if ($year -and $year -le 1836) { return 23.5 } return 23.0 }
