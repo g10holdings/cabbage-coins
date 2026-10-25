@@ -50,27 +50,41 @@ $Work = Join-Path $env:TEMP 'CabbagePhotoPrep'
 function Get-CoinMM([string]$name) {
   $n = ' ' + ($name -replace '[-_]+', ' ') + ' '
   $year = if ($n -match '\b(1[5-9]\d\d|20\d\d)\b') { [int]$Matches[1] } else { 0 }   # the folder starts with the cert #
+  # Modern gold and platinum (1986 on) go by weight, or by face value on the American Eagles: a G$5 Eagle is 1/10 oz.
+  if ($n -match '\b(gold|platinum)\b' -and $n -match '\b1[ /](10|4|2) ?oz') { return @{ '10' = 16.5; '4' = 22.0; '2' = 27.0 }[$Matches[1]] }
+  if ($year -ge 1986 -and $n -match '(gold|platinum) eagle' -and $n -match '\$(\d+)\b|\b(\d+) dollar') {
+    $face = [int]"$($Matches[1])$($Matches[2])"
+    $sizes = if ($n -match 'platinum') { @{ 10 = 16.5; 25 = 22.0; 50 = 27.0; 100 = 32.7 } } else { @{ 5 = 16.5; 10 = 22.0; 25 = 27.0; 50 = 32.7 } }
+    if ($sizes.ContainsKey($face)) { return $sizes[$face] }
+  }
+  if ($n -match '\b(gold|platinum)\b' -and $n -match '\b1 ?oz\b') { return 32.7 }
   switch -Regex ($n) {
-    '\bH10C\b|half dime'                             { return 15.5 }
+    # Many sizes changed over the years: the early (pre-1840ish) sizes come first in each line, from the Red Book.
+    'philippines' { if ($n -match '\b20C\b') { return 20.8 } }    # 1907-29 size, measured on the 1913-S
+    'silver eagle'                                   { return 40.6 }
+    'flying eagle'                                   { return 19.0 }
+    'half cent'                                      { if ($year -eq 1793) { return 22.0 } if ($year -and $year -le 1836) { return 23.5 } return 23.0 }
+    '\bH10C\b|half dime'                             { if ($year -and $year -le 1805) { return 16.5 } return 15.5 }
     '\b3CS\b|three cent silver|trime'                { return 14.0 }
     '\b3CN\b|three cent nickel'                      { return 17.9 }
     '\b2C\b|two cent'                                { return 23.0 }
     '\b20C\b|twenty cent'                            { return 22.0 }
     'G\$1\b|gold dollar|\$1 gold|one dollar gold'      { if ($n -match 'type 1' -or ($year -ge 1849 -and $year -le 1853)) { return 13.0 } return 15.0 }
-    '\$2\.5|2\.5 dollar|quarter eagle'               { return 18.0 }
+    '\$2\.5|\$2 1/2|2\.5 dollar|quarter eagle'             { if ($year -and $year -le 1827) { return 20.0 } if ($year -and $year -le 1834) { return 18.2 } return 18.0 }
     '\$3\b|three dollar|3 dollar'                    { return 20.5 }
     '\$20|twenty dollar|20 dollar|double eagle'      { return 34.0 }
-    '\$10|ten dollar|10 dollar|\beagle\b(?!.*half)'  { if ($n -notmatch 'half eagle') { return 27.0 } }
-    '\$5|five dollar|5 dollar|half eagle'            { return 21.6 }
+    '\$10|ten dollar|10 dollar|\beagle\b(?!.*half)'  { if ($n -notmatch 'half eagle') { if ($year -and $year -le 1804) { return 33.0 } return 27.0 } }
+    '\$5|five dollar|5 dollar|half eagle'            { if ($year -and $year -le 1828) { return 25.0 } if ($year -and $year -le 1838) { return 22.5 } return 21.6 }
     '8 reales'                                       { return 39.0 }
     'trade dollar|\bT\$1'                            { return 38.1 }
-    'half dollar|\b50C\b'                            { return 30.6 }
-    'silver dollar|morgan|peace|\$1\b|\bS\$1'        { return 38.1 }
-    '\b25C\b|quarter'                                { return 24.3 }
-    '\b10C\b|\bdime\b'                               { return 17.9 }
+    'half dollar|\b50C\b'                            { if ($year -and $year -le 1836) { return 32.5 } return 30.6 }
+    'sacagawea|presidential|susan b|\bSBA\b|native american|innovation' { if ($n -match '\$1\b|dollar') { return 26.5 } }
+    'silver dollar|morgan|peace|seated dollar|gobrecht|draped bust dollar|flowing hair dollar|\$1\b|\bS\$1' { if ($year -and $year -le 1803) { return 39.5 } return 38.1 }
+    '\b25C\b|quarter'                                { if ($year -and $year -le 1828) { return 27.0 } return 24.3 }
+    '\b10C\b|\bdime\b'                               { if ($year -and $year -le 1827) { return 18.8 } if ($year -and $year -le 1837) { return 18.5 } return 17.9 }
     '\b5C\b|nickel'                                  { return 21.2 }
     'large cent'                                     { return 28.5 }
-    '\b1C\b|\bcent\b|penny'                          { return 19.0 }
+    '\b1C\b|\bcent\b|penny'                          { if ($year -and $year -le 1857) { return 28.5 } return 19.0 }
   }
   return 0
 }
