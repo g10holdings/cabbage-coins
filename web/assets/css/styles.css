@@ -1153,6 +1153,53 @@ margin-top: 20px;
   --bs-gutter-y: 0;
 }
 
+/* Wide screens: let the inventory grow past 4 across instead of sitting in a
+   fixed column. A column is added every ~350px so cards stay 230-345px wide;
+   8 across is the cap. Starts at 1056px, where it lines up exactly with the old
+   fixed-width layout (same card size and margins), so there is no jump.
+   Phones and tablets are unchanged. */
+@media (min-width: 1056px) {
+  #listing-grid-container {
+    max-width: 2850px;
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+
+  /* the grids sit inside #listing-grid-container, which already pads them */
+  .listings-container > .container {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .listings-container .listing-row.row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .listings-container .listing-row > .listing-preview-border {
+    width: auto;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1500px) {
+  .listings-container .listing-row.row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1850px) {
+  .listings-container .listing-row.row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 2200px) {
+  .listings-container .listing-row.row { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+}
+
+@media (min-width: 2550px) {
+  .listings-container .listing-row.row { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+}
+
 #listings-dateasc{
   display:none;
 }
