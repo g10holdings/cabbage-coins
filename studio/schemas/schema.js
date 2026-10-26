@@ -11,6 +11,7 @@ import post from './documents/post'
 import siteSettings from './documents/siteSettings'
 import listing from './documents/listing'
 import coinShow from './documents/coinShow'
+import awayNotice from './documents/awayNotice'
 
 // Object types
 import bodyPortableText from './objects/bodyPortableText'
@@ -35,6 +36,7 @@ export default createSchema({
     mainImage,
     listing,
     coinShow,
+    awayNotice,
     authorReference,
     bodyPortableText,
     bioPortableText,

@@ -2,9 +2,10 @@ import S from '@sanity/desk-tool/structure-builder'
 import { MdSettings } from "react-icons/md";
 import { MdPerson } from "react-icons/md";
 import { MdEvent } from "react-icons/md";
+import { MdFlightTakeoff } from "react-icons/md";
 
 const hiddenDocTypes = listItem =>
-  !['category', 'author', 'post', 'siteSettings', 'coinShow'].includes(listItem.getId())
+  !['category', 'author', 'post', 'siteSettings', 'coinShow', 'awayNotice'].includes(listItem.getId())
 
 export default () =>
   S.list()
@@ -18,6 +19,15 @@ export default () =>
             .id('siteSettings')
             .schemaType('siteSettings')
             .documentId('siteSettings')
+        ),
+      S.listItem()
+        .title('Away Message')
+        .icon(MdFlightTakeoff)
+        .child(
+          S.editor()
+            .id('awayNotice')
+            .schemaType('awayNotice')
+            .documentId('awayNotice')
         ),
       S.listItem()
         .title('Coin Shows')
