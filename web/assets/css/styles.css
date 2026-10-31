@@ -471,6 +471,7 @@ body {
 
 /* Inquire and Share, side by side. Share is outlined so Inquire stays the main button. */
 .cc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+.cc-spec + .cc-actions { margin-top: 20px; }   /* the CAC badge row brings its own space */
 .cc-share { position: relative; display: flex; }
 .cc-share-btn {
   display: inline-flex;
