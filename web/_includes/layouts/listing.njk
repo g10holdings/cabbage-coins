@@ -84,9 +84,21 @@ parent: Inventory
                     </div>
                     {% endif %}
 
-                    {% if not listing.sold %}
-                    <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
-                    {% endif %}
+                    <div class="cc-actions">
+                        {% if not listing.sold %}
+                        <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
+                        {% endif %}
+                        {# Phones open their own share sheet; computers get this menu. See the script at the bottom. #}
+                        <div class="cc-share" data-share data-title="{{ listing.name }}">
+                            <button class="cc-share-btn" type="button" aria-label="Share this listing" aria-expanded="false" data-share-toggle><i class="fa fa-share-alt"></i> Share</button>
+                            <div class="cc-share-menu" data-share-menu hidden>
+                                <button type="button" data-share-copy><i class="fa fa-link"></i> <span>Copy link</span></button>
+                                <a data-share-to="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i> Facebook</a>
+                                <a data-share-to="x" target="_blank" rel="noopener"><i class="fa fa-twitter"></i> X</a>
+                                <a data-share-to="email"><i class="fa fa-envelope"></i> Email</a>
+                            </div>
+                        </div>
+                    </div>
 
                     {# PCGS population around this grade: unsold PCGS listings only, once the
                        population has been saved (scripts/engine/fill-pcgs-pop.js). #}
@@ -200,6 +212,53 @@ Thank you!</textarea>
                 }
             })();
             </script>
+<script>
+/* Share button: the phone's own share sheet where there is one, otherwise a small menu. */
+(function () {
+    var box = document.querySelector('[data-share]');
+    if (!box) return;
+
+    var toggle = box.querySelector('[data-share-toggle]');
+    var menu = box.querySelector('[data-share-menu]');
+    var copy = box.querySelector('[data-share-copy]');
+    var url = location.origin + location.pathname;
+    var title = box.getAttribute('data-title');
+    var enc = encodeURIComponent;
+    var links = {
+        facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + enc(url),
+        x: 'https://twitter.com/intent/tweet?url=' + enc(url) + '&text=' + enc(title),
+        email: 'mailto:?subject=' + enc(title) + '&body=' + enc(url)
+    };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-share-to]'), function (a) {
+        a.href = links[a.getAttribute('data-share-to')];
+    });
+
+    function setOpen(open) {
+        menu.hidden = !open;
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    toggle.addEventListener('click', function () {
+        // Touch screens only: Windows has a share sheet too, but it doesn't offer Facebook.
+        if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+            navigator.share({ title: title, url: url }).catch(function () {});
+            return;
+        }
+        setOpen(menu.hidden);
+    });
+
+    copy.addEventListener('click', function () {
+        var label = copy.querySelector('span');
+        navigator.clipboard.writeText(url).then(function () {
+            label.textContent = 'Link copied!';
+            setTimeout(function () { label.textContent = 'Copy link'; setOpen(false); }, 1500);
+        });
+    });
+
+    document.addEventListener('click', function (e) { if (!box.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+})();
+</script>
 <script>
 /* Photo carousel — only does anything below the 900px breakpoint, where the CSS
    turns .cc-img-track into a horizontal scroll-snap strip. Above that the track

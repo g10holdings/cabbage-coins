@@ -469,6 +469,56 @@ body {
 }
 .cc-inquire-btn:hover { background: #15294a; transform: translateY(-1px); }
 
+/* Inquire and Share, side by side. Share is outlined so Inquire stays the main button. */
+.cc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+.cc-share { position: relative; display: flex; }
+.cc-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  color: #1d3961;
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-size: 20px;
+  letter-spacing: .04em;
+  border: 2px solid #1d3961;
+  border-radius: 10px;
+  padding: 14px 26px;
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+.cc-share-btn:hover { background: #eef2f7; transform: translateY(-1px); }
+.cc-share-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 190px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e6ebf1;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(29, 57, 97, 0.18);
+}
+.cc-share-menu a, .cc-share-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: #1d3961;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cc-share-menu a:hover, .cc-share-menu button:hover { background: #eef2f7; }
+.cc-share-menu .fa { width: 18px; text-align: center; }
+
 /* ---- Tony Says ---- */
 .cc-tony-says {
   margin: 28px 0 0;
@@ -628,12 +678,14 @@ body {
   .cc-cac-text { font-size: 13px; }
 
   /* full-width button is a much better thumb target */
+  .cc-actions { flex-wrap: nowrap; }
   .cc-inquire-btn {
-    width: 100%;
+    flex: 1;
     justify-content: center;
     font-size: 18px;
     padding: 15px 20px;
   }
+  .cc-share-btn { font-size: 18px; padding: 13px 18px; }
 
   .cc-tony-says { margin-top: 22px; padding: 16px 16px 18px; border-left-width: 4px; }
   .cc-tony-head { gap: 9px; margin-bottom: 9px; }
