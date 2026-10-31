@@ -129,6 +129,9 @@ its top) so every future coin of that series fills in itself.
 
 Only PCGS coins get it. NGC and CACG have no PCGS grid.
 
+### Add a YouTube video to a listing
+In the Studio, paste the Short's link into **YouTube video** on the listing and Publish. It shows under "Tony says" after the next site build. Clear the field to remove it.
+
 ### CAC population is missing or old
 Step 4 fills it and refreshes anything over 30 days old; `Extras\Fill-CAC-Pop` does the same on its own. Either way the site needs a build to show it. A stickered coin needs its CAC catalog # in `engine\cac-catalog.json` (PCGS # to CAC catalog #, the PCGS # with designation if the coin has one). A coin that isn't there is listed on screen and shows no CAC box. **Don't use the GSID from the marketplace:** it's a different number and gives another coin's population.
 

@@ -92,6 +92,12 @@ export default {
         title: 'Description'
       },
       {
+        name: 'youtubeUrl',
+        type: 'url',
+        title: 'YouTube video',
+        description: 'Paste the link to this coin\'s YouTube Short. It shows on the listing page after the next site build. Leave blank for no video.'
+      },
+      {
   name: 'gradingCompany',
   type: 'string',
   title: 'Grading Company',

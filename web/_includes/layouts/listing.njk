@@ -112,6 +112,18 @@ parent: Inventory
                         <div class="cc-tony-body">{{ listing.description | markdownify | safe }}</div>
                     </div>
                     {% endif %}
+
+                    {# The coin's YouTube Short, from the Studio's "YouTube video" field. Vertical, so it fills
+                       the space under the write-up; the player only loads as it scrolls into view. #}
+                    {% set videoId = listing.youtubeUrl | youtubeId %}
+                    {% if videoId %}
+                    <section class="cc-video" aria-labelledby="cc-video-title">
+                        <h3 class="cc-video-title" id="cc-video-title">Watch this coin</h3>
+                        <div class="cc-video-frame">
+                            <iframe src="https://www.youtube-nocookie.com/embed/{{ videoId }}?rel=0" title="Video of the {{ listing.name }}" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </section>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -39,6 +39,7 @@ async function getListings () {
     pcgsDesignationNumber,
     pcgsPop,
     cacPop,
+    youtubeUrl,
     category,
     description[]{
       ...,

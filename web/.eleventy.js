@@ -22,6 +22,12 @@ module.exports = function(eleventyConfig) {
   // spreadsheet rows unique. Customers see the real cert number.
   eleventyConfig.addFilter("certNumber", (n) => String(n ?? "").trim().replace(/_\d+$/, ""));
 
+  // "https://youtube.com/shorts/bb1NfTabfZ8" → "bb1NfTabfZ8" (also watch?v= and youtu.be links); "" if it isn't one.
+  eleventyConfig.addFilter("youtubeId", (url) => {
+    const m = /(?:youtube\.com\/(?:shorts\/|embed\/|watch\?(?:.*&)?v=)|youtu\.be\/)([\w-]{11})/.exec(String(url ?? ""));
+    return m ? m[1] : "";
+  });
+
   // "2026-10-10" → "Oct 2026" (the PCGS population "as of" date on listings).
   eleventyConfig.addFilter("monthYear", (iso) => {
     const d = new Date(String(iso).slice(0, 10) + "T12:00:00Z");
