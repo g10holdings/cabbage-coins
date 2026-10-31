@@ -1,6 +1,6 @@
 {# CAC population around this coin's grade (±2 grades), in its own box under the PCGS one.
    PCGS and CAC are competitors: keep their data, logos and links in separate boxes.
-   Two rows: Stickered (PCGS/NGC coins CAC approved) and CACG (coins in CAC's own holders).
+   Two rows: Stickered (PCGS/NGC coins CAC approved) and Graded (coins in CAC's own holders).
    The highlighted cell is on the row this coin belongs to. Filled by scripts/engine (CAC API). #}
 {% set cp = cacPopData %}
 {% set row = "cacg" if cp.held == "cacg" else "stickered" %}
@@ -19,7 +19,7 @@
         <thead><tr><th scope="col"><span class="cc-sr">Grade</span></th>{% for c in cp.cells %}<th scope="col">{{ c.label }}</th>{% endfor %}</tr></thead>
         <tbody>
             <tr class="cc-cacpop-stk"><th scope="row">Stickered</th>{% for c in cp.cells %}<td{% if c.isThisGrade and row == "stickered" %} class="is-this"{% endif %}>{{ c.stickered }}</td>{% endfor %}</tr>
-            <tr class="cc-cacpop-cacg"><th scope="row">CACG</th>{% for c in cp.cells %}<td{% if c.isThisGrade and row == "cacg" %} class="is-this"{% endif %}>{{ c.graded }}</td>{% endfor %}</tr>
+            <tr class="cc-cacpop-cacg"><th scope="row">Graded</th>{% for c in cp.cells %}<td{% if c.isThisGrade and row == "cacg" %} class="is-this"{% endif %}>{{ c.graded }}</td>{% endfor %}</tr>
         </tbody>
     </table>
 
