@@ -35,7 +35,7 @@ export function parseGrade(text) {
 }
 
 /** The label PCGS would print: proofs keep PR; business strikes take the prefix for their number. */
-function label(prefix, num, plus) {
+export function gradeLabel(prefix, num, plus) {
   const p = prefix === 'PR' || prefix === 'PF' || prefix === 'SP' ? prefix
     : num >= 60 ? 'MS' : num >= 50 ? 'AU' : num >= 40 ? 'XF' : num >= 20 ? 'VF' : num >= 12 ? 'F' : num >= 8 ? 'VG' : num >= 4 ? 'G' : num >= 3 ? 'AG' : num >= 2 ? 'FR' : 'PO';
   return `${p}${num}${plus ? '+' : ''}`;
@@ -122,9 +122,9 @@ export async function fetchPopGrid({ cert, token, catalogNumber = null, steps = 
     pcgsNumber,
     name: info.Name ?? coin.Name ?? '',
     // "MS67FB", "PR62CAM": the population is for that designation (PCGS gives each its own PCGS number).
-    grade: label(g.prefix, g.num, g.plus) + String(coin.Designation ?? '').replace(/s+/g, '').toUpperCase(),
+    grade: gradeLabel(g.prefix, g.num, g.plus) + String(coin.Designation ?? '').replace(/s+/g, '').toUpperCase(),
     coinFactsUrl: info.CoinFactsLink ? `https://${String(info.CoinFactsLink).replace(/^https?:\/\//, '')}` : null,
-    cells: cells.map((c) => ({ ...c, label: label(g.prefix, c.num, c.plus), isThisGrade: c.num === g.num && c.plus === g.plus })),
+    cells: cells.map((c) => ({ ...c, label: gradeLabel(g.prefix, c.num, c.plus), isThisGrade: c.num === g.num && c.plus === g.plus })),
     higherThanTop: topFacts ? topFacts.higher : null,
     calls,
   };

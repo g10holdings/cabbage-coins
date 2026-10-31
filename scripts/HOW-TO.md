@@ -127,7 +127,10 @@ its top) so every future coin of that series fills in itself.
 - **Missing** (a big batch hit PCGS's 100-a-day limit): `Extras\Fill-PCGS-Pop`, again the next day if needed.
 - **Refresh every few months:** in `scripts\engine`, run `node fill-pcgs-pop.js --refresh-days 120`.
 
-Only PCGS coins get it. NGC and CACG have no population grid.
+Only PCGS coins get it. NGC and CACG have no PCGS grid.
+
+### CAC population is missing or old
+Step 4 fills it and refreshes anything over 30 days old; `Extras\Fill-CAC-Pop` does the same on its own. Either way the site needs a build to show it. A stickered coin needs its CAC catalog # in `engine\cac-catalog.json` (PCGS # to CAC catalog #, the PCGS # with designation if the coin has one). A coin that isn't there is listed on screen and shows no CAC box. **Don't use the GSID from the marketplace:** it's a different number and gives another coin's population.
 
 ### A coin came back into stock (`51354567_2`)
 Nothing special to do: the `_2` is dropped, so it matches its cert. Mark it **R** to list it again.

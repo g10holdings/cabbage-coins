@@ -20,7 +20,7 @@ const isSold = (r) => /^sold$/i.test(String(r.Status ?? '').trim());
  * Reads the workbook once and returns soldInWorkbook(listing) -> true / false (false also when there's no row).
  * `rows` can be passed in (tests, or a caller that already read the workbook).
  */
-export function workbookSales(rows = readInventory().rows) {
+export function workbookSales(rows = readInventory(undefined, ['inventoryID', 'itemDescription', 'Status']).rows) {
   const byCert = new Map(), byName = new Map();
   const add = (map, key, r) => { const s = map.get(key) ?? { sold: 0, active: 0 }; s[isSold(r) ? 'sold' : 'active']++; map.set(key, s); };
   for (const r of rows) {

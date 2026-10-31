@@ -29,7 +29,7 @@ const SHEET = 'inventory';
 const NEEDED = ['inventoryID', 'Type', 'itemDescription', 'Certification', 'CAC', 'PCGS Num', 'Website', 'Status', 'listPrice'];
 
 /** All rows of the inventory sheet, read from a throwaway copy. */
-export function readInventory(file = settings.workbook) {
+export function readInventory(file = settings.workbook, needed = NEEDED) {
   if (!fs.existsSync(file)) throw new Error(`Workbook not found: ${file}`);
   const before = fs.statSync(file);
   const copy = path.join(os.tmpdir(), `cabbage-workbook-${process.pid}-${Date.now()}.xlsx`);
@@ -48,7 +48,7 @@ export function readInventory(file = settings.workbook) {
     // Can only mean Excel/OneDrive saved it while we read; we never write. Read again to be safe.
     throw new Error('The workbook changed while it was being read (a save in Excel or a OneDrive sync?). Run again.');
   }
-  const missing = NEEDED.filter((h) => !(rows[0] && h in rows[0]));
+  const missing = needed.filter((h) => !(rows[0] && h in rows[0]));
   if (missing.length) throw new Error(`The inventory sheet is missing column(s): ${missing.join(', ')}. Was a header renamed?`);
   return { rows, file, savedAt: before.mtime };
 }

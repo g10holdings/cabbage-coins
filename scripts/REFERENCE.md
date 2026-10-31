@@ -5,7 +5,7 @@ This page explains the rules behind them.
 
 **Contents:** [The flow](#the-flow) · [Safety](#safety) · [The workbook](#the-workbook) ·
 [Photos](#photos) · [Listings](#listings) · [Captions](#captions) ·
-[PCGS population](#pcgs-population) · [CAC marketplace](#cac-marketplace) · [eBay](#ebay) ·
+[PCGS population](#pcgs-population) · [CAC population](#cac-population) · [CAC marketplace](#cac-marketplace) · [eBay](#ebay) ·
 [Status report](#status-report) · [Settings and files](#settings-and-files)
 
 ---
@@ -161,6 +161,15 @@ higher". NGC/CACG coins don't get one, and it disappears when a coin sells.
 - **The daily limit:** 100 PCGS calls a day, shared with The Cabbage Patch, at about 6 a coin. A run stops at the limit and carries on the next day; answers are cached in `engine\.pcgs-cache.json`.
 - **Which PCGS # it uses:** the designation # for DMPL/PL/CAM and similar, and the plain catalog # for die varieties.
 - **PCGS's license** requires a CoinFacts link, the PCGS logo and their credit line on the page. Don't remove them.
+
+## CAC population
+
+`engine/fill-cac-pop.js` saves `cacPop` on unsold CAC coins; the site shows it in its own box under the PCGS one. One CAC call per coin, 30-day refresh, run by step 4.
+
+- CAC's `/pops` takes CAC's catalog number (`cacId`), though it calls it `gsId`. It is not the marketplace GSID.
+- CACG coins get the number from their cert. Stickered coins get it from `engine/cac-catalog.json`, because the sticker lookup doesn't return it. Each entry was confirmed by an exact PCGS # match on a CACG cert.
+- CAC doesn't split stickered coins by plus grade, so a stickered MS66+ is counted and shown at MS66.
+- A coin must be counted in its own population or nothing is saved for it.
 
 ## CAC marketplace
 

@@ -43,7 +43,7 @@ the cert #**, e.g. `1895-O-10-Dollar-MS62-59080489`. The rest of the name can be
 **Also run step 4** whenever you mark a coin **Sold**, change a price, or tick **Keep off
 eBay** in the Studio. It takes sold coins down from CAC and eBay and files their photos.
 
-**`Extras` folder:** `Redo-Photos`, `Undo-Import`, `Fill-PCGS-Pop`, `Check-Rules`,
+**`Extras` folder:** `Redo-Photos`, `Undo-Import`, `Fill-PCGS-Pop`, `Fill-CAC-Pop`, `Check-Rules`,
 `Connect-eBay`, `Make-Video-Graphics` (name banners and the thumbnail for YouTube videos), and the old
 hand-photo rename tools. See [`HOW-TO.md`](HOW-TO.md) for
 when to use each.
