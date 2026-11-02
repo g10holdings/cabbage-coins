@@ -62,6 +62,12 @@ export default {
         title: "Featured"
       },
       {
+        name: 'hero',
+        type: 'boolean',
+        title: "Homepage hero",
+        description: "The big coin at the top of the homepage (new site design). Turn this on for ONE unsold coin; if several are on, the oldest wins. With none on, the priciest coin in stock is used."
+      },
+      {
           name: 'sold',
           type: 'boolean',
           title: "Sold"
