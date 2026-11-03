@@ -295,8 +295,25 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 .cc26-toggle:has(input:checked) { border-color: var(--gold); }
 .cc26-toggle--cac:has(input:checked) { border-color: #4a9e6b; background: rgba(74,158,107,.12); }
 .cc26-inv__empty { margin: 40px 0 0; text-align: center; color: var(--muted); }
+/* Phones / small tablets: every filter on ONE line you swipe sideways, so the coins start right below it.
+   The strip runs edge to edge (past the page gutter) and fades at the right to show there's more. */
 @media (max-width: 760px) {
-  .cc26-inv__controls { position: static; }
+  .cc26-inv__head { margin-bottom: 14px; }
+  .cc26-inv__controls { position: static; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px;
+    overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    margin: 0 calc(-1 * var(--gutter)) 20px; padding: 10px var(--gutter);
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+            mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
+  .cc26-inv__controls::-webkit-scrollbar { display: none; }
+  .cc26-inv__row, .cc26-pills, .cc26-inv__toggles { flex: none; flex-wrap: nowrap; gap: 8px; }
+  .cc26-inv__row + .cc26-inv__row { padding-left: 8px; border-left: 1px solid var(--line-3); }
+  .cc26-inv__sort { flex: none; }
+  .cc26-pill { flex: none; height: 36px; padding: 0 14px; white-space: nowrap; }
+  .cc26-inv__sort select { height: 36px; background-position: calc(100% - 20px) 15px, calc(100% - 15px) 15px; }
+  .cc26-toggle { flex: none; min-height: 36px; white-space: nowrap; }
+  .cc26-toggle--cac img { height: 24px; }
+  .cc26-pills__label { flex: none; margin-right: 0; font-size: 11px; }
+  .cc26-inv__controls::after { content: ''; flex: none; width: 24px; }   /* room past the last pill, under the fade */
 }
 
 /* ---------- Stack two-column sections at tablet-portrait / phone ---------- */
