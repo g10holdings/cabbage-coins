@@ -1,309 +1,201 @@
 ---
-layout: layouts/base.njk
+layout: layouts/dark.njk
 templateClass: tmpl-listing
 parent: Inventory
 ---
-   <div class="container-fluid site-section main-section" id="listing">
-        {% set isFeatured = featured and listing.slug.current == featured.slug.current %}
-        <nav class="cc-crumbs" aria-label="Breadcrumb">
-            <a href="/">Home</a><span class="cc-crumbs-sep">/</span><a href="/inventory/">Inventory</a><span class="cc-crumbs-sep">/</span><span class="cc-crumbs-current">{{ listing.name }}</span>
-        </nav>
-        {% if isFeatured %}<div class="cc-featured-frame">{% endif %}
-        <div class="cc-listing{% if isFeatured %} cc-listing--featured{% endif %}">
-            {% if isFeatured %}
-            <div class="cc-feature-banner"><span class="cc-fb-star">&#9733;</span><h2 class="cc-fb-title">Featured Listing</h2><span class="cc-fb-star">&#9733;</span></div>
-            {% endif %}
-            <div class="cc-listing-grid">
-                <!-- IMAGES -->
-                {# All shots render at full column width. Every one stays wrapped in a
-                   data-lightbox="coins" anchor, so clicking any of them still opens the
-                   full-size file in the lightbox gallery ("Image 1 of 4", arrows to page
-                   through) exactly as before. #}
-                <div class="cc-img-col">
-{% if listing.image.caption %}
-                    {# Sits above the photos on desktop and below them on narrow screens;
-                       the swap is flex `order`, so there is only ever one copy of it. #}
-                    <div class="cc-coin-caption">"{{ listing.image.caption }}"</div>
+{# Same structure as the 2026-08 listing redesign (four full-width photos stacked on the left, details on the
+   right in this order: title, price, specs, CAC, buttons, PCGS pop, CAC pop, Tony says, video), in the new
+   colors and fonts. Under 900px the photos become a swipe carousel. #}
+{% set isFeatured = featured and listing.slug.current == featured.slug.current %}
+{% set imgq = "&q=90&auto=format&fit=max" %}
+{% set photos = listing | listingPhotos %}
+
+<div class="cc26-wrap cc26-listing{% if isFeatured %} cc26-listing--featured{% endif %}">
+    <nav class="cc26-crumbs cc26-listing__crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/inventory/">Inventory</a><span aria-hidden="true">/</span><span class="cc26-crumbs__here" aria-current="page">{{ listing.name }}</span>
+    </nav>
+
+    <div class="cc26-lcard">
+        {% if isFeatured %}<div class="cc26-lcard__banner"><span aria-hidden="true">★</span> Featured listing <span aria-hidden="true">★</span></div>{% endif %}
+        <div class="cc26-lgrid">
+            {# ---------- Photos: four large shots, stacked. Click any one for the zoom viewer. ---------- #}
+            <div class="cc26-lphotos">
+                {% if listing.image.caption %}<p class="cc26-lphotos__caption">“{{ listing.image.caption }}”</p>{% endif %}
+                <div class="cc26-lphotos__track" data-carousel-track>
+                    {% for src in photos %}
+                    <a class="cc26-lphoto" href="{{ src }}" data-zoom="coin" aria-label="Zoom photo {{ loop.index }} of {{ photos.length }}">
+                        <img src="{{ src }}?w=1044{{ imgq }}" alt="{{ listing.name }}{% if loop.first %} obverse{% elif loop.index == 2 %} reverse{% else %} in holder, view {{ loop.index0 - 1 }}{% endif %}"{% if not loop.first %} loading="lazy"{% endif %} width="1044" height="1044">
+                        <span class="cc26-lphoto__zoom" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/></svg></span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% if photos.length > 1 %}
+                <div class="cc26-lphotos__nav" data-carousel-nav>
+                    {% for src in photos %}
+                    <button type="button" class="cc26-lphotos__thumb" data-goto="{{ loop.index0 }}" aria-label="Photo {{ loop.index }}" style="background-image: url('{{ src }}?w=220{{ imgq }}')"></button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            {# ---------- Details ---------- #}
+            <div class="cc26-linfo">
+                <h1 class="cc26-linfo__title">{{ listing.name }}</h1>
+
+                <div class="cc26-linfo__price">
+                    {% if listing.sold %}
+                    <span class="cc26-linfo__amount is-sold">${{ listing.price | money }}</span>
+                    <span class="cc26-status cc26-status--sold">Sold</span>
+                    {% else %}
+                    <span class="cc26-linfo__amount">${{ listing.price | money }}</span>
+                    <span class="cc26-status">Available</span>
+                    {% endif %}
+                </div>
+
+                <dl class="cc26-specs">
+                    <div><dt>Issue</dt><dd>{{ listing.dateshown }}</dd></div>
+                    <div><dt>Grading company</dt><dd>{{ listing.gradingCompany }}</dd></div>
+                    <div><dt>Certification #</dt><dd>{{ listing.gradenumber | certNumber }}</dd></div>
+                    <div><dt>Grade</dt><dd>{{ listing.grade }}</dd></div>
+                    <div><dt>PCGS catalog #</dt><dd>{{ listing.pcgsDesignationNumber or listing.pcgsCatalogNumber }}</dd></div>
+                </dl>
+
+                {% if listing.cac %}
+                <div class="cc26-cacrow">
+                    <img src="/assets/img/caccoin.png" alt="CAC verified">
+                    <span>CAC verified — green sticker</span>
+                </div>
+                {% endif %}
+
+                <div class="cc26-linfo__actions">
+                    {% if not listing.sold %}
+                    <button type="button" class="cc26-btn cc26-btn--gold" data-modal-open="cc26-inquire">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                        <span>Inquire</span>
+                    </button>
+                    {% else %}
+                    <button type="button" class="cc26-btn cc26-btn--gold" data-join-open><span>Looking for one like it?</span></button>
+                    {% endif %}
+                    {# Phones open their own share sheet; computers get this menu. #}
+                    <div class="cc26-share" data-share data-title="{{ listing.name }}">
+                        <button type="button" class="cc26-btn cc26-btn--ghost" aria-expanded="false" data-share-toggle>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+                            <span>Share</span>
+                        </button>
+                        <div class="cc26-share__menu" data-share-menu hidden>
+                            <button type="button" data-share-copy><span>Copy link</span></button>
+                            <a data-share-to="facebook" target="_blank" rel="noopener">Facebook</a>
+                            <a data-share-to="x" target="_blank" rel="noopener">X</a>
+                            <a data-share-to="email">Email</a>
+                        </div>
+                    </div>
+                    <a class="cc26-btn cc26-btn--ghost" href="/selltous/">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.2 1.1-2 2.5-2s2.5.8 2.5 2-1.1 1.8-2.5 2.1-2.5.9-2.5 2.1 1.1 2 2.5 2 2.5-.8 2.5-2"/></svg>
+                        <span>Have one of these to sell?</span>
+                    </a>
+                </div>
+                {% if listing.sold %}<p class="cc26-muted cc26-linfo__soldnote">This coin has sold. Join the list with your want list and Tony will reach out when a similar coin comes in.</p>{% endif %}
+
+                {# PCGS population: unsold PCGS listings that have it saved (scripts/engine/fill-pcgs-pop.js). #}
+                {% if listing.pcgsPop and listing.gradingCompany == "PCGS" and not listing.sold %}
+                {% set popData = listing.pcgsPop %}{% include "pcgspop.njk" %}
+                {% endif %}
+                {# CAC population: its own box, never combined with PCGS (competitors). #}
+                {% if listing.cacPop and listing.cacPop.cells and not listing.sold %}
+                {% set cacPopData = listing.cacPop %}{% include "cacpop.njk" %}
+                {% endif %}
+
+                {% if listing.description %}
+                <section class="cc26-tonysays{% if isFeatured %} cc26-tonysays--gold{% endif %}" aria-labelledby="cc26-tonysays-title">
+                    <div class="cc26-tonysays__head">
+                        <img src="/assets/img/CabbageCoins_Emblem_Small_White.png" alt="">
+                        <h2 id="cc26-tonysays-title">Tony says …</h2>
+                    </div>
+                    <div class="cc26-tonysays__body">{{ listing.description | markdownify | safe }}</div>
+                </section>
+                {% endif %}
+
+                {# The coin's YouTube Short ("YouTube video" field in Studio). #}
+                {% set videoId = listing.youtubeUrl | youtubeId %}
+                {% if videoId %}
+                <section class="cc26-short" aria-labelledby="cc26-short-title">
+                    <h2 id="cc26-short-title">Watch this coin</h2>
+                    <div class="cc26-short__frame">
+                        <iframe src="https://www.youtube-nocookie.com/embed/{{ videoId }}?rel=0" title="Video of the {{ listing.name }}" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ---------- Keep browsing: the most similar coins in stock (similarListings in .eleventy.js) ---------- #}
+{% set similar = collections.listingsNewest | similarListings(listing, 6) %}
+{% if similar.length %}
+<section class="cc26-wrap cc26-section cc26-section--last">
+    <div class="cc26-section__head">
+        <div>
+            <div class="cc26-eyebrow">Keep browsing</div>
+            <h2>Similar coins in the inventory</h2>
+        </div>
+        <a class="cc26-textlink" href="/inventory/">View the full inventory →</a>
+    </div>
+    <div class="cc26-grid">
+        {% for other in similar %}
+        <a class="cc26-card" href="/listings/{{ other.slug.current | slug }}/">
+            <span class="cc26-card__img">
+                <img src="{{ other.imageUrl }}?w=640{{ imgq }}" alt="{{ other.name }}" loading="lazy">
+                {% if other.galleryImageUrl and other.galleryImageUrl[0] %}<img class="cc26-card__back" src="{{ other.galleryImageUrl[0] }}?w=640{{ imgq }}" alt="" loading="lazy">{% endif %}
+            </span>
+            <span class="cc26-card__meta">
+                <span>{{ other.gradingCompany }} {{ other.grade | replace(" CAC", "") }}</span>
+                {% if other.cac %}<img src="/assets/img/caccoin.png" alt="CAC approved" class="cc26-cac">{% endif %}
+            </span>
+            <span class="cc26-card__name">{{ other.name }}</span>
+            <span class="cc26-card__price">${{ other.price | money }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
 {% endif %}
-                    <div class="cc-img-track" data-carousel-track>
-                        <div class="cc-slide">
-                            <a href="{{ listing.imageUrl }}" target="_blank" data-lightbox="coins">
-                                <img class="cc-coin" src="{{ listing.imageUrl }}?w=1044&amp;q=90&amp;auto=format&amp;fit=max" alt="{{ listing.name }} obverse">
-                            </a>
-                        </div>
-{% for image in listing.galleryImageUrl %}
-                        <div class="cc-slide">
-                            <a href="{{ image }}" target="_blank" data-lightbox="coins">
-                                <img class="cc-coin" src="{{ image }}?w=1044&amp;q=90&amp;auto=format&amp;fit=max" alt="{{ listing.name }}{% if loop.first %} reverse{% else %} in holder, view {{ loop.index0 }}{% endif %}">
-                            </a>
-                        </div>
-{% endfor %}
-                    </div>
-                    {# Only visible below the 900px breakpoint, where the stack becomes a
-                       swipeable carousel. Dots show position; the thumbnail strip is the
-                       tap target for jumping straight to a shot. #}
-                    <div class="cc-carousel-nav" data-carousel-nav>
-                        <div class="cc-cn-dots">
-                            <button class="cc-cn-dot" type="button" data-goto="0" aria-label="Photo 1"></button>
-                            {% for image in listing.galleryImageUrl %}
-                            <button class="cc-cn-dot" type="button" data-goto="{{ loop.index }}" aria-label="Photo {{ loop.index + 1 }}"></button>
-                            {% endfor %}
-                        </div>
-                        <div class="cc-cn-thumbs">
-                            <button class="cc-cn-thumb" type="button" data-goto="0" aria-label="Photo 1" style="background-image: url({{ listing.imageUrl }}?w=220&amp;q=90&amp;auto=format&amp;fit=max)"></button>
-                            {% for image in listing.galleryImageUrl %}
-                            <button class="cc-cn-thumb" type="button" data-goto="{{ loop.index }}" aria-label="Photo {{ loop.index + 1 }}" style="background-image: url({{ image }}?w=220&amp;q=90&amp;auto=format&amp;fit=max)"></button>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
 
-                <!-- INFO -->
-                <div class="cc-info-col">
-                    <h1 class="cc-title">{{ listing.name }}</h1>
-                    <div class="cc-price-row">
-                        {% if listing.sold %}
-                        <span class="cc-price"><strike>${{ listing.price }}</strike></span>
-                        <span class="cc-status cc-status-sold">Sold</span>
-                        {% else %}
-                        <span class="cc-price">${{ listing.price }}</span>
-                        <span class="cc-status">Available</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="cc-spec"><span class="cc-spec-label">Issue</span><span class="cc-spec-value">{{ listing.dateshown }}</span></div>
-                    <div class="cc-spec"><span class="cc-spec-label">Grading Company</span><span class="cc-spec-value">{{ listing.gradingCompany }}</span></div>
-                    <div class="cc-spec"><span class="cc-spec-label">Certification #</span><span class="cc-spec-value">{{ listing.gradenumber | certNumber }}</span></div>
-                    <div class="cc-spec"><span class="cc-spec-label">Grade</span><span class="cc-spec-value">{{ listing.grade }}</span></div>
-                    <div class="cc-spec"><span class="cc-spec-label">PCGS Catalog #</span><span class="cc-spec-value">{{ listing.pcgsDesignationNumber or listing.pcgsCatalogNumber }}</span></div>
-
-                    {% if listing.cac %}
-                    <div class="cc-badge-row">
-                        <img class="cc-cac-badge" src="/assets/img/caccoin.png" alt="CAC verified">
-                        <span class="cc-cac-text">CAC verified &mdash; green sticker</span>
-                    </div>
-                    {% endif %}
-
-                    <div class="cc-actions">
-                        {% if not listing.sold %}
-                        <button class="cc-inquire-btn" id="lightbox-form-button" type="button"><i class="fa fa-envelope"></i> Inquire</button>
-                        {% endif %}
-                        {# Phones open their own share sheet; computers get this menu. See the script at the bottom. #}
-                        <div class="cc-share" data-share data-title="{{ listing.name }}">
-                            <button class="cc-share-btn" type="button" aria-label="Share this listing" aria-expanded="false" data-share-toggle><i class="fa fa-share-alt"></i> Share</button>
-                            <div class="cc-share-menu" data-share-menu hidden>
-                                <button type="button" data-share-copy><i class="fa fa-link"></i> <span>Copy link</span></button>
-                                <a data-share-to="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i> Facebook</a>
-                                <a data-share-to="x" target="_blank" rel="noopener"><i class="fa fa-twitter"></i> X</a>
-                                <a data-share-to="email"><i class="fa fa-envelope"></i> Email</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    {# PCGS population around this grade: unsold PCGS listings only, once the
-                       population has been saved (scripts/engine/fill-pcgs-pop.js). #}
-                    {% if listing.pcgsPop and listing.gradingCompany == "PCGS" and not listing.sold %}
-                    {% set popData = listing.pcgsPop %}{% include "pcgspop.njk" %}
-                    {% endif %}
-
-                    {# CAC population (stickered and CACG rows): unsold listings that have it saved. #}
-                    {% if listing.cacPop and listing.cacPop.cells and not listing.sold %}
-                    {% set cacPopData = listing.cacPop %}{% include "cacpop.njk" %}
-                    {% endif %}
-
-
-                    {# Stays in the right-hand info column for featured and non-featured
-                       alike; it only drops below the photos when the grid collapses to a
-                       single column under 900px. #}
-                    {% if listing.description %}
-                    <div class="cc-tony-says{% if isFeatured %} cc-tony-says--gold{% endif %}">
-                        <div class="cc-tony-head">
-                            <img class="cc-tony-emblem" src="/assets/img/CabbageCoins_Emblem_Small.png" alt="">
-                            <h3 class="cc-tony-title">Tony says ...</h3>
-                        </div>
-                        <div class="cc-tony-body">{{ listing.description | markdownify | safe }}</div>
-                    </div>
-                    {% endif %}
-
-                    {# The coin's YouTube Short, from the Studio's "YouTube video" field. Vertical, so it fills
-                       the space under the write-up; the player only loads as it scrolls into view. #}
-                    {% set videoId = listing.youtubeUrl | youtubeId %}
-                    {% if videoId %}
-                    <section class="cc-video" aria-labelledby="cc-video-title">
-                        <h3 class="cc-video-title" id="cc-video-title">Watch this coin</h3>
-                        <div class="cc-video-frame">
-                            <iframe src="https://www.youtube-nocookie.com/embed/{{ videoId }}?rel=0" title="Video of the {{ listing.name }}" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        </div>
-                    </section>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% if isFeatured %}</div>{% endif %}
-<div id="lightbox-form">
-    <div class="inquiry-form">
-        <div style="display:flex; align-items:center; margin-bottom:20px; border-bottom:2px solid #e0e5ea; padding-bottom:16px;">
-            <div style="background:#1d3961; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin-right:14px; flex-shrink:0;">
-                <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='white' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2zm3.708 6.208L1 11.105V5.383l4.708 2.825zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2z'/></svg>
-            </div>
+{# ---------- Inquire pop-up: same Formspree form, subject, fields and message as before ---------- #}
+{% if not listing.sold %}
+<div class="cc26-modal" id="cc26-inquire" hidden>
+    <div class="cc26-modal__backdrop" data-modal-close></div>
+    <div class="cc26-modal__card" role="dialog" aria-modal="true" aria-labelledby="cc26-inquire-title">
+        <div class="cc26-modal__head">
+            <img src="{{ listing.imageUrl }}?w=120{{ imgq }}" alt="" class="cc26-modal__coin">
             <div>
-                <h2 style="margin:0; color:#1d3961; font-family:'Noto Serif Display'; font-weight:800; font-size:24px;">Inquire About This Coin</h2>
-                <p style="margin:0; color:#6289c1; font-family:'Roboto'; font-size:14px;">{{ listing.name }}</p>
+                <h2 id="cc26-inquire-title">Inquire about this coin</h2>
+                <p>{{ listing.name }}</p>
             </div>
+            <button type="button" class="cc26-iconbtn" data-modal-close aria-label="Close">&times;</button>
         </div>
-
-            <form action="https://formspree.io/f/xzdkqbva" method="POST">
-                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-                <input type="hidden" name="_subject" value="Purchase Inquiry - {{ listing.name }}">
-                <input type="hidden" name="form_type" value="Coin Purchase Inquiry">
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-                <div>
-                    <label class="sell-label">Your Name</label>
-                    <input class="form-control sell-input" type="text" name="name" placeholder="John Smith" required>
-                </div>
-                <div>
-                    <label class="sell-label">Your Email</label>
-                    <input class="form-control sell-input" type="email" name="email" placeholder="john@email.com" required>
-                </div>
+        <form action="https://formspree.io/f/xzdkqbva" method="POST" class="cc26-form" data-replyto>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
+            <input type="hidden" name="_subject" value="Purchase Inquiry - {{ listing.name }}">
+            <input type="hidden" name="form_type" value="Coin Purchase Inquiry">
+            <div class="cc26-form__two">
+                <label>Your name<input type="text" name="name" placeholder="John Smith" required></label>
+                <label>Your email<input type="email" name="email" placeholder="john@email.com" required></label>
             </div>
-
-            <div style="margin-bottom:14px;">
-                <label class="sell-label">Phone Number (optional)</label>
-                <input class="form-control sell-input" type="tel" name="phone" placeholder="(717) 555-1234">
-            </div>
-
-            <div style="margin-bottom:14px;">
-                <label class="sell-label">Message</label>
-                <textarea class="form-control sell-input" name="message" rows="6">Hello Tony,
+            <label>Phone number (optional)<input type="tel" name="phone" placeholder="(717) 555-1234"></label>
+            <label>Message<textarea name="message" rows="6">Hello Tony,
 I am interested in purchasing the {{ listing.name }} listed at ${{ listing.price }}.
 My preferred payment method is: (Zelle, Venmo, Paypal FF, Check)
 Please contact me at your earliest convenience to discuss this purchase.
 [please add your phone number here]
-Thank you!</textarea>
-            </div>
-
-            <div style="margin-bottom:16px;">
-                <input type="checkbox" id="privacypolicy" name="privacypolicy" required>
-                <label for="privacypolicy" style="margin-left:8px; font-family:'Roboto'; font-size:14px; color:#444;">
-                    I agree to the <a href="/privacypolicy/" target="_blank" style="color:#6289c1;">privacy policy</a>.
-                </label>
-            </div>
-
-            <div style="display:flex; gap:12px;">
-                <button class="btn btn-primary" type="submit" style="font-size:16px; padding:10px 28px; flex:1;">Send Inquiry</button>
-                <button type="button" onclick="document.getElementById('lightbox-form').classList.remove('active')" style="font-size:16px; padding:10px 20px; background:none; border:1px solid #ccc; border-radius:6px; cursor:pointer; color:#666;">Cancel</button>
+Thank you!</textarea></label>
+            <label class="cc26-form__check"><input type="checkbox" name="privacypolicy" required> I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+            <div class="cc26-form__actions">
+                <button type="submit" class="cc26-btn cc26-btn--gold">Send inquiry</button>
+                <button type="button" class="cc26-btn cc26-btn--ghost" data-modal-close>Cancel</button>
             </div>
         </form>
     </div>
 </div>
-<script>
-            (function() {
-                var form = document.querySelector('#lightbox-form form');
-                if (form) {
-                    form.addEventListener('submit', function() {
-                        var email = form.querySelector('input[name="email"]').value;
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = '_replyto';
-                        input.value = email;
-                        form.appendChild(input);
-                    });
-                }
-            })();
-            </script>
-<script>
-/* Share button: the phone's own share sheet where there is one, otherwise a small menu. */
-(function () {
-    var box = document.querySelector('[data-share]');
-    if (!box) return;
+{% endif %}
 
-    var toggle = box.querySelector('[data-share-toggle]');
-    var menu = box.querySelector('[data-share-menu]');
-    var copy = box.querySelector('[data-share-copy]');
-    var url = location.origin + location.pathname;
-    var title = box.getAttribute('data-title');
-    var enc = encodeURIComponent;
-    var links = {
-        facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + enc(url),
-        x: 'https://twitter.com/intent/tweet?url=' + enc(url) + '&text=' + enc(title),
-        email: 'mailto:?subject=' + enc(title) + '&body=' + enc(url)
-    };
-    Array.prototype.forEach.call(box.querySelectorAll('[data-share-to]'), function (a) {
-        a.href = links[a.getAttribute('data-share-to')];
-    });
-
-    function setOpen(open) {
-        menu.hidden = !open;
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-
-    toggle.addEventListener('click', function () {
-        // Touch screens only: Windows has a share sheet too, but it doesn't offer Facebook.
-        if (navigator.share && matchMedia('(pointer: coarse)').matches) {
-            navigator.share({ title: title, url: url }).catch(function () {});
-            return;
-        }
-        setOpen(menu.hidden);
-    });
-
-    copy.addEventListener('click', function () {
-        var label = copy.querySelector('span');
-        navigator.clipboard.writeText(url).then(function () {
-            label.textContent = 'Link copied!';
-            setTimeout(function () { label.textContent = 'Copy link'; setOpen(false); }, 1500);
-        });
-    });
-
-    document.addEventListener('click', function (e) { if (!box.contains(e.target)) setOpen(false); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
-})();
-</script>
-<script>
-/* Photo carousel — only does anything below the 900px breakpoint, where the CSS
-   turns .cc-img-track into a horizontal scroll-snap strip. Above that the track
-   is a plain vertical stack and the nav is hidden, so this is inert. */
-(function () {
-    var track = document.querySelector('[data-carousel-track]');
-    var nav = document.querySelector('[data-carousel-nav]');
-    if (!track || !nav) return;
-
-    var slides = track.querySelectorAll('.cc-slide');
-    var marks = nav.querySelectorAll('[data-goto]');
-    if (slides.length < 2) { nav.style.display = 'none'; return; }
-
-    function step() {
-        var gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-        return slides[0].getBoundingClientRect().width + gap;
-    }
-    function current() {
-        var s = step();
-        return s ? Math.round(track.scrollLeft / s) : 0;
-    }
-    function sync() {
-        var i = Math.min(slides.length - 1, Math.max(0, current()));
-        for (var n = 0; n < marks.length; n++) {
-            var on = Number(marks[n].getAttribute('data-goto')) === i;
-            marks[n].classList.toggle('is-active', on);
-            marks[n].setAttribute('aria-current', on ? 'true' : 'false');
-        }
-    }
-    function goTo(i) {
-        i = Math.min(slides.length - 1, Math.max(0, i));
-        // scrollTo rather than scrollIntoView so the page never jumps vertically
-        track.scrollTo({ left: i * step(), behavior: 'smooth' });
-    }
-
-    Array.prototype.forEach.call(marks, function (m) {
-        m.addEventListener('click', function () { goTo(Number(m.getAttribute('data-goto'))); });
-    });
-
-    var raf;
-    track.addEventListener('scroll', function () {
-        if (raf) return;
-        raf = requestAnimationFrame(function () { raf = null; sync(); });
-    });
-    window.addEventListener('resize', sync);
-    sync();
-})();
-</script>
+<script src="/assets/js/listing2026.js" defer></script>

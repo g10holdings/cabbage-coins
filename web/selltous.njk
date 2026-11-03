@@ -3,96 +3,96 @@ date: 2022-01-03
 eleventyNavigation:
   key: Sell To Us
   order: 2
-layout: layouts/base.njk
+layout: layouts/dark.njk
 tags:
   - nav
 navtitle: Sell To Us
 title: Cabbage Coins | Sell To Us
 ---
-
-<div class="container text-start site-section main-section">
-    <h1 class="text-start">Sell To Us</h1>
-
-    <div class="row row-cols-3 mb-4">
-        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
-            <div class="we-buy">
-                <h2>Rare Coins</h2>
-                <p>We make the strongest offers on rare coin collections in Central PA. Our deep knowledge of the market means you get a fair, expert appraisal — not a lowball offer.</p>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
-            <div class="we-buy">
-                <h2>Gold & Silver</h2>
-                <p>Selling gold or silver bars and coins? We test for purity on the spot and make competitive cash offers. We buy everything from American Eagles to vintage poured silver bars.</p>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-6 col-lg-4 we-buy-holder">
-            <div class="we-buy">
-                <h2>Quick & Easy</h2>
-                <p>No lengthy process. Tell us what you have, and we'll give you an estimate — sometimes right over the phone. We pay quickly in the format that suits you best.</p>
-            </div>
+<section class="cc26-pagehero cc26-pagehero--image" style="--hero-img: url('/assets/img/Coins_BG_4.jpg')">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">Sell to us</div>
+        <h1>Strong offers on rare coins, gold and silver.</h1>
+        <p class="cc26-lede">Tell us what you have and get a fast, fair appraisal from a professional numismatist.</p>
+        <div class="cc26-hero__ctas">
+            <a class="cc26-btn cc26-btn--gold cc26-btn--lg" href="#sell-form">Tell us about your collection</a>
+            <a class="cc26-textlink" href="tel:17177239505">Or call (717) 723-9505</a>
         </div>
     </div>
+</section>
 
-    <div class="sell-form-wrapper">
-        <div class="sell-form-overlay">
-            <h2 style="color:#1d3961; font-family:'Noto Serif Display'; font-weight:800; margin-bottom:8px;">Tell Us About Your Collection</h2>
-            <p style="color:#444; margin-bottom:24px;">Fill out the form below and Tony will get back to you promptly. Include as much detail as you can about each coin — grading service, grade, year, and any special attributes help us give you the most accurate offer.</p>
+{# ---------- What we buy ---------- #}
+<section class="cc26-wrap cc26-section">
+    <div class="cc26-ways">
+        <div><span class="cc26-ways__n">01</span><span class="cc26-ways__t">Rare Coins</span><span class="cc26-ways__d">We make the strongest offers on rare coin collections in Central PA. Our deep knowledge of the market means you get a fair, expert appraisal — not a lowball offer.</span></div>
+        <div><span class="cc26-ways__n">02</span><span class="cc26-ways__t">Gold &amp; Silver</span><span class="cc26-ways__d">Selling gold or silver bars and coins? We test for purity on the spot and make competitive cash offers. We buy everything from American Eagles to vintage poured silver bars.</span></div>
+        <div><span class="cc26-ways__n">03</span><span class="cc26-ways__t">Quick &amp; Easy</span><span class="cc26-ways__d">No lengthy process. Tell us what you have, and we'll give you an estimate — sometimes right over the phone. We pay quickly in the format that suits you best.</span></div>
+    </div>
+</section>
 
-            <form action="https://formspree.io/f/xpqorvdg" method="POST">
-                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="sell-label">Your Name</label>
-                        <input class="form-control sell-input" type="text" name="name" placeholder="John Smith" required>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="sell-label">Your Email</label>
-                        <input class="form-control sell-input" type="email" name="email" placeholder="john@email.com" required>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="sell-label">Phone Number (optional)</label>
-                        <input class="form-control sell-input" type="tel" name="phone" placeholder="(717) 555-1234">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="sell-label">Best Time to Reach You</label>
-                        <input class="form-control sell-input" type="text" name="best_time" placeholder="e.g. Weekday mornings">
-                    </div>
-                    <div class="col-12">
-                        <label class="sell-label">Coin & Collection Details</label>
-                        <textarea class="form-control sell-input" name="message" rows="10" placeholder="Please describe what you have. For each coin, include:
+{# ---------- Form + what to include ---------- #}
+<section class="cc26-wrap cc26-section cc26-section--last cc26-sell" id="sell-form">
+    <div class="cc26-sell__form">
+        <div class="cc26-eyebrow">Tell us about your collection</div>
+        <h2 class="cc26-h2">Get an offer</h2>
+        <p class="cc26-muted cc26-sell__intro">Fill out the form below and Tony will get back to you promptly. Include as much detail as you can about each coin — grading service, grade, year, and any special attributes help us give you the most accurate offer.</p>
+        <form action="https://formspree.io/f/xpqorvdg" method="POST" class="cc26-form cc26-form--page" data-replyto>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
+            <div class="cc26-form__two">
+                <label>Your name<input type="text" name="name" placeholder="John Smith" required></label>
+                <label>Your email<input type="email" name="email" placeholder="john@email.com" required></label>
+                <label>Phone number (optional)<input type="tel" name="phone" placeholder="(717) 555-1234"></label>
+                <label>Best time to reach you<input type="text" name="best_time" placeholder="e.g. Weekday mornings"></label>
+            </div>
+            <label>Coin &amp; collection details<textarea name="message" rows="10" required placeholder="Please describe what you have. For each coin, include:
 - Year, denomination, and mint mark (e.g. 1881-S $1 Morgan Dollar)
 - Grading service and grade (e.g. PCGS MS64, NGC AU58)
 - Certification number if available
 - Any special attributes (CAC sticker, toning, varieties)
 - Approximate quantity if selling a large collection
 
-The more detail you provide, the faster we can get you an offer!" required></textarea>
-                    </div>
-                    <div class="col-12">
-                        <input type="checkbox" name="privacypolicy" id="privacypolicy" required>
-                        <label for="privacypolicy" style="margin-left:8px; font-family:'Roboto'; font-size:14px;">I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-primary" type="submit" style="font-size:18px; padding:12px 30px;">Send Inquiry</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+The more detail you provide, the faster we can get you an offer!"></textarea></label>
+            <label class="cc26-form__check"><input type="checkbox" name="privacypolicy" required> I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+            <div class="cc26-form__actions">
+                <button type="submit" class="cc26-btn cc26-btn--gold cc26-btn--lg">Send inquiry</button>
+            </div>
+        </form>
     </div>
-</div>
+
+    <aside class="cc26-sell__side">
+        <div class="cc26-sell__box">
+            <div class="cc26-eyebrow">For each coin, include</div>
+            <ul class="cc26-checks">
+                <li>Year, denomination, and mint mark</li>
+                <li>Grading service and grade</li>
+                <li>Certification number if available</li>
+                <li>Special attributes: CAC sticker, toning, varieties</li>
+                <li>Approximate quantity for a large collection</li>
+            </ul>
+        </div>
+        <div class="cc26-sell__box">
+            <div class="cc26-eyebrow">Sellers say</div>
+            {% set sellerReviews = ["Jeremy H.", "Lily B.", "Richard L."] %}
+            {% for r in reviews.items %}{% if r.who in sellerReviews %}
+            <figure class="cc26-sell__quote">
+                <span class="cc26-gold cc26-stars">★★★★★</span>
+                <blockquote>“{{ r.q }}”</blockquote>
+                <figcaption>{{ r.who }} · Google review</figcaption>
+            </figure>
+            {% endif %}{% endfor %}
+            <a class="cc26-textlink" href="{{ reviews.googleUrl }}" target="_blank" rel="noopener">Read them on Google ↗</a>
+        </div>
+    </aside>
+</section>
+
 <script>
-            (function() {
-                var form = document.querySelector('.sell-form-overlay form');
-                if (form) {
-                    form.addEventListener('submit', function() {
-                        var email = form.querySelector('input[name="email"]').value;
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = '_replyto';
-                        input.value = email;
-                        form.appendChild(input);
-                    });
-                }
-            })();
-            </script>
+// Formspree reply-to = the seller's email, so Tony can just hit Reply (kept from the old page).
+document.querySelectorAll('form[data-replyto]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+        var email = form.querySelector('input[name="email"]').value;
+        var input = form.querySelector('input[name="_replyto"]') || document.createElement('input');
+        input.type = 'hidden'; input.name = '_replyto'; input.value = email;
+        form.appendChild(input);
+    });
+});
+</script>

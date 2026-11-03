@@ -4,34 +4,72 @@ eleventyNavigation:
   key: Podcast
   parent: About Cabbage Coins
   order: 2
-layout: layouts/base.njk
+layout: layouts/dark.njk
 tags:
   - nav
 navtitle: Podcast
 title: Cabbage Coins Podcast
 ---
+<section class="cc26-pagehero">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">The Cabbage Coins Podcast</div>
+        <h1>Conversations about the rare coin market.</h1>
+        <p class="cc26-lede">With expert collectors, dealers, and enthusiasts. New episodes every week on <a href="https://www.youtube.com/@cabbage_coins" target="_blank" rel="noopener">YouTube</a>.</p>
+    </div>
+</section>
 
-<div class="container site-section main-section">
-    <h1 class="text-center" style="color: #2e5090;">The Cabbage Coins Podcast</h1>
-    <p class="text-center" style="font-size: 22px; max-width: 700px; margin: 0 auto 40px;">Conversations about the rare coin market with expert collectors, dealers, and enthusiasts. New episodes every week on <a href="https://www.youtube.com/@cabbage_coins" target="_blank">YouTube</a>.</p>
-
-<div class="podcast-episodes">
-    {% for episode in podcast %}
-    <div class="podcast-episode">
-        <div class="ratio ratio-16x9">
-            <iframe src="https://www.youtube.com/embed/{{ episode.videoId }}" 
-                    title="{{ episode.title }}" 
-                    allowfullscreen></iframe>
+{% if podcast and podcast.length %}
+{# Every episode is a thumbnail that turns into the video when clicked (site2026.js), so the page loads
+   fast instead of loading ten YouTube players up front. #}
+<section class="cc26-wrap cc26-section">
+    {% set ep = podcast[0] %}
+    <div class="cc26-latest">
+        <button type="button" class="cc26-video" data-video="{{ ep.videoId }}" aria-label="Play: {{ ep.title }}">
+            <img src="{{ ep.thumbnail }}" alt="" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/{{ ep.videoId }}/hqdefault.jpg'">
+            <span class="cc26-video__badge">Latest episode</span>
+            <span class="cc26-video__play" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+        <div class="cc26-latest__copy">
+            <div class="cc26-eyebrow">Latest episode · {{ ep.publishedAt }}</div>
+            <h2>{{ ep.title }}</h2>
+            <div class="cc26-linkrow">
+                <a class="cc26-textlink" href="https://www.youtube.com/watch?v={{ ep.videoId }}" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                <button type="button" class="cc26-textlink cc26-gold" data-join-open>Listener? Join the list for first look at new coins →</button>
+            </div>
         </div>
-        <h3>{{ episode.title }}</h3>
-        <p class="podcast-meta">
-            {% if episode.views %}{{ episode.views | int | string }} views · {% endif %}{{ episode.publishedAt }}
-        </p>
     </div>
-    {% endfor %}
-</div>
+</section>
 
-    <div class="text-center" style="margin-top: 40px; padding-bottom: 40px;">
-        <a href="https://www.youtube.com/@cabbage_coins/podcasts" target="_blank" class="btn btn-primary" style="font-size: 18px; padding: 12px 30px;">View All Episodes on YouTube</a>
+{% if podcast.length > 1 %}
+<section class="cc26-wrap cc26-section">
+    <div class="cc26-section__head">
+        <h2>More episodes</h2>
+        <a class="cc26-textlink" href="https://www.youtube.com/@cabbage_coins/podcasts" target="_blank" rel="noopener">View all episodes on YouTube ↗</a>
     </div>
-</div>
+    <div class="cc26-episodes">
+        {% for episode in podcast %}{% if not loop.first %}
+        <article class="cc26-episode">
+            <button type="button" class="cc26-video" data-video="{{ episode.videoId }}" aria-label="Play: {{ episode.title }}">
+                <img src="{{ episode.thumbnail }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/{{ episode.videoId }}/hqdefault.jpg'">
+                <span class="cc26-video__play cc26-video__play--sm" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            </button>
+            <h3>{{ episode.title }}</h3>
+            <span class="cc26-muted">{{ episode.publishedAt }}</span>
+        </article>
+        {% endif %}{% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endif %}
+
+<section class="cc26-wrap cc26-section cc26-section--last">
+    <div class="cc26-cta">
+        <div class="cc26-cta__copy">
+            <div class="cc26-eyebrow">Never miss an episode</div>
+            <h2>Subscribe on YouTube.</h2>
+        </div>
+        <div class="cc26-cta__actions">
+            <a class="cc26-btn cc26-btn--gold cc26-btn--lg" href="https://www.youtube.com/@cabbage_coins?sub_confirmation=1" target="_blank" rel="noopener">Subscribe ↗</a>
+        </div>
+    </div>
+</section>

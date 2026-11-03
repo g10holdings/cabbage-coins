@@ -3,103 +3,87 @@ date: 2022-01-02
 eleventyNavigation:
   key: inventory
   order: 1
-layout: layouts/base.njk
+layout: layouts/dark.njk
 tags:
   - nav
 navtitle: Inventory
 title: Cabbage Coins | Inventory
 ---
-<div class="container site-section preview-grid" id="listing-grid-container">
-<div id="inventory-controls">
-    <!-- Row 1: Product count far left -->
-    <div style="margin-bottom:8px; text-align:left;">
-        <h2 id="product-count-all" class="active" style="font-size:26px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length }} Products</h2>
-        <h2 id="product-count-sold" style="font-size:26px; color:#6289c1; font-family:'Noto Serif Display'; font-weight:800; margin:0;">{{ collections.listingsNewest.length - collections.listingsNotsold.length }} Products</h2>
-    </div>
-
-    <!-- Row 2: Show Sold left, CAC Only right -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:16px; color:#6289c1; cursor:pointer;">
-            <input type="checkbox" checked id="show-sold-check" name="showsold" style="width:18px; height:18px; cursor:pointer;">
-            Show Sold
-        </label>
-        <label style="display:inline-flex; align-items:center; gap:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:16px; color:#4a9e6b; cursor:pointer;">
-            <input type="checkbox" id="cac-filter-check" style="width:18px; height:18px; cursor:pointer; accent-color:#4a9e6b;">
-            <img src="/assets/img/caccoin.png" style="height:24px;">
-            Only
-        </label>
-    </div>
-
-    <!-- Row 3: Filter buttons left, sort dropdown far right -->
-    <div class="inventory-filter-row">
-        <div class="inventory-filter-buttons">
-            <span class="filter-label">Filter</span>
-            <button class="filter-btn active-filter" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="Gold">Gold</button>
-            <button class="filter-btn" data-filter="Silver">Silver</button>
-            <button class="filter-btn" data-filter="Copper/Bronze">Copper/Bronze</button>
-            <button class="filter-btn" data-filter="Vintage Ingot">Vintage Ingot</button>
-            <button class="filter-btn" data-filter="Foreign">Foreign</button>
+{% set imgq = "&q=90&auto=format&fit=max" %}
+<div class="cc26-wrap cc26-wrap--wide cc26-inv">
+    <div class="cc26-inv__head">
+        <div>
+            <div class="cc26-eyebrow">Inventory</div>
+            <h1 class="cc26-inv__count" data-inv-count aria-live="polite">{{ collections.listingsNewest.length }} items</h1>
         </div>
-        <select name="sort" id="sort">
-            <option value="newest" selected>Newest Items</option>
-            <option value="catalogasc">PCGS Catalog #</option>
-            <option value="priceasc">Price (low to high)</option>
-            <option value="pricedsc">Price (high to low)</option>
-        </select>
+        <span class="cc26-muted">Last updated: {{ buildInfo.lastUpdated }}</span>
     </div>
-    <div class="inventory-filter-row" style="margin-top:10px;">
-        <div class="inventory-filter-buttons">
-            <span class="filter-label">Certification</span>
-            <button class="cert-btn active-cert" data-cert="all">All</button>
-            <button class="cert-btn" data-cert="PCGS">PCGS</button>
-            <button class="cert-btn" data-cert="NGC">NGC</button>
-            <button class="cert-btn" data-cert="CACG">CACG</button>
-            <button class="cert-btn" data-cert="Ungraded">Ungraded</button>
+
+    <div class="cc26-inv__controls">
+        <div class="cc26-inv__row">
+            <div class="cc26-pills" role="group" aria-label="Filter by type">
+                <span class="cc26-pills__label">Type</span>
+                <button type="button" class="cc26-pill" data-filter-cat="all" aria-pressed="true">All</button>
+                <button type="button" class="cc26-pill" data-filter-cat="Gold" aria-pressed="false">Gold</button>
+                <button type="button" class="cc26-pill" data-filter-cat="Silver" aria-pressed="false">Silver</button>
+                <button type="button" class="cc26-pill" data-filter-cat="Copper/Bronze" aria-pressed="false">Copper/Bronze</button>
+                <button type="button" class="cc26-pill" data-filter-cat="Vintage Ingot" aria-pressed="false">Vintage Ingot</button>
+                <button type="button" class="cc26-pill" data-filter-cat="Foreign" aria-pressed="false">Foreign</button>
+            </div>
+            <label class="cc26-inv__sort">
+                <span class="cc26-pills__label">Sort</span>
+                <select data-inv-sort>
+                    <option value="newest" selected>Newest items</option>
+                    <option value="catalog">PCGS catalog #</option>
+                    <option value="priceasc">Price (low to high)</option>
+                    <option value="pricedsc">Price (high to low)</option>
+                </select>
+            </label>
         </div>
-        <div style="font-family:'Roboto'; font-size:14px; color:#5f6b7a; white-space:nowrap; align-self:center;">Last Updated: {{ buildInfo.lastUpdated }}</div>
+        <div class="cc26-inv__row">
+            <div class="cc26-pills" role="group" aria-label="Filter by grading service">
+                <span class="cc26-pills__label">Graded by</span>
+                <button type="button" class="cc26-pill" data-filter-cert="all" aria-pressed="true">All</button>
+                <button type="button" class="cc26-pill" data-filter-cert="PCGS" aria-pressed="false">PCGS</button>
+                <button type="button" class="cc26-pill" data-filter-cert="NGC" aria-pressed="false">NGC</button>
+                <button type="button" class="cc26-pill" data-filter-cert="CACG" aria-pressed="false">CACG</button>
+                <button type="button" class="cc26-pill" data-filter-cert="Ungraded" aria-pressed="false">Ungraded</button>
+            </div>
+            <div class="cc26-inv__toggles">
+                <label class="cc26-toggle cc26-toggle--cac">
+                    <input type="checkbox" data-inv-cac>
+                    <img src="/assets/img/caccoin.png" alt="CAC">
+                    <span>Only</span>
+                </label>
+                <label class="cc26-toggle">
+                    <input type="checkbox" data-inv-sold checked>
+                    <span>Show sold</span>
+                </label>
+            </div>
+        </div>
     </div>
-</div>
-<div class="listings-container">
-<div class="container site-section preview-grid listing fade-in" id="listings-catalog">
-    <div class="row preview-grid listing-row justify-content-start">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid_catalog.njk" %} 
-    </div>
-</div>
-<div class="container site-section preview-grid listing fade-in" id="listings-latest">
-    <div class="row preview-grid listing-row justify-content-start">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid.njk" %} 
 
+    <div class="cc26-grid cc26-grid--inv" data-inv-grid>
+        {% for listing in collections.listingsNewest | reverse %}
+        <a class="cc26-card{% if listing.sold %} cc26-card--sold{% endif %}" href="/listings/{{ listing.slug.current | slug }}/"
+           data-cat="{{ listing.category }}" data-cac="{{ 'true' if listing.cac else 'false' }}" data-cert="{{ listing.gradingCompany }}"
+           data-sold="{{ 'true' if listing.sold else 'false' }}" data-price="{{ listing.price }}" data-catno="{{ listing.pcgsCatalogNumber }}" data-newest="{{ loop.index0 }}">
+            <span class="cc26-card__img">
+                <img src="{{ listing.imageUrl }}?w=640{{ imgq }}" alt="{{ listing.name }}" loading="lazy">
+                {% if listing.galleryImageUrl and listing.galleryImageUrl[0] %}
+                <img class="cc26-card__back" src="{{ listing.galleryImageUrl[0] }}?w=640{{ imgq }}" alt="" loading="lazy">
+                {% endif %}
+                {% if listing.sold %}<span class="cc26-card__sold">Sold</span>{% endif %}
+            </span>
+            <span class="cc26-card__meta">
+                <span>{{ listing.gradingCompany }} {{ listing.grade | replace(" CAC", "") }}</span>
+                {% if listing.cac %}<img src="/assets/img/caccoin.png" alt="CAC approved" class="cc26-cac">{% endif %}
+            </span>
+            <span class="cc26-card__name">{{ listing.name }}</span>
+            <span class="cc26-card__price">${{ listing.price | money }}</span>
+        </a>
+        {% endfor %}
     </div>
+    <p class="cc26-inv__empty" data-inv-empty hidden>No coins match those filters right now. <button type="button" class="cc26-textlink cc26-gold" data-join-open>Tell Tony what you're looking for →</button></p>
 </div>
-<div class="container site-section preview-grid listing fade-in" id="listings-priceasc">
-    <div class="row preview-grid listing-row justify-content-start">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid_priceasc.njk" %}
-
-    </div>
-</div>
-<div class="container site-section preview-grid listing fade-in" id="listings-pricedsc">
-    <div class="row preview-grid listing-row justify-content-start">
-        {% set listinggrid = collections.myListings%}
-        {% include "listinggrid_pricedsc.njk" %} 
-    </div>
-</div>
-</div>
-<script>
-document.querySelectorAll('.image-dummy[data-img-back]').forEach(function(el) {
-    const front = el.dataset.imgFront;
-    const back = el.dataset.imgBack;
-    // listings with no second image render the URL as "undefined?<params>"
-    if (!back || back.indexOf('undefined') === 0) return;
-    el.addEventListener('mouseenter', function() {
-        el.style.backgroundImage = 'url(' + back + ')';
-    });
-    el.addEventListener('mouseleave', function() {
-        el.style.backgroundImage = 'url(' + front + ')';
-    });
-});
-</script>
-
+<script src="/assets/js/inventory2026.js" defer></script>

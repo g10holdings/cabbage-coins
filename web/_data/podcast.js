@@ -17,10 +17,44 @@ function fetchJSON(url) {
     })
 }
 
+function fetchText(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = ''
+            res.on('data', chunk => data += chunk)
+            res.on('end', () => resolve(data))
+        }).on('error', reject)
+    })
+}
+
+// No-key fallback: YouTube's public playlist feed (newest 15 entries). Used when YOUTUBE_API_KEY is
+// missing (e.g. a local build) so the homepage podcast preview still has the latest episode.
+async function getEpisodesFromFeed() {
+    try {
+        const xml = await fetchText(`https://www.youtube.com/feeds/videos.xml?playlist_id=${PLAYLIST_ID}`)
+        const decode = (s) => s.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        return xml.split('<entry>').slice(1).map((entry) => {
+            const pick = (re) => (entry.match(re) || [])[1] || ''
+            const videoId = pick(/<yt:videoId>([^<]+)<\/yt:videoId>/)
+            return {
+                title: decode(pick(/<title>([^<]*)<\/title>/)),
+                videoId,
+                publishedAt: new Date(pick(/<published>([^<]+)<\/published>/)).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }),
+                thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
+            }
+        }).filter((e) => e.videoId)
+    } catch (err) {
+        console.error('YouTube feed fetch error:', err)
+        return []
+    }
+}
+
 async function getPodcastEpisodes() {
     if (!API_KEY) {
-        console.warn('YOUTUBE_API_KEY not set - skipping podcast episodes')
-        return []
+        console.warn('YOUTUBE_API_KEY not set - using the public playlist feed for podcast episodes')
+        return getEpisodesFromFeed()
     }
 
     try {

@@ -1,0 +1,34 @@
+{# Contact pop-up (2026 look). Same fields as the old lightbox forms. Before including, a page may set contactForm (its Formspree URL)
+   and contactMsg (the pre-filled message); otherwise the About-page form is used. Optional: contactTitle,
+   contactSub (pop-up heading), contactSubject + contactType (hidden _subject / form_type), contactPlaceholder
+   (an empty message box with a hint, instead of pre-filled text).
+   Open it with any button carrying data-modal-open="cc26-contact", or a link to #contact. #}
+<div class="cc26-modal" id="cc26-contact" hidden>
+    <div class="cc26-modal__backdrop" data-modal-close></div>
+    <div class="cc26-modal__card" role="dialog" aria-modal="true" aria-labelledby="cc26-contact-title">
+        <div class="cc26-modal__head">
+            <img src="/assets/img/CabbageCoins_Emblem_Small_White.png" alt="">
+            <div>
+                <h2 id="cc26-contact-title">{{ contactTitle or "Contact Cabbage Coins" }}</h2>
+                <p>{{ contactSub or "Send Tony a message" }}</p>
+            </div>
+            <button type="button" class="cc26-iconbtn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <form action="{{ contactForm or 'https://formspree.io/f/xpqorvdg' }}" method="POST" class="cc26-form">
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
+            {% if contactSubject %}<input type="hidden" name="_subject" value="{{ contactSubject }}">{% endif %}
+            {% if contactType %}<input type="hidden" name="form_type" value="{{ contactType }}">{% endif %}
+            <div class="cc26-form__two">
+                <label>Name<input type="text" name="name" required></label>
+                <label>Email<input type="email" name="email" required></label>
+            </div>
+            <label>Message{% if contactPlaceholder %}<textarea name="message" rows="7" placeholder="{{ contactPlaceholder }}"></textarea>{% else %}<textarea name="message" rows="7" required>{{ contactMsg or "Hello Tony,
+I had a question about Cabbage Coins: " }}</textarea>{% endif %}</label>
+            <label class="cc26-form__check"><input type="checkbox" name="privacypolicy" required> I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+            <div class="cc26-form__actions">
+                <button type="submit" class="cc26-btn cc26-btn--gold">Send</button>
+                <button type="button" class="cc26-btn cc26-btn--ghost" data-modal-close>Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

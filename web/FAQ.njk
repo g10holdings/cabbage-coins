@@ -3,67 +3,72 @@ date: 2022-01-04
 eleventyNavigation:
   key: FAQ
   order: 3
-layout: layouts/base.njk
+layout: layouts/dark.njk
 tags:
   - nav
 navtitle: FAQs
 title: Cabbage Coins | FAQs
 ---
+<section class="cc26-pagehero">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">FAQ</div>
+        <h1>Frequently asked questions</h1>
+        <p class="cc26-lede">Payments, shipping, returns and more. Don't see your question? Tony is a call or an email away.</p>
+    </div>
+</section>
 
-<div class="container text-start main-section">
-        <h1 class="text-center">Frequently Asked Questions</h1>
-        <div class="faq-container">
-            <h2 class="text-start faq-question">• What kind of payments do you take?</h2>
-            <p class="text-start faq-answer">We accept most forms of payment, except for credit cards. Use the contact form on one of our inventory items to discuss payment options, such as through Zelle, Venmo, PayPal (feeless only). We accept paper and electronic checks. Wires and ACH deposits are also a possibility for large dollar value items. Cash will be accepted for in-person transactions in the Lancaster County area or at local events. Please contact us to make arrangements.<br></p>
+<section class="cc26-wrap cc26-section cc26-section--last cc26-faq">
+    <aside class="cc26-faq__side">
+        <div class="cc26-cta cc26-cta--stack">
+            <div class="cc26-cta__copy">
+                <div class="cc26-eyebrow">Have more questions?</div>
+                <h2>Contact us with anything we didn't cover.</h2>
+            </div>
+            <div class="cc26-cta__actions">
+                <button type="button" class="cc26-btn cc26-btn--gold" data-modal-open="cc26-contact">Contact us</button>
+                <a class="cc26-textlink" href="tel:17177239505">(717) 723-9505</a>
+                <a class="cc26-textlink" href="mailto:tony@cabbagecoins.com">tony@cabbagecoins.com</a>
+            </div>
         </div>
-                <div class="faq-container">
-            <h2 class="text-start faq-question">• When will you ship the item purchased?</h2>
-            <p class="text-start faq-answer">We will ship your coin after the item has been paid in full and the payment clears our bank. Once payment clears, most orders are shipped the next business day.<br></p>
-        </div>
-                <div class="faq-container">
-            <h2 class="text-start faq-question">• How will you ship my coin?</h2>
-            <p class="text-start faq-answer">For items between $1000 and $5000, Cabbage Coins will ship your item using USPS Priority Mail and will require signature. All items above $5000 will ship via FedEx. The coin will be well packaged, padded and secure within the shipping container. The shipment will be fully insured and will require signature. Items below $1000 will ship via USPS Ground.<br></p>
-        </div>
-                        <div class="faq-container">
-            <h2 class="text-start faq-question">• Where will you ship coins?</h2>
-            <p class="text-start faq-answer">We will only ship coins to addresses in the lower 48 states. Shipping to Canada or overseas is not available at this time. Signature confirmation will be required for delivery.<br></p>
-        </div>
-                <div class="faq-container">
-            <h2 class="text-start faq-question">• How can I contact Cabbage Coins?</h2>
-            <p class="text-start faq-answer">The easiest way is simply to send us an email at <a href="mailto:tony@cabbagecoins.com" target="_blank">tony@cabbagecoins.com</a> or give us a call at <a href="tel:17177239505">+1 (717) 723-9505</a>. Please leave us a voicemail and we'll return your call promptly.<br></p>
-        </div>
-        <div class="faq-container">
-            <h2 class="text-start faq-question">• Do you accept returns?</h2>
-            <p class="text-start faq-answer">In-person and cash transactions are final per the terms of the agreement at the time of sale. Sales through our website or social media pages are handled on a case-by-case basis. Please contact us directly to discuss the particulars of your transaction. If a return is approved, the coin MUST be returned in its original holder and include a copy of the invoice. Any coin that has been cracked out of the holder, holder abused, or coin/bar damaged in any way will not be accepted for return.<br></p>
-        </div>
-                <div class="faq-container">
-            <h2 class="text-start faq-question">• What coin shows do you attend?</h2>
-            <p class="text-start faq-answer">Cabbage Coins is often in attendance at shows across the country, walking the floor and making purchases. On occasion, we have a table and will try to do the major events, such as the ANA World's Fair of Money, the Baltimore Whitman Expo, and the FUN shows in Florida.<br></p>
-        </div>
-                <div class="faq-container">
-            <h2 class="text-start faq-question">• How do you use my data and personal information?</h2>
-            <p class="text-start faq-answer">Submitting a contact form provides us your name and email address. Completing a transaction may provide us a contact number and a mailing address. This information is kept in our secure database for use in future contact or marketing efforts. Your information will never be sold or provided to a third party without your consent. Please see our <a href="/privacypolicy/" target="blank">Privacy Policy</a> for full details.<br></p>
-        </div>
-    </div>
-    <div class="container text-start site-section">
-        <h1 class="text-center">Have more questions?</h1>
-        <div class="text-center faq-container">
-            <p class="text-center faq-answer">Contact us with any additional questions you may have<br></p><button class="btn btn-primary" type="button" id="lightbox-form-button">contact us</button>
-        </div>
-    </div>
+    </aside>
 
-    <div id="lightbox-form">
-        <div class='inquiry-form'>
-                <form action="https://formspree.io/f/mzbogwbb" method="post">
-                    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-                    <h2 class="text-center">Contact Us</h2>
-                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
-                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I had a question that wasn't covered by your FAQ page: [insert question here]</textarea></div>
-                    <div><input type="checkbox" name="privacypolicy" required></input>
-                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
-                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
-                </form>
-            <form></form>
-        </div>
+    <div class="cc26-faq__list">
+        <details class="cc26-qa" open>
+            <summary>What kind of payments do you take?</summary>
+            <div class="cc26-qa__a"><p>We accept most forms of payment, except for credit cards. Use the contact form on one of our inventory items to discuss payment options, such as through Zelle, Venmo, PayPal (feeless only). We accept paper and electronic checks. Wires and ACH deposits are also a possibility for large dollar value items. Cash will be accepted for in-person transactions in the Lancaster County area or at local events. Please contact us to make arrangements.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>When will you ship the item purchased?</summary>
+            <div class="cc26-qa__a"><p>We will ship your coin after the item has been paid in full and the payment clears our bank. Once payment clears, most orders are shipped the next business day.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>How will you ship my coin?</summary>
+            <div class="cc26-qa__a"><p>For items between $1000 and $5000, Cabbage Coins will ship your item using USPS Priority Mail and will require signature. All items above $5000 will ship via FedEx. The coin will be well packaged, padded and secure within the shipping container. The shipment will be fully insured and will require signature. Items below $1000 will ship via USPS Ground.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>Where will you ship coins?</summary>
+            <div class="cc26-qa__a"><p>We will only ship coins to addresses in the lower 48 states. Shipping to Canada or overseas is not available at this time. Signature confirmation will be required for delivery.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>How can I contact Cabbage Coins?</summary>
+            <div class="cc26-qa__a"><p>The easiest way is simply to send us an email at <a href="mailto:tony@cabbagecoins.com">tony@cabbagecoins.com</a> or give us a call at <a href="tel:17177239505">+1 (717) 723-9505</a>. Please leave us a voicemail and we'll return your call promptly.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>Do you accept returns?</summary>
+            <div class="cc26-qa__a"><p>In-person and cash transactions are final per the terms of the agreement at the time of sale. Sales through our website or social media pages are handled on a case-by-case basis. Please contact us directly to discuss the particulars of your transaction. If a return is approved, the coin MUST be returned in its original holder and include a copy of the invoice. Any coin that has been cracked out of the holder, holder abused, or coin/bar damaged in any way will not be accepted for return.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>What coin shows do you attend?</summary>
+            <div class="cc26-qa__a"><p>Cabbage Coins is often in attendance at shows across the country, walking the floor and making purchases. On occasion, we have a table and will try to do the major events, such as the ANA World's Fair of Money, the Baltimore Whitman Expo, and the FUN shows in Florida. See the <a href="/coinshows/">show schedule</a> for where we'll be next.</p></div>
+        </details>
+        <details class="cc26-qa">
+            <summary>How do you use my data and personal information?</summary>
+            <div class="cc26-qa__a"><p>Submitting a contact form provides us your name and email address. Completing a transaction may provide us a contact number and a mailing address. This information is kept in our secure database for use in future contact or marketing efforts. Your information will never be sold or provided to a third party without your consent. Please see our <a href="/privacypolicy/">Privacy Policy</a> for full details.</p></div>
+        </details>
     </div>
+</section>
+
+{% set contactForm = "https://formspree.io/f/mzbogwbb" %}
+{% set contactMsg = "Hello Tony,
+I had a question that wasn't covered by your FAQ page: " %}
+{% include "contactmodal.njk" %}

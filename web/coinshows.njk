@@ -4,11 +4,10 @@ eleventyNavigation:
   key: Coin Shows
   parent: About Cabbage Coins
   order: 2
-layout: layouts/base.njk
+layout: layouts/dark.njk
 navtitle: Coin Shows
 title: Cabbage Coins | Coin Show Schedule
 ---
-
 {#
   The schedule below is driven entirely by the "Coin Shows" documents in Sanity
   Studio — see `web/_data/coinshows.js` for the query, month grouping and date
@@ -18,76 +17,75 @@ title: Cabbage Coins | Coin Show Schedule
   Website" deploy button on the Studio dashboard. Same for adding or editing —
   changes are only live once that deploy runs. Shows do NOT expire on their own.
 #}
-
-<div class="container site-section main-section" style="text-align:center;">
-    <h1 style="text-align:center;">Coin Show Schedule</h1>
-    <p style="font-family:'Roboto'; font-size:18px; color:#444; max-width:700px; margin:0 auto 40px auto;">Come find us at these upcoming shows! Stop by the table to browse inventory, talk coins, or sell your collection in person.</p>
-
-    {% for group in coinshows %}
-    <div class="show-month-group" data-month="{{ group.key }}" style="margin-bottom:40px; max-width:800px; margin-left:auto; margin-right:auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:22px; border-bottom:2px solid #e0e5ea; padding-bottom:8px; margin-bottom:16px; text-align:left;">{{ group.label }}</h2>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-
-            {% for show in group.shows %}
-            <div class="show-card{% if show.isPast %} is-past{% endif %}" data-end="{{ show.endISO }}">
-                <div class="show-date-badge">
-                    <div class="show-month-short">{{ show.monthShort }}</div>
-                    <div class="show-day">{{ show.dayRange }}</div>
-                </div>
-                <div class="show-details">
-                    {% if show.url %}
-                    <a href="{{ show.url }}" target="_blank" rel="noopener" class="show-name-link">
-                        <h3 class="show-name">{{ show.name }}</h3>
-                    </a>
-                    {% else %}
-                    <h3 class="show-name">{{ show.name }}</h3>
-                    {% endif %}
-                    <div class="show-location">📍 {{ show.location }}</div>
-                    <div class="show-meta">Table: {{ show.tableNumber }}</div>
-                </div>
-                <div class="show-badge-status {% if show.isPast %}is-past{% else %}is-upcoming{% endif %}">{% if show.isPast %}Past{% else %}Upcoming{% endif %}</div>
-            </div>
-            {% endfor %}
-
-        </div>
+<section class="cc26-pagehero cc26-pagehero--image" style="--hero-img: url('/assets/img/coinshow.jpg')">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">Coin show schedule</div>
+        <h1>Come find us on the bourse floor.</h1>
+        <p class="cc26-lede">Come find us at these upcoming shows! Stop by the table to browse inventory, talk coins, or sell your collection in person.</p>
     </div>
-    {% endfor %}
+</section>
 
-    <p id="no-shows-message" style="font-family:'Roboto'; font-size:17px; color:#666; max-width:700px; margin:0 auto;" {% if coinshows.length %}hidden{% endif %}>
-        Our next show schedule is being finalized — check back soon, or <a href="/contactus/">get in touch</a> and we'll let you know where to find us.
-    </p>
+<section class="cc26-wrap cc26-section cc26-section--last cc26-showsched">
+    <div class="cc26-showsched__list">
+        {% for group in coinshows %}
+        <div class="cc26-month" data-month="{{ group.key }}">
+            <h2 class="cc26-month__label">{{ group.label }}</h2>
+            <ul class="cc26-showlist">
+                {% for show in group.shows %}
+                <li class="cc26-show{% if show.isPast %} is-past{% endif %}" data-end="{{ show.endISO }}">
+                    <div class="cc26-show__date">
+                        <span class="cc26-show__mon">{{ show.monthShort }}</span>
+                        <span class="cc26-show__days">{{ show.dayRange }}</span>
+                    </div>
+                    <div class="cc26-show__info">
+                        <h3>{% if show.url %}<a href="{{ show.url }}" target="_blank" rel="noopener">{{ show.name }} <span aria-hidden="true">↗</span></a>{% else %}{{ show.name }}{% endif %}</h3>
+                        <div class="cc26-show__meta">
+                            <span>{{ show.location }}</span>
+                            <span>Table: {{ show.tableNumber }}</span>
+                        </div>
+                    </div>
+                    <span class="cc26-show__status">{% if show.isPast %}Past{% else %}Upcoming{% endif %}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
 
-</div>
+        <p class="cc26-lede" id="no-shows-message" {% if coinshows.length %}hidden{% endif %}>
+            Our next show schedule is being finalized — check back soon, or <a href="/contactus/">get in touch</a> and we'll let you know where to find us.
+        </p>
+    </div>
+
+    <aside class="cc26-showsched__side">
+        <div class="cc26-sell__box">
+            <div class="cc26-eyebrow">Selling at a show?</div>
+            <p class="cc26-muted">Bring your coins to the table, or tell us what you have ahead of time and we'll be ready for you.</p>
+            <a class="cc26-btn cc26-btn--outline" href="/selltous/">Tell us about your collection</a>
+        </div>
+        <div class="cc26-sell__box">
+            <div class="cc26-eyebrow">Can't make a show?</div>
+            <p class="cc26-muted">Join the list and be the first to see new coins the moment they land on the website.</p>
+            <button type="button" class="cc26-btn cc26-btn--gold" data-join-open>Join the list</button>
+        </div>
+    </aside>
+</section>
 
 <script>
 (function () {
-    // Refreshes the Past / Upcoming badge against today's date. The server
-    // already rendered the correct state at build time; this only matters for
-    // a show that ends between deploys, so the badge does not sit on
-    // "Upcoming" for a show that has already happened.
-    //
-    // Removing a past show from the page is deliberately NOT done here — that
-    // is a manual step in Studio (unpublish, then redeploy). Keeping the rule
-    // out of this file means there is no schedule logic to keep in sync with
-    // web/_data/coinshows.js.
+    // Refreshes the Past / Upcoming tag against today's date. The build already rendered the correct
+    // state; this only matters for a show that ends between deploys. Removing a past show stays a
+    // manual step in Studio (unpublish, then redeploy) — no schedule logic lives here.
     var today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    document.querySelectorAll('.show-card').forEach(function (card) {
+    document.querySelectorAll('.cc26-show').forEach(function (card) {
         var parts = String(card.dataset.end || '').split('-');
         if (parts.length !== 3) return;
-
         var endDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
         if (isNaN(endDate.getTime())) return;
-
         var isPast = endDate < today;
-        var badge = card.querySelector('.show-badge-status');
         card.classList.toggle('is-past', isPast);
-        if (badge) {
-            badge.textContent = isPast ? 'Past' : 'Upcoming';
-            badge.classList.toggle('is-past', isPast);
-            badge.classList.toggle('is-upcoming', !isPast);
-        }
+        var tag = card.querySelector('.cc26-show__status');
+        if (tag) tag.textContent = isPast ? 'Past' : 'Upcoming';
     });
 })();
 </script>

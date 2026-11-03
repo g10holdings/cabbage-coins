@@ -107,6 +107,67 @@ module.exports = function(eleventyConfig) {
     return md.render(value)
   })
 
+  // ---- 2026 homepage helpers ----
+  // Listings still for sale, newest first. listingsNewest is oldest-first, hence the reverse.
+  eleventyConfig.addFilter("inStockNewest", (list) =>
+    (list || []).filter((l) => !l.sold).slice().reverse());
+
+  // The homepage hero coin: the priciest COIN in stock (ingots don't make a good round hero image),
+  // skipping the featured one (it has its own section).
+  eleventyConfig.addFilter("heroCoin", (list, featured) => {
+    const skip = featured && featured._id;
+    return (list || [])
+      .filter((l) => !l.sold && l._id !== skip && l.imageUrl && l.category !== "Vintage Ingot")
+      .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))[0] || null;
+  });
+
+  // The next n coin shows that haven't ended, flattened out of coinshows' month groups.
+  eleventyConfig.addFilter("upcomingShows", (groups, n) =>
+    (groups || []).flatMap((g) => g.shows).filter((s) => !s.isPast).slice(0, n || 3));
+
+  // The full listing record (with its markdown description) for a given _id.
+  eleventyConfig.addFilter("findListing", (list, id) =>
+    (list || []).find((l) => l._id === id) || null);
+
+  // A listing's photos in page order: main image (obverse), then the gallery (reverse, holder shots).
+  eleventyConfig.addFilter("listingPhotos", (l) =>
+    [l && l.imageUrl].concat((l && l.galleryImageUrl) || []).filter(Boolean));
+
+  // The list minus one listing (by _id), e.g. "more from the inventory" without the coin you're on.
+  eleventyConfig.addFilter("withoutId", (list, id) => (list || []).filter((l) => l._id !== id));
+
+  // "Keep browsing" on a listing: the n in-stock coins most like this one. Scores the series words in the
+  // name (Morgan, Indian Head, Seated…), denomination ($1, 50C, $2.50), metal category, grading company,
+  // CAC, and how close the price is. Ties go to the newer listing.
+  const STOP = new Set(['pcgs', 'ngc', 'cacg', 'cac', 'anacs', 'icg', 'the', 'of', 'at', 'and', 'a', 'gold', 'silver',
+    'usd', 'type', 'coin', 'proof', 'ms', 'pr', 'pf', 'au', 'xf', 'vf', 'bn', 'rd', 'rb', 'pl', 'dmpl', 'cam', 'dcam', 'fine']);
+  const words = (name) => new Set(String(name || '').toLowerCase().replace(/[()#,]/g, ' ').split(/\s+/)
+    .filter((w) => w && !/\d/.test(w) && !STOP.has(w)));
+  const denom = (name) => ((String(name || '').match(/(\$\s?[\d.]+|\b\d+\s?c\b|\b\d\/\d\s?c?\b)/i) || [])[0] || '').toLowerCase().replace(/\s/g, '');
+  eleventyConfig.addFilter("similarListings", (list, me, n) => {
+    if (!me) return [];
+    const myWords = words(me.name), myDenom = denom(me.name), myPrice = Number(me.price) || 0;
+    const pool = (list || []).filter((l) => !l.sold && l._id !== me._id && l.imageUrl);
+    return pool.map((l, i) => {
+      const w = words(l.name);
+      const shared = [...w].filter((x) => myWords.has(x)).length;
+      const union = new Set([...w, ...myWords]).size || 1;
+      const p = Number(l.price) || 0;
+      const priceScore = myPrice && p ? 1 - Math.min(1, Math.abs(Math.log(p / myPrice)) / Math.log(4)) : 0;
+      const score = 3 * (shared / union)
+        + (myDenom && denom(l.name) === myDenom ? 1.5 : 0)
+        + (l.category && l.category === me.category ? 1 : 0)
+        + (l.gradingCompany === me.gradingCompany ? 0.3 : 0)
+        + (l.cac && me.cac ? 0.3 : 0)
+        + priceScore;
+      return { l, score, i };
+    }).sort((a, b) => b.score - a.score || b.i - a.i).slice(0, n || 6).map((x) => x.l);
+  });
+
+  // 1350 → "1,350"
+  eleventyConfig.addFilter("money", (n) =>
+    Number(n) ? Number(n).toLocaleString("en-US") : String(n ?? ""));
+
 
   return {
     templateFormats: [

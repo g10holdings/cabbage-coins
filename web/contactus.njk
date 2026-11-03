@@ -1,21 +1,44 @@
 ---
-layout: layouts/base.njk
+layout: layouts/dark.njk
 date: 2022-01-06
 title: Cabbage Coins | Contact Us
 ---
+<section class="cc26-pagehero">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">Contact</div>
+        <h1>Get in touch with Tony.</h1>
+        <p class="cc26-lede">Questions about a coin, a collection, or an order? Call, text, email, or send a message below.</p>
+    </div>
+</section>
 
-<div class="contact-bg">
-    <div class="contact-us">
-        <div>
-                <form action="https://formspree.io/f/mzbogwbb" method="post">
-                    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-                    <h2 class="text-center">Contact Us</h2>
-                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
-                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14"></textarea></div>
-                    <div><input type="checkbox" name="privacypolicy" required></input>
-                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
-                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
-                </form>
+<section class="cc26-wrap cc26-section cc26-section--last cc26-sell">
+    <div class="cc26-sell__form">
+        <h2 class="cc26-h2">Send a message</h2>
+        <form action="https://formspree.io/f/mzbogwbb" method="post" class="cc26-form cc26-form--page">
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
+            <div class="cc26-form__two">
+                <label>Name<input type="text" name="name" required></label>
+                <label>Email<input type="email" name="email" required></label>
+            </div>
+            <label>Message<textarea name="message" rows="10" required></textarea></label>
+            <label class="cc26-form__check"><input type="checkbox" name="privacypolicy" required> I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+            <div class="cc26-form__actions">
+                <button type="submit" class="cc26-btn cc26-btn--gold cc26-btn--lg">Send</button>
+            </div>
+        </form>
+    </div>
+    <aside class="cc26-sell__side">
+        <address class="cc26-sell__box cc26-contactcard">
+            <div class="cc26-eyebrow">Reach Tony directly</div>
+            <a class="cc26-contactcard__row" href="tel:17177239505"><span class="cc26-muted">Phone / text</span><span>+1 (717) 723-9505</span></a>
+            <a class="cc26-contactcard__row" href="mailto:tony@cabbagecoins.com"><span class="cc26-muted">Email</span><span>tony@cabbagecoins.com</span></a>
+            <div class="cc26-contactcard__row"><span class="cc26-muted">Mail</span><span>P.O. Box 10575<br>Lancaster, PA 17605</span></div>
+        </address>
+        <div class="cc26-sell__box">
+            <div class="cc26-eyebrow">Looking for something else?</div>
+            <a class="cc26-textlink" href="/selltous/">Selling coins? Get an offer →</a>
+            <a class="cc26-textlink" href="/FAQ/">Payments, shipping &amp; returns (FAQ) →</a>
+            <a class="cc26-textlink" href="/coinshows/">Meet us at a show →</a>
         </div>
-</div>
+    </aside>
+</section>

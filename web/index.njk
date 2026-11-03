@@ -3,369 +3,231 @@ date: 2022-01-01
 eleventyNavigation:
   key: Home
   order: 0
-layout: layouts/home.njk
+layout: layouts/dark.njk
 tags:
   - nav
 navtitle: Home
-title: Cabbage Coins | Home
+title: Cabbage Coins | Rare Coins, Gold & Silver
 ---
+{% set inStock = collections.listingsNewest | inStockNewest %}
+{# hero = the coin Tony switched on in Studio ("Homepage hero"); with none on, the priciest coin in stock #}
+{% set heroPick = hero or (collections.listingsNewest | heroCoin(featured)) %}
+{% set imgq = "&q=90&auto=format&fit=max" %}
 
-<div id="promo" class="carousel-holder">
-        <div class="text-center jumbotron">
-            <div class="carousel slide" data-bs-ride="carousel" id="carousel-1">
-                <div class="carousel-inner">
-                    {% if featured %}
-                    <div class="carousel-item active custom-carousel featured-slide" id="SlideFeatured">
-                        <a class="featured-slide-link" href="/listings/{{ featured.slug.current | slug }}/">
-                            <span class="featured-ribbon">★ Featured this week</span>
-                            <div class="featured-inner">
-                                <div class="featured-slabs">
-                                    {# .featured-slab renders at clamp(150px, 21vw, 278px), so 640 covers it at 2x #}
-                                    {% if featured.slabFront %}<span class="featured-slab" style="background-image: url('{{ featured.slabFront }}?w=640&amp;q=90&amp;auto=format&amp;fit=max');"></span>{% endif %}
-                                    {% if featured.slabBack %}<span class="featured-slab" style="background-image: url('{{ featured.slabBack }}?w=640&amp;q=90&amp;auto=format&amp;fit=max');"></span>{% endif %}
-                                </div>
-                                <div class="featured-copy">
-                                    <span class="featured-eyebrow">Featured Listing</span>
-                                    <h3 class="featured-title">{{ featured.name }}</h3>
-                                    <div class="featured-cta-row">
-                                        <span class="featured-cta">View this coin →</span>
-                                        {% if featured.cac %}<img class="featured-cac-logo" src="/assets/img/caccoin.png" alt="CAC approved">{% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    {% endif %}
-                    <div class="carousel-item{% if not featured %} active{% endif %} custom-carousel" id="Slide02" style="background-image: url('https://img.youtube.com/vi/{{ podcast[0].videoId }}/maxresdefault.jpg'); background-size: cover; background-position: center;">
-                        <div class="slide-text" style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px;">
-                            <a href="/podcast/" style="text-decoration:none;">
-                                <h3 class="centered-2" style="color: white;">🎙️ The Cabbage Coins Podcast</h3>
-                                <h4 class="centered-2" style="font-size: 20px; color: white;">New episodes every week — expert interviews on rare coins, gold & silver</h4>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="carousel-item custom-carousel" id="Slide03">
-                        <div class="slide-text">
-                        <a href="/inventory/">
-                            <h3 class="centered-2">Check out our inventory</h3>
-                        </a>
-                        </div>
-                    </div>
-                    <div class="carousel-item custom-carousel" id="Slide01">
-                        <div class="slide-text">
-                        <a href="/aboutus/">
-                        <h3 class="centered-2" style="font-size:30px; !important">Cabbage Coins is a Buyer and Seller of Rare Coins, Gold, and Silver bars located right in the heart of beautiful Lancaster County Pennsylvania.</h3>
-                        </a>
-                        </div>
-                    </div>
-                    <div class="carousel-item custom-carousel" id="Slide05">
-                        <div class="slide-text">
-                        <a href="https://www.instagram.com/cabbage_coins/" style="text-decoration:none;" target="blank">
-                        <img src="/assets/img/VisitOurInstagram.png" style="max-width:80%">
-                        </a>
-                    </div>
-                    </div>
-                    <div class="carousel-item custom-carousel" id="Slide04">
-                        <div class="slide-text">
-                            <a href="/coinshows/" style="text-decoration:none;">
-                                <h3 class="centered-2">🗓️ See Us at a Coin Show</h3>
-                                <h4 class="centered-2" style="font-size:20px;">View our upcoming show schedule — come say hello and browse the inventory in person</h4>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div><a class="carousel-control-prev" href="#carousel-1" role="button" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span><span class="visually-hidden">Previous</span></a><a class="carousel-control-next" href="#carousel-1" role="button" data-bs-slide="next"><span class="carousel-control-next-icon"></span><span class="visually-hidden">Next</span></a></div>
-                {% set off = 1 if featured else 0 %}
-                <ol class="carousel-indicators">
-                    {% if featured %}<li data-bs-target="#carousel-1" data-bs-slide-to="0" class="active"></li>{% endif %}
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off }}"{% if not featured %} class="active"{% endif %}></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 1 }}"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 2 }}"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 3 }}"></li>
-                    <li data-bs-target="#carousel-1" data-bs-slide-to="{{ off + 4 }}"></li>
-                </ol>
-            </div>
-        </div>
-    </div> 
-<div class="container site-section preview-grid" style="padding:35px 20px 40px 40px;margin:auto;" id="listing">
-    <h2>New Purchases:</h2>
-    <div class="row preview-grid listing-row">
-        {% set listinglist = collections.myListings%}
-        {% include "listinglist.njk" %}
-
-    </div>
-</div>
-
-
-<div class="dark-section">
-    <div class="container site-section" id="why">
-        <div class="row g-4">
-
-            <!-- Email Signup -->
-            <div class="col-12 col-md-4">
-                <div class="home-card text-center">
-                    <div class="home-card-icon">✉️</div>
-                    <h2 class="home-card-title">First Look at New Inventory</h2>
-                    <p class="home-card-text">Join the list and be the first to know when new coins arrive. Share your wish list and Tony will reach out when the right coin comes in.</p>
-                    <button onclick="document.getElementById('newsletter-popup').style.display='flex'" class="btn home-card-btn">Join the List →</button>
-                </div>
-            </div>
-
-            <!-- Sell To Us -->
-            <div class="col-12 col-md-4">
-                <div class="home-card home-card-dark text-center">
-                    <div class="home-card-icon">🪙</div>
-                    <h2 class="home-card-title" style="color:white;">Looking to Sell?</h2>
-                    <p class="home-card-text" style="color:#b8cce4;">We make strong offers on rare coins, gold, and silver. Tell us what you have and get a fast, fair appraisal from a professional numismatist.</p>
-                    <a href="/selltous/" class="btn home-card-btn-light">Get an Offer →</a>
-                </div>
-            </div>
-
-            <!-- Sister site: Manrong Collectibles -->
-            <div class="col-12 col-md-4">
-                <div class="home-card text-center">
-                    <div class="home-card-icon"><img src="/assets/img/panda-source.png" alt="Manrong Collectibles" style="width:64px; height:64px; object-fit:contain; vertical-align:middle;"></div>
-                    <h2 class="home-card-title">Manrong Collectibles</h2>
-                    <p class="home-card-text">Looking for world banknotes? Our sister site, Manrong Collectibles, specializes in rare and graded paper money from around the world.</p>
-                    <a href="https://hellomanrong.com" target="_blank" rel="noopener" class="btn home-card-btn">HELLOMANRONG.COM →</a>
-                </div>
-            </div>
-
+{# ---------- Hero ---------- #}
+<section class="cc26-wrap cc26-hero">
+    <div class="cc26-hero__copy">
+        <div class="cc26-eyebrow">Rare coins · Gold · Silver</div>
+        <h1>Rare coins,<br>chosen one<br>at a time.</h1>
+        <p>Cabbage Coins buys and sells certified U.S. rare coins, gold and silver. Every coin is hand-picked, graded by PCGS, NGC or CAC, and photographed in-house so you see exactly what you get.</p>
+        <div class="cc26-hero__ctas">
+            <a class="cc26-btn cc26-btn--gold cc26-btn--lg" href="/inventory/">Browse the inventory</a>
+            <a class="cc26-textlink" href="/selltous/">Sell your coins →</a>
         </div>
     </div>
-</div>
+    {% if heroPick %}
+    <a class="cc26-hero__coin" href="/listings/{{ heroPick.slug.current | slug }}/">
+        <img src="{{ heroPick.imageUrl }}?w=1100{{ imgq }}" alt="{{ heroPick.name }}" width="760" height="760">
+        <span class="cc26-hero__caption">
+            <span class="cc26-hero__name">{{ heroPick.name }}</span>
+            <span class="cc26-hero__price">${{ heroPick.price | money }} →</span>
+        </span>
+    </a>
+    {% endif %}
+</section>
 
-<!-- Newsletter Popup -->
-<div id="newsletter-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center;">
-    <div style="background:white; border-radius:16px; padding:36px; width:520px; max-width:95vw; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
-        <div style="display:flex; align-items:center; margin-bottom:20px; border-bottom:2px solid #e0e5ea; padding-bottom:16px;">
-            <div style="background:#1d3961; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin-right:14px; flex-shrink:0; font-size:20px;">✉️</div>
-            <div>
-                <h2 style="margin:0; color:#1d3961; font-family:'Noto Serif Display'; font-weight:800; font-size:22px;">Join the Cabbage Coins List</h2>
-                <p style="margin:0; color:#6289c1; font-family:'Roboto'; font-size:13px;">First notice on new inventory + wish list matching</p>
-            </div>
+{# ---------- Trust strip ---------- #}
+<section class="cc26-trust" aria-label="Why collectors trust us">
+    <div class="cc26-wrap cc26-trust__grid">
+        <a class="cc26-trust__item" href="#reviews">
+            <span class="cc26-trust__big">{{ reviews.rating }} <span class="cc26-gold">★★★★★</span></span>
+            <span class="cc26-trust__small cc26-gold">Read all {{ reviews.items.length }} Google reviews ↓</span>
+        </a>
+        <div class="cc26-trust__item">
+            <span class="cc26-trust__big">PCGS · NGC · CAC</span>
+            <span class="cc26-trust__small">Every coin independently certified</span>
         </div>
-        <form action="https://formspree.io/f/xjgprnzv" method="POST">
-            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-            <input type="hidden" name="_subject" value="Newsletter Signup - Cabbage Coins">
-            <input type="hidden" name="form_type" value="Newsletter & Wishlist Signup">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div>
-                    <label class="sell-label">Your Name</label>
-                    <input class="form-control sell-input" type="text" name="name" placeholder="John Smith" required>
-                </div>
-                <div>
-                    <label class="sell-label">Your Email</label>
-                    <input class="form-control sell-input" type="email" name="email" placeholder="john@email.com" required>
-                </div>
-            </div>
-            <div style="margin-bottom:12px;">
-                <label class="sell-label">What coins are you looking for?</label>
-                <textarea class="form-control sell-input" name="wishlist" rows="4" placeholder="e.g. Early American copper MS63+, Morgan Dollars CAC, gold type coins under $5000..."></textarea>
-            </div>
-            <div style="margin-bottom:12px;">
-                <label class="sell-label">How did you hear about us? (optional)</label>
-                <input class="form-control sell-input" type="text" name="how_did_you_hear" placeholder="Instagram, podcast, friend, coin show...">
-            </div>
-            <div style="margin-bottom:16px;">
-                <input type="checkbox" id="newsletter-privacy" name="privacypolicy" required>
-                <label for="newsletter-privacy" style="margin-left:8px; font-family:'Roboto'; font-size:14px; color:#444;">
-                    I agree to the <a href="/privacypolicy/" target="_blank" style="color:#6289c1;">privacy policy</a>.
-                </label>
-            </div>
-            <div style="display:flex; gap:12px;">
-                <button type="submit" class="btn btn-primary" style="font-size:16px; padding:10px 28px; flex:1;">Sign Me Up</button>
-                <button type="button" onclick="document.getElementById('newsletter-popup').style.display='none'" style="font-size:16px; padding:10px 20px; background:none; border:1px solid #ccc; border-radius:6px; cursor:pointer; color:#666;">Cancel</button>
-            </div>
-        </form>
+        <div class="cc26-trust__item">
+            <span class="cc26-trust__big">ANA Life Member</span>
+            <span class="cc26-trust__small">#7339 · Professional numismatist</span>
+        </div>
+        <a class="cc26-trust__item" href="/podcast/">
+            <span class="cc26-trust__big">Weekly podcast</span>
+            <span class="cc26-trust__small">Interviews with the hobby's experts</span>
+        </a>
     </div>
-</div>
-<!-- Reviews Section -->
-<div id="reviews-section" style="background-color:#f3f6f9; padding:60px 20px; text-align:center;">
-    <div style="max-width:1100px; margin:0 auto;">
-        <h2 style="font-family:'Noto Serif Display'; font-weight:800; color:#1d3961; font-size:36px; margin-bottom:8px;">What Our Customers Say</h2>
-        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:40px;">
-            <span style="color:#f5a623; font-size:22px;">★★★★★</span>
-            <span style="font-family:'Roboto'; font-size:16px; color:#666;">5.0 · 15 Reviews · Google</span>
+</section>
+
+{# ---------- New arrivals ---------- #}
+<section class="cc26-wrap cc26-section">
+    <div class="cc26-section__head">
+        <div>
+            <div class="cc26-eyebrow">New arrivals</div>
+            <h2>Just added to the inventory</h2>
         </div>
-        <div style="position:relative; overflow:hidden;">
-            <div id="review-track" style="display:flex; transition:transform 0.6s ease; gap:24px;">
+        <a class="cc26-textlink" href="/inventory/">View the full inventory →</a>
+    </div>
+    <div class="cc26-grid">
+        {% for listing in inStock %}{% if loop.index <= 12 %}
+        <a class="cc26-card" href="/listings/{{ listing.slug.current | slug }}/">
+            <span class="cc26-card__img">
+                <img src="{{ listing.imageUrl }}?w=640{{ imgq }}" alt="{{ listing.name }}" loading="lazy">
+                {% if listing.galleryImageUrl and listing.galleryImageUrl[0] %}
+                <img class="cc26-card__back" src="{{ listing.galleryImageUrl[0] }}?w=640{{ imgq }}" alt="" loading="lazy">
+                {% endif %}
+            </span>
+            <span class="cc26-card__meta">
+                <span>{{ listing.gradingCompany }} {{ listing.grade | replace(" CAC", "") }}</span>
+                {% if listing.cac %}<img src="/assets/img/caccoin.png" alt="CAC approved" class="cc26-cac">{% endif %}
+            </span>
+            <span class="cc26-card__name">{{ listing.name }}</span>
+            <span class="cc26-card__price">${{ listing.price | money }}</span>
+        </a>
+        {% endif %}{% endfor %}
+    </div>
+</section>
 
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"I recently contacted Tony to sell a coin collection. Tony was prompt and responsive to my questions. Tony was courteous and ethical and I would recommend him to anyone looking to sell or buy coins. He had some outstanding coins in his inventory. Great experience 👍"</p>
-                    <div class="review-name">— Richard L.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"I am very satisfied with my recent purchase from Cabbage Coins. Their website is very well done, communication was excellent, and shipping was very quick and reliable!"</p>
-                    <div class="review-name">— Todd B.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Not only was Tony very helpful, but he kept me informed and stayed on top of my sale, reassuring me during the entire process. I was promptly wired the money for my coins once he was able to inspect them. I recommend Cabbage Coins for knowledge, prompt attention, and the personal touch."</p>
-                    <div class="review-name">— Lily B.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Tony is a great coin dealer. I've seen him work with collectors of all levels. I'd highly recommend!!"</p>
-                    <div class="review-name">— Pampered P.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Tony is professional and very straight forward. He answered all my questions in detail about the various grading services, their backgrounds, and consistency or lack thereof in grading coins."</p>
-                    <div class="review-name">— Randy C.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"He is very knowledgeable and has done many interviews with some of the best in the world of coin collecting. The hobby needs more people like Tony. A few nice purchases too. Thank you."</p>
-                    <div class="review-name">— Sean F.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Great stuff. Interesting. Unique stuff."</p>
-                    <div class="review-name">— MacArther P.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Great experience working with Tony at Cabbage Coins!! Thanks so much for helping me add a special coin to my collection!"</p>
-                    <div class="review-name">— Kevin P.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"I contacted Tony, who made an offer on my $20 gold coin, and after shipping the coin to him I received payment immediately. Super easy to work with and responsive. Highly recommend!"</p>
-                    <div class="review-name">— Jeremy H.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Great prices! Fast shipping and overall an amazing experience and product! Would highly recommend and I would definitely do business again!!"</p>
-                    <div class="review-name">— AmoinTampa</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"I ordered a very specific piece and literally from across the country had my item in 2 days! Very happy with the customer service and quality of the products. I'll shop here again for certain!"</p>
-                    <div class="review-name">— Luke L.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Always a pleasure working with Cabbage Coins! Great selection in every price range and Tony always stays in touch with new inventory if he knows what you like!"</p>
-                    <div class="review-name">— Dylan H.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"I have purchased several coins from Tony at Cabbage Coins and was fully satisfied with the coins, the shipping and the communication. They are reputable and trustworthy."</p>
-                    <div class="review-name">— John K.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Tony hooked me up with a great price on my Athens owl. My first ancient and oldest coin I own. Would definitely buy more from the one and only Cabbage Coins."</p>
-                    <div class="review-name">— Andrew B.</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-stars">★★★★★</div>
-                    <p class="review-text">"Been looking for a 93-S Morgan Dollar for the past 3 years at a reasonable price. He tracked down a great example for me at a very affordable price. Great service and quality coins. Highly recommend."</p>
-                    <div class="review-name">— G.B.</div>
-                </div>
-
-            </div>
-        </div>
-        <div style="display:flex; justify-content:center; gap:12px; margin-top:30px; align-items:center;">
-            <button id="review-prev" style="background:#1d3961; color:white; border:none; border-radius:50%; width:40px; height:40px; font-size:18px; cursor:pointer;">‹</button>
-            <div id="review-dots" style="display:flex; gap:8px;">
-                <div class="rdot active-dot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-                <div class="rdot"></div>
-            </div>
-            <button id="review-next" style="background:#1d3961; color:white; border:none; border-radius:50%; width:40px; height:40px; font-size:18px; cursor:pointer;">›</button>
+{# ---------- Join the list (Tony's banner image) ---------- #}
+<section class="cc26-pad">
+    <div class="cc26-wrap">
+        <div class="cc26-joinbanner">
+            <span class="cc26-joinbanner__eyebrow">Heard us on the podcast? Start here.</span>
+            <h2>Get first look at new coins</h2>
+            <p>Signing up for the list ensures you are notified the moment new arrivals land on the website.</p>
+            <button type="button" class="cc26-btn cc26-btn--gold cc26-btn--lg" data-join-open>Join the list</button>
         </div>
     </div>
-</div>
-<script>
-// Auto-open newsletter popup if URL contains #newsletter
-if (window.location.hash === '#newsletter') {
-    document.getElementById('newsletter-popup').style.display = 'flex';
-}
-</script>
-<script>
-document.querySelectorAll('.image-dummy[data-img-back]').forEach(function(el) {
-    const front = el.dataset.imgFront;
-    const back = el.dataset.imgBack;
-    // listings with no second image render the URL as "undefined?<params>"
-    if (!back || back.indexOf('undefined') === 0) return;
-    el.addEventListener('mouseenter', function() {
-        el.style.backgroundImage = 'url(' + back + ')';
-    });
-    el.addEventListener('mouseleave', function() {
-        el.style.backgroundImage = 'url(' + front + ')';
-    });
-});
-</script>
-<script>
-            (function() {
-                var form = document.querySelector('#newsletter-popup form');
-                if (form) {
-                    form.addEventListener('submit', function() {
-                        var email = form.querySelector('input[name="email"]').value;
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = '_replyto';
-                        input.value = email;
-                        form.appendChild(input);
-                    });
-                }
-            })();
-            </script>
-<script>
-(function() {
-    var current = 0;
-    var track = document.getElementById('review-track');
-    var dots = document.querySelectorAll('.rdot');
-    var cards = document.querySelectorAll('.review-card');
-    var total = cards.length;
-    var cardWidth = 344;
-    var visible = Math.max(1, Math.floor(document.getElementById('reviews-section').offsetWidth / cardWidth));
+</section>
 
-    function goTo(i) {
-        var max = total - visible;
-        if (i > max) i = 0;
-        if (i < 0) i = max;
-        current = i;
-        track.style.transform = 'translateX(-' + (current * cardWidth) + 'px)';
-        dots.forEach(function(d, idx) {
-            d.classList.toggle('active-dot', idx === current);
-        });
-    }
+{# ---------- Featured this week ---------- #}
+{% if featured %}
+{% set featuredFull = collections.listingsNewest | findListing(featured._id) %}
+<section class="cc26-wrap cc26-section">
+    <div class="cc26-featured">
+        <a class="cc26-featured__photos" href="/listings/{{ featured.slug.current | slug }}/">
+            <img src="{{ featured.imageUrl }}?w=700{{ imgq }}" alt="{{ featured.name }}, obverse">
+            {% if featured.galleryImageUrl and featured.galleryImageUrl[0] %}<img src="{{ featured.galleryImageUrl[0] }}?w=700{{ imgq }}" alt="{{ featured.name }}, reverse">{% endif %}
+            {% if featured.slabFront %}<img src="{{ featured.slabFront }}?w=700{{ imgq }}" alt="{{ featured.name }}, in its holder">{% endif %}
+        </a>
+        <div class="cc26-featured__copy">
+            <div class="cc26-featured__main">
+                <div class="cc26-eyebrow">★ Featured this week</div>
+                <h2>{{ featured.name }}</h2>
+                <div class="cc26-featured__grade">{{ featured.gradingCompany }} {{ featured.grade | replace(" CAC", "") }}{% if featured.cac %} <img src="/assets/img/caccoin.png" alt="CAC approved" class="cc26-cac"> {% endif %}</div>
+                <div class="cc26-featured__buy">
+                    <span class="cc26-featured__price">${{ featured.price | money }}</span>
+                    <a class="cc26-btn cc26-btn--outline" href="/listings/{{ featured.slug.current | slug }}/">View this coin</a>
+                </div>
+            </div>
+            {% if featuredFull and featuredFull.description %}
+            <div class="cc26-featured__note">{{ featuredFull.description | markdownify | safe }}</div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
 
-    document.getElementById('review-prev').addEventListener('click', function() { goTo(current - 1); });
-    document.getElementById('review-next').addEventListener('click', function() { goTo(current + 1); });
-    dots.forEach(function(d, i) { d.addEventListener('click', function() { goTo(i); }); });
+{# ---------- Meet Tony ---------- #}
+<section class="cc26-wrap cc26-section cc26-tony">
+    <img src="/assets/img/tony-portrait.jpg" alt="Tony Gryckiewicz examining a coin at the Cabbage Coins show table" loading="lazy" width="620" height="620">
+    <div class="cc26-tony__copy">
+        <div class="cc26-eyebrow">Meet Tony</div>
+        <h2>Every coin here passed through my hands.</h2>
+        <p>I'm Tony Gryckiewicz, a professional numismatist and ANA Life Member (#7339). I've owned and operated Cabbage Coins since 2021 from Lancaster County, Pennsylvania. You may know me from the podcast, from YouTube, or from across the table at a coin show. Call, text or email — you'll reach me, not a call center.</p>
+        <div class="cc26-linkrow">
+            <a class="cc26-textlink" href="/aboutus/">About Cabbage Coins →</a>
+            <a class="cc26-textlink" href="tel:17177239505">(717) 723-9505</a>
+        </div>
+    </div>
+</section>
 
-    setInterval(function() { goTo(current + 1); }, 4000);
-})();
-</script>
+{# ---------- How we work ---------- #}
+<section class="cc26-wrap cc26-section">
+    <h2 class="cc26-h2">How we work with collectors</h2>
+    <div class="cc26-ways">
+        <a href="/inventory/"><span class="cc26-ways__n">01</span><span class="cc26-ways__t">Buy</span><span class="cc26-ways__d">Certified coins with full photography, population data and a straight answer to every question.</span><span class="cc26-ways__go">Browse inventory →</span></a>
+        <a href="/selltous/"><span class="cc26-ways__n">02</span><span class="cc26-ways__t">Sell</span><span class="cc26-ways__d">Strong offers on rare coins, gold and silver, and prompt payment once your coins are inspected.</span><span class="cc26-ways__go">Get an offer →</span></a>
+        <button type="button" data-join-open><span class="cc26-ways__n">03</span><span class="cc26-ways__t">Want list</span><span class="cc26-ways__d">Tell Tony what you are looking for. When the right coin comes in, you hear about it first.</span><span class="cc26-ways__go">Share your want list →</span></button>
+    </div>
+</section>
+
+{# ---------- Podcast + shows ---------- #}
+<section class="cc26-wrap cc26-section cc26-split">
+    <div class="cc26-split__main">
+        <div class="cc26-eyebrow">The Cabbage Coins Podcast</div>
+        {% if podcast and podcast.length %}
+        {# Click plays the episode right here (youtube-nocookie). Until then it's just a thumbnail, so the page stays fast. #}
+        <button type="button" class="cc26-video" data-video="{{ podcast[0].videoId }}" aria-label="Play the latest episode: {{ podcast[0].title }}">
+            <img src="{{ podcast[0].thumbnail }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/{{ podcast[0].videoId }}/hqdefault.jpg'">
+            <span class="cc26-video__badge">Latest episode</span>
+            <span class="cc26-video__play" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+        <a class="cc26-video__title" href="https://www.youtube.com/watch?v={{ podcast[0].videoId }}" target="_blank" rel="noopener">{{ podcast[0].title }}</a>
+        <span class="cc26-muted">{{ podcast[0].publishedAt }}</span>
+        {% else %}
+        <a class="cc26-video cc26-video--empty" href="/podcast/">Watch the latest episodes →</a>
+        {% endif %}
+        <div class="cc26-linkrow">
+            <a class="cc26-textlink" href="/podcast/">All episodes →</a>
+            <button type="button" class="cc26-textlink cc26-gold" data-join-open>Listener? Join the list for first look at new coins →</button>
+        </div>
+    </div>
+    <div class="cc26-split__side">
+        <div class="cc26-eyebrow">Meet us in person</div>
+        {% set shows = coinshows | upcomingShows(3) %}
+        <ul class="cc26-shows">
+            {% for s in shows %}
+            <li>
+                <span><span class="cc26-shows__name">{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.name }}</a>{% else %}{{ s.name }}{% endif %}</span><span class="cc26-muted">{{ s.location }}</span></span>
+                <span class="cc26-gold cc26-nowrap">{{ s.monthShort }} {{ s.dayRange }}</span>
+            </li>
+            {% else %}
+            <li><span class="cc26-muted">New shows are announced soon.</span></li>
+            {% endfor %}
+        </ul>
+        <a class="cc26-textlink" href="/coinshows/">Full show schedule →</a>
+    </div>
+</section>
+
+{# ---------- Reviews carousel ---------- #}
+<section class="cc26-wrap cc26-section" id="reviews">
+    <div class="cc26-section__head">
+        <div>
+            <div class="cc26-eyebrow">{{ reviews.rating }} ★★★★★ · {{ reviews.items.length }} reviews on Google</div>
+            <h2>What collectors say</h2>
+        </div>
+        <div class="cc26-reviews__ctrl">
+            {% if reviews.googleUrl %}<a class="cc26-textlink" href="{{ reviews.googleUrl }}" target="_blank" rel="noopener">Read them on Google ↗</a>{% endif %}
+            <button type="button" class="cc26-iconbtn cc26-iconbtn--lg" data-rev-prev aria-label="Previous reviews">‹</button>
+            <button type="button" class="cc26-iconbtn cc26-iconbtn--lg" data-rev-next aria-label="Next reviews">›</button>
+        </div>
+    </div>
+    <div class="cc26-reviews" data-reviews tabindex="0" aria-label="Customer reviews, scroll sideways for more">
+        {% for r in reviews.items %}
+        <figure class="cc26-review">
+            <span class="cc26-gold cc26-stars">★★★★★</span>
+            <blockquote>“{{ r.q }}”</blockquote>
+            <figcaption>{{ r.who }}</figcaption>
+        </figure>
+        {% endfor %}
+    </div>
+</section>
+
+{# ---------- Manrong ---------- #}
+<section class="cc26-wrap cc26-section">
+    <a class="cc26-manrong" href="https://hellomanrong.com" target="_blank" rel="noopener">
+        <img src="/assets/img/panda-source.png" alt="Manrong Collectibles logo">
+        <span class="cc26-manrong__copy">
+            <span class="cc26-eyebrow">Our sister site</span>
+            <span class="cc26-manrong__name">Manrong Collectibles</span>
+            <span class="cc26-muted">Looking for world banknotes? Manrong specializes in rare and graded paper money from around the world.</span>
+        </span>
+        <span class="cc26-btn cc26-btn--outline">Visit hellomanrong.com ↗</span>
+    </a>
+</section>
+
+{# ---------- Instagram (Tony's design) ---------- #}
+<a class="cc26-insta" href="https://www.instagram.com/cabbage_coins/" target="_blank" rel="noopener">
+    <img src="/assets/img/VisitOurInstagram.png" alt="Visit our Instagram">
+    <span>@cabbage_coins</span>
+</a>

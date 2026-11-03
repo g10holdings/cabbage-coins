@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="{{ renderData.title or title or metadata.title }}" />
+    <meta name="Description" content="{{ listing.description or renderData.description or description or metadata.description }}">
+    {% if listing.imageUrl %}
+    <meta property="og:image" content="{{ listing.imageUrl }}"/>
+    {% else %}
+    <meta property="og:image" content="https://www.cabbage-coins.com/assets/img/ccthumb.jpg"/>
+    {% endif %}
+    <meta name="theme-color" content="#0A0A0B">
+    <title>{{ renderData.title or title or metadata.title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Manrope:wght@400;500;600;700&amp;display=swap">
+    <link rel="stylesheet" href="/assets/css/site2026.css">
+    <link rel="stylesheet" href="/assets/css/away.css">
+    <link rel="icon" type="image/x-icon" href="/assets/img/ccfav.ico">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQ0J047M4R"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') gtag('config', 'G-LQ0J047M4R');
+    </script>
+</head>
+<body class="cc26">
+    {% if page.url == "/" or page.url == "/inventory/" %}
+      {% include "awaynotice.njk" %}
+    {% endif %}
+
+    <div class="cc26-topbar">
+        <div class="cc26-wrap cc26-topbar__in">
+            <span class="cc26-topbar__tag">Certified rare U.S. coins · PCGS · NGC · CAC</span>
+            <span class="cc26-topbar__contact">
+                <a href="tel:17177239505">(717) 723-9505</a>
+                <a href="mailto:tony@cabbagecoins.com">tony@cabbagecoins.com</a>
+            </span>
+        </div>
+    </div>
+
+    <header class="cc26-wrap cc26-header">
+        <a class="cc26-logo" href="/" aria-label="Cabbage Coins home"><img src="/assets/img/Cabbage%20Coins_White.png" alt="Cabbage Coins"></a>
+        <nav class="cc26-nav" aria-label="Main">
+            <a href="/inventory/"{% if page.url == "/inventory/" %} aria-current="page"{% endif %}>Inventory</a>
+            <a href="/selltous/"{% if page.url == "/selltous/" %} aria-current="page"{% endif %}>Sell to Us</a>
+            <a href="/collectorservices/"{% if page.url == "/collectorservices/" %} aria-current="page"{% endif %}>Collector Services</a>
+            <a href="/podcast/"{% if page.url == "/podcast/" %} aria-current="page"{% endif %}>Podcast</a>
+            <a href="/coinshows/"{% if page.url == "/coinshows/" %} aria-current="page"{% endif %}>Coin Shows</a>
+            <a href="/aboutus/"{% if page.url == "/aboutus/" %} aria-current="page"{% endif %}>About</a>
+            <a href="/FAQ/"{% if page.url == "/FAQ/" %} aria-current="page"{% endif %}>FAQ</a>
+        </nav>
+        <div class="cc26-header__actions">
+            <button type="button" class="cc26-btn cc26-btn--gold cc26-btn--sm" data-join-open>Join the list</button>
+            <button type="button" class="cc26-iconbtn cc26-menubtn" aria-label="Open menu" aria-expanded="false" aria-controls="cc26-mnav" data-menu-toggle>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
+        </div>
+    </header>
+    <nav class="cc26-mnav" id="cc26-mnav" aria-label="Main" hidden>
+        <a href="/inventory/">Inventory</a>
+        <a href="/selltous/">Sell to Us</a>
+        <a href="/collectorservices/">Collector Services</a>
+        <a href="/podcast/">Podcast</a>
+        <a href="/coinshows/">Coin Shows</a>
+        <a href="/aboutus/">About</a>
+        <a href="/FAQ/">FAQ</a>
+        <a href="/contactus/">Contact</a>
+    </nav>
+
+    <main>
+        {{ content | safe }}
+    </main>
+
+    <footer class="cc26-footer">
+        <div class="cc26-wrap cc26-footer__grid">
+            <div class="cc26-footer__brand">
+                <img src="/assets/img/Cabbage%20Coins_White.png" alt="Cabbage Coins">
+                <p>Owned and operated since 2021 by Tony Gryckiewicz, Professional Numismatist. ANA Life Member #7339.</p>
+                <a class="cc26-iconbtn" href="https://www.instagram.com/cabbage_coins/" target="_blank" rel="noopener" aria-label="Cabbage Coins on Instagram">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+                </a>
+            </div>
+            <address class="cc26-footer__contact">
+                <span class="cc26-footer__head">Contact</span>
+                <span class="cc26-footer__row">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                    <span>P.O. Box 10575<br>Lancaster, PA 17605</span>
+                </span>
+                <a class="cc26-footer__row" href="tel:17177239505">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+                    <span>+1 (717) 723-9505</span>
+                </a>
+                <a class="cc26-footer__row" href="mailto:tony@cabbagecoins.com">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                    <span>tony@cabbagecoins.com</span>
+                </a>
+            </address>
+            <nav class="cc26-footer__links" aria-label="Footer">
+                <div>
+                    <span class="cc26-footer__head">Shop</span>
+                    <a href="/inventory/">Inventory</a>
+                    <a href="/selltous/">Sell to us</a>
+                    <a href="/collectorservices/">Collector services</a>
+                    <button type="button" class="cc26-linkbtn" data-join-open>Want list</button>
+                </div>
+                <div>
+                    <span class="cc26-footer__head">Company</span>
+                    <a href="/aboutus/">About</a>
+                    <a href="/FAQ/">FAQ</a>
+                    <a href="/podcast/">Podcast</a>
+                    <a href="/coinshows/">Coin shows</a>
+                    <a href="/contactus/">Contact</a>
+                </div>
+            </nav>
+            <div class="cc26-footer__join">
+                <span class="cc26-footer__head">First look at new coins</span>
+                <p>Be notified the moment new arrivals land on the website.</p>
+                <button type="button" class="cc26-btn cc26-btn--gold" data-join-open>Join the list</button>
+            </div>
+        </div>
+        <div class="cc26-wrap cc26-footer__base">
+            <span>Cabbage Coins © 2022–2026 · Sister site: <a href="https://hellomanrong.com" target="_blank" rel="noopener">Manrong Collectibles</a> (world banknotes)</span>
+            <a href="/privacypolicy/">Privacy policy</a>
+        </div>
+    </footer>
+
+    {# Join-the-list pop-up: same Formspree form and field names as the old homepage #}
+    <div class="cc26-modal" id="cc26-join" hidden>
+        <div class="cc26-modal__backdrop" data-join-close></div>
+        <div class="cc26-modal__card" role="dialog" aria-modal="true" aria-labelledby="cc26-join-title">
+            <div class="cc26-modal__head">
+                <img src="/assets/img/CabbageCoins_Emblem_Small_White.png" alt="">
+                <div>
+                    <h2 id="cc26-join-title">Join the Cabbage Coins list</h2>
+                    <p>First notice on new inventory + want list matching</p>
+                </div>
+                <button type="button" class="cc26-iconbtn" data-join-close aria-label="Close">&times;</button>
+            </div>
+            <form action="https://formspree.io/f/xjgprnzv" method="POST" class="cc26-form">
+                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
+                <input type="hidden" name="_subject" value="Newsletter Signup - Cabbage Coins">
+                <input type="hidden" name="form_type" value="Newsletter & Wishlist Signup">
+                <div class="cc26-form__two">
+                    <label>Your name<input type="text" name="name" placeholder="John Smith" required></label>
+                    <label>Your email<input type="email" name="email" placeholder="john@email.com" required></label>
+                </div>
+                <label>What coins are you looking for?<textarea name="wishlist" rows="4" placeholder="e.g. Early US gold $5 or $10 AU55-MS62, PCGS Morgan Dollars with CAC approval, silver type coins under $5000"></textarea></label>
+                <label>How did you hear about us? (optional)<input type="text" name="how_did_you_hear" placeholder="Podcast, YouTube, Instagram, friend, coin show..."></label>
+                <label class="cc26-form__check"><input type="checkbox" name="privacypolicy" required> I agree to the <a href="/privacypolicy/" target="_blank">privacy policy</a>.</label>
+                <div class="cc26-form__actions">
+                    <button type="submit" class="cc26-btn cc26-btn--gold">Sign me up</button>
+                    <button type="button" class="cc26-btn cc26-btn--ghost" data-join-close>Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/assets/js/site2026.js" defer></script>
+</body>
+</html>

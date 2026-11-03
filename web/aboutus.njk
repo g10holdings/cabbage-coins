@@ -1,5 +1,5 @@
 ---
-layout: layouts/base.njk
+layout: layouts/dark.njk
 date: 2022-01-05
 tags:
   - nav
@@ -9,80 +9,90 @@ eleventyNavigation:
   key: About Cabbage Coins
   order: 100
 ---
- 
-<div class="container text-start site-section main-section">
-        <h1 class="text-start">About Cabbage Coins</h1><img id="about-us-image" src="/assets/img/LancasterCounty_Wide.jpg" width="100%">
-        <div class="about-us-text">
-            <h2 class="text-start">Who We Are</h2>
-            <p class="text-start">Cabbage Coins is a Buyer and Seller of Rare Coins, Gold, and Silver Bars located right in the heart of beautiful Lancaster County Pennsylvania. A few facts about Cabbage Coins:</p>
-            <ul>
-                <li>We want to be your coin dealer. We buy rare coin collections and offer free appraisals. Give us a call to discuss the collection and we'll help answer questions and give an idea around value. </li>
-                <li>Our bread and butter are nice, encapsulated, better date coins for the astute collector. Visit our "Inventory" page to see the current collection for purchase.</li>
-                <li>Lancaster County, PA is our home, but we're happy to travel across the mid-Atlantic to check out coin collections and scope out local coin shows for new buying opportunities</li>
-                <li>We visit most of the major national and local coin shows - if you ever see us set up as a dealer - please come by, check out our coins and say 'hello!'</li>
-                <li>Be sure to check out the <a href="https://www.youtube.com/@cabbage_coins" target="_blank" style="color:#6289c1;">YouTube podcast</a> where the mission is educating viewers, inspiring new collectors and elevating the quality of collections</li>
-            </ul>
-            <div class="about-us-bio">
-                <div style="display:flex; gap:30px; align-items:center; flex-wrap:wrap;">
-                    <div style="flex-shrink:0;">
-                        <img src="/assets/img/tonyPic1.JPEG" style="width:180px; height:180px; object-fit:cover; object-position:center 25%; border-radius:50%; box-shadow:0 4px 20px rgba(0,0,0,0.15); border:4px solid white;">
-                    </div>
-                    <div style="flex:1; min-width:250px;">
-                        <p style="font-family:'Roboto'; font-size:16px; color:#333; line-height:1.7; margin-bottom:10px;">Owned and operated since 2021 by <strong>Tony Gryckiewicz</strong> — Professional Numismatist and ANA Life Member #7339.</p>
-                        <p style="font-family:'Roboto'; font-size:16px; color:#333; line-height:1.7; margin-bottom:16px;">Tony's background is in data analytics and operational strategy for the mortgage servicing industry. After starting Cabbage Coins as a side-hustle in 2021, it has grown to a full-time gig. In Summer 2025, Tony finished his final consulting contract and went all-in with Cabbage Coins!</p>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <a href="/coinshows/" style="background:#1d3961; color:white; text-decoration:none; padding:8px 20px; border-radius:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:14px;">Show Schedule →</a>
-                            <a href="/podcast/" style="background:white; color:#1d3961; text-decoration:none; padding:8px 20px; border-radius:8px; font-family:'Noto Serif Display'; font-weight:800; font-size:14px; border:1px solid #1d3961;">The Podcast →</a>
-                        </div>
-                    </div>
-                </div>
-</div>
-            <div class="container text-start site-section">
-                <div class="text-center faq-container">
-                    <button class="btn btn-primary" type="button" id="lightbox-form-button">contact us</button>
-                </div>
-            </div>
-        </div>
+{# ---------- Banner: Tony's Lancaster County aerial, fading into the page ---------- #}
+<section class="cc26-pagehero cc26-pagehero--image" style="--hero-img: url('/assets/img/lancaster-wide.jpg')">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">About Cabbage Coins</div>
+        <h1>Rare coins from the heart of Lancaster County.</h1>
+    </div>
+</section>
 
-        <div id="lightbox-form">
-        <div class='inquiry-form'>
-                <form action="https://formspree.io/f/xpqorvdg" method="POST">
-                    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none !important;">
-                    <h2 class="text-center">Contact Us</h2>
-                    <div class="mb-3"><input class="form-control" type="text" name="name" placeholder="Name"></div>
-                    <div class="mb-3"><input class="form-control is-invalid" type="email" name="email" placeholder="Email"><small class="form-text text-danger"></small></div>
-                    <div class="mb-3"><textarea class="form-control" name="message" placeholder="Message" rows="14">Hello Tony, &#013;I had a question about Cabbage Coins: [ insert question here ]</textarea></div>
-                    <div><input type="checkbox" name="privacypolicy" required></input>
-                    <label for="privacypolicy">I agree to the <a href="/privacypolicy/" target="blank">privacy policy.</a></label><br></div>
-                    <div class="mb-3"><button class="btn btn-primary" type="submit">send </button></div>
-                </form>
-            <form></form>
+{# ---------- Who we are ---------- #}
+<section class="cc26-wrap cc26-section cc26-about">
+    <div class="cc26-about__intro">
+        <div class="cc26-eyebrow">Who we are</div>
+        <h2 class="cc26-h2">A buyer and seller of rare coins, gold and silver.</h2>
+        <p class="cc26-lede">Cabbage Coins is a buyer and seller of rare coins, gold, and silver bars located right in the heart of beautiful Lancaster County, Pennsylvania. A few facts about Cabbage Coins:</p>
+    </div>
+    <ol class="cc26-facts">
+        <li>
+            <span class="cc26-facts__n">01</span>
+            <h3>We want to be your coin dealer</h3>
+            <p>We buy rare coin collections and offer free appraisals. Give us a call to discuss the collection and we'll help answer questions and give an idea around value.</p>
+            <a class="cc26-textlink" href="/selltous/">Sell to us →</a>
+        </li>
+        <li>
+            <span class="cc26-facts__n">02</span>
+            <h3>Better-date coins for the astute collector</h3>
+            <p>Our bread and butter are nice, encapsulated, better date coins for the astute collector. Visit our Inventory page to see the current collection for purchase.</p>
+            <a class="cc26-textlink" href="/inventory/">See the inventory →</a>
+        </li>
+        <li>
+            <span class="cc26-facts__n">03</span>
+            <h3>Home in Lancaster, on the road across the mid-Atlantic</h3>
+            <p>Lancaster County, PA is our home, but we're happy to travel across the mid-Atlantic to check out coin collections and scope out local coin shows for new buying opportunities.</p>
+        </li>
+        <li>
+            <span class="cc26-facts__n">04</span>
+            <h3>At the major shows</h3>
+            <p>We visit most of the major national and local coin shows. If you ever see us set up as a dealer, please come by, check out our coins and say hello!</p>
+            <a class="cc26-textlink" href="/coinshows/">Show schedule →</a>
+        </li>
+        <li>
+            <span class="cc26-facts__n">05</span>
+            <h3>The Cabbage Coins Podcast</h3>
+            <p>Be sure to check out the YouTube podcast, where the mission is educating viewers, inspiring new collectors and elevating the quality of collections.</p>
+            <a class="cc26-textlink" href="/podcast/">Watch the podcast →</a>
+        </li>
+        <li class="cc26-facts--story">
+            <span class="cc26-facts__n">06</span>
+            <h3>The story behind Cabbage Coins</h3>
+            <p>It's one of the questions we're asked most often: why “Cabbage”? It began with a nickname on Instagram — and it turns out cabbage has always meant money.</p>
+            <a class="cc26-textlink" href="/story/">Read the story →</a>
+        </li>
+    </ol>
+</section>
+
+{# ---------- Tony ---------- #}
+<section class="cc26-wrap cc26-section cc26-tony">
+    <img src="/assets/img/tony-about-1.jpg" data-swap-src="/assets/img/tony-about-2.jpg" alt="Tony Gryckiewicz" class="cc26-tony__portrait" width="620" height="827" loading="lazy">
+    <div class="cc26-tony__copy">
+        <div class="cc26-eyebrow">The owner</div>
+        <h2>Tony Gryckiewicz</h2>
+        <div class="cc26-tony__creds">Professional Numismatist · ANA Life Member #7339</div>
+        <p>Owned and operated since 2021 by Tony Gryckiewicz, Professional Numismatist and ANA Life Member #7339.</p>
+        <p>Tony's background is in data analytics and operational strategy for the mortgage servicing industry. After starting Cabbage Coins as a side-hustle in 2021, it has grown to a full-time gig. In Summer 2025, Tony finished his final consulting contract and went all-in with Cabbage Coins!</p>
+        <div class="cc26-linkrow">
+            <a class="cc26-btn cc26-btn--outline" href="/coinshows/">Show schedule</a>
+            <a class="cc26-btn cc26-btn--outline" href="/podcast/">The podcast</a>
         </div>
-<script>
-(function() {
-    var img = document.querySelector('.about-us-bio img');
-    if (!img) return;
-    var front = '/assets/img/tonyPic1.JPEG';
-    var back = '/assets/img/tonyPic3.JPEG';
-    var preload = new Image();
-    preload.src = back;
-    img.style.transition = 'opacity 0.2s ease';
-    img.addEventListener('mouseenter', function() {
-        img.style.opacity = '0';
-        setTimeout(function() {
-            img.src = back;
-            img.style.objectPosition = 'center 25%';
-            img.style.opacity = '1';
-        }, 200);
-    });
-    img.addEventListener('mouseleave', function() {
-        img.style.opacity = '0';
-        setTimeout(function() {
-            img.src = front;
-            img.style.objectPosition = 'center 25%';
-            img.style.opacity = '1';
-        }, 200);
-    });
-})();
-</script>
-</div>
+    </div>
+</section>
+
+{# ---------- Contact ---------- #}
+<section class="cc26-wrap cc26-section cc26-section--last">
+    <div class="cc26-cta">
+        <div class="cc26-cta__copy">
+            <div class="cc26-eyebrow">Get in touch</div>
+            <h2>Have a question about a coin or a collection?</h2>
+            <p>Call, text or email Tony directly, or send a message.</p>
+        </div>
+        <div class="cc26-cta__actions">
+            <button type="button" class="cc26-btn cc26-btn--gold cc26-btn--lg" data-modal-open="cc26-contact">Contact us</button>
+            <a class="cc26-textlink" href="tel:17177239505">(717) 723-9505</a>
+            <a class="cc26-textlink" href="mailto:tony@cabbagecoins.com">tony@cabbagecoins.com</a>
+        </div>
+    </div>
+</section>
+
+{% include "contactmodal.njk" %}
