@@ -27,6 +27,16 @@ public static class CoinPhoto
     // dst is written only when something changed (cropped or turned); otherwise Path is the original.
     public static PrepResult Prepare(string src, string dst, int margin, double expectedDia, bool coinLow, int turn)
     {
+        return Prepare(src, dst, margin, expectedDia, coinLow, turn, false);
+    }
+
+    // capsule: an ungraded coin in a round capsule (no slab, no label). The frame is NOT turned 90 degrees (a round
+    // capsule has no "up"), it's cropped to the capsule, and turn counts quarter turns (0-3) so the window's Turn
+    // button steps 90 degrees at a time. The coin is found without knowing its size (odd shapes like Latvia's
+    // cabbage coin included): see FindCoinInCapsule.
+    public static PrepResult Prepare(string src, string dst, int margin, double expectedDia, bool coinLow, int turn, bool capsule)
+    {
+        if (capsule) return PrepareCapsule(src, dst, margin, turn);
         using (var raw = new Bitmap(src))
         {
             bool isRaw = raw.Width > raw.Height;
@@ -56,6 +66,88 @@ public static class CoinPhoto
             }
             finally { if (own) b.Dispose(); }
         }
+    }
+
+    static PrepResult PrepareCapsule(string src, string dst, int margin, int turn)
+    {
+        if (turn < 0) turn = 0;
+        turn &= 3;
+        using (var raw = new Bitmap(src))
+        {
+            // The capsule's box: the slab scan works the same on a round capsule. Cropped square around its centre.
+            var box = FindSlab(raw);
+            double cx = (box.Left + box.Right) / 2.0, cy = (box.Top + box.Bottom) / 2.0;
+            double half = Math.Max(box.Right - box.Left, box.Bottom - box.Top) / 2.0 + margin;
+            int x0 = (int)Math.Max(0, cx - half), y0 = (int)Math.Max(0, cy - half);
+            int x1 = (int)Math.Min(raw.Width, cx + half), y1 = (int)Math.Min(raw.Height, cy + half);
+            using (var b = raw.Clone(new Rectangle(x0, y0, x1 - x0, y1 - y0), PixelFormat.Format24bppRgb))
+            {
+                if (turn == 1) b.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                else if (turn == 2) b.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                else if (turn == 3) b.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                var fit = FindCoinInCapsule(b);
+                SaveJpeg(b, dst, 100);
+                return new PrepResult { Path = dst, Fit = fit, Turn = turn, Cropped = true, TiltDeg = 0 };
+            }
+        }
+    }
+
+    // The coin inside a capsule crop, size unknown. Along each ray from the middle, the OUTERMOST strong
+    // bright-inside / dark-outside step (the coin's edge against the dark gap; the leaf veins and other design
+    // inside are further in), kept clear of the capsule's own rim. The centre comes from a robust circle fit and
+    // the radius is the circle around the outermost points, so a scalloped edge (the cabbage leaves) sits just
+    // inside the mask instead of being clipped.
+    public static CoinFit FindCoinInCapsule(Bitmap b)
+    {
+        int f = 2, w, h; var L = Lum(b, f, out w, out h);
+        double cx = w / 2.0, cy = h / 2.0, Rc = Math.Min(w, h) / 2.0;
+        var pts = new List<double[]>(); int N = 720, k = 4;
+        var d = new double[(int)Rc + 2];
+        for (int a = 0; a < N; a++)
+        {
+            double t = 2 * Math.PI * a / N, ct = Math.Cos(t), st = Math.Sin(t);
+            int lo = (int)(0.40 * Rc), hi = (int)(0.93 * Rc);
+            double maxD = 0;
+            for (int r = lo; r <= hi; r++)
+            {
+                double inn = 0, outv = 0; bool ok = true;
+                for (int j = 1; j <= k; j++)
+                {
+                    var i1 = Sample(L, w, h, cx + (r - j) * ct, cy + (r - j) * st);
+                    var o1 = Sample(L, w, h, cx + (r + j) * ct, cy + (r + j) * st);
+                    if (float.IsNaN(i1) || float.IsNaN(o1)) { ok = false; break; }
+                    inn += i1; outv += o1;
+                }
+                d[r] = ok ? (inn - outv) / k : 0;
+                if (d[r] > maxD) maxD = d[r];
+            }
+            // outermost step where the inside is bright silver and the outside clearly darker: proof mirror fields
+            // can be as dark as the background, and the capsule's own rings reflect light, so only bright edges count
+            for (int r = hi; r >= lo; r--)
+            {
+                double inn = 0; bool ok = true;
+                for (int j = 1; j <= k; j++) { var i1 = Sample(L, w, h, cx + (r - j) * ct, cy + (r - j) * st); if (float.IsNaN(i1)) { ok = false; break; } inn += i1; }
+                if (!ok || inn / k < 200 || d[r] < 80) continue;
+                while (r - 1 >= lo && d[r - 1] > d[r]) r--;   // the peak of that step
+                pts.Add(new[] { (cx + r * ct) * f + f / 2.0, (cy + r * st) * f + f / 2.0 });
+                break;
+            }
+        }
+        if (pts.Count < 30)
+        {
+            var u = new CoinFit { Cx = b.Width / 2.0, Cy = b.Height / 2.0, R = Math.Min(b.Width, b.Height) * 0.4, Note = "not found" };
+            Exposure(b, u); return u;
+        }
+        // A capsule is made to fit its coin, so the coin sits close to the capsule's centre: the fitted centre is
+        // only trusted when it agrees (design lines inside the coin can pull it off). The radius is then the
+        // outer envelope of the edge points, so the scalloped tips sit just inside the mask.
+        double fx, fy, fr; FitRobust(pts, out fx, out fy, out fr);
+        double ccx = b.Width / 2.0, ccy = b.Height / 2.0;
+        if (Math.Sqrt((fx - ccx) * (fx - ccx) + (fy - ccy) * (fy - ccy)) > 0.03 * Rc * f) { fx = ccx; fy = ccy; }
+        double R = Pct(pts.Select(p => Math.Sqrt((p[0] - fx) * (p[0] - fx) + (p[1] - fy) * (p[1] - fy))), 0.97);
+        var fit = new CoinFit { Cx = fx, Cy = fy, R = R, Note = "guess" };
+        Exposure(b, fit);
+        return fit;
     }
 
     // The slab's outer edges in an upright frame: on each scanline, the first run of pixels clearly brighter than

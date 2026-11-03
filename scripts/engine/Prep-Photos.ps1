@@ -141,11 +141,13 @@ foreach ($coin in $coins) {
   $mm = Get-CoinMM $coin.name
   $isCac = [bool]$coin.cac
   $medal = Test-MedalTurn $coin.name
+  # no grading service in the name = a raw coin in a round capsule (e.g. Tony's 2024 Latvia cabbage coin)
+  $capsule = $coin.name -notmatch '\b(PCGS|NGC|CACG|ANACS|ICG|SEGS)\b'
   $coinPx = if ($mm -gt 0) { [math]::Min(880, $mm * $MAX_PX_PER_MM) } else { 880 }
   $defaultGap = [int][math]::Round(450 - $coinPx / 2)
   Write-Host ''
   Write-Host "== $($folder.Name)" -ForegroundColor Cyan
-  Write-Host ("   {0}{1}{2}" -f $(if ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }))
+  Write-Host ("   {0}{1}{2}{3}" -f $(if ($capsule) { 'raw coin in a capsule (size found from the photo)' } elseif ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }), '')
   $saved = @{}
   if (Test-Path -LiteralPath $stateFile) { foreach ($l in Get-Content -LiteralPath $stateFile) { $p = $l -split "`t"; if ($p.Count -ge 6) { $saved[$p[0]] = $p } } }
 
@@ -161,7 +163,7 @@ foreach ($coin in $coins) {
       $f = $shots[$k]
       Write-Host ("   {0}: finding the slab and coin in {1} ({2} of {3})..." -f $(if ($side -eq 'obv') { 'obverse' } else { 'reverse' }), $f.Name, ($k + 1), $shots.Count)
       $turn = if ($sv -and $sv[1] -eq $f.Name) { [int]$sv[2] } else { -1 }
-      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn)
+      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn, $capsule)
     })
     $fits = @($preps | ForEach-Object { $_.Fit })
     $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($fits[$_].ClipPct) }, { - $fits[$_].MeanLum })[0]
@@ -186,10 +188,10 @@ foreach ($coin in $coins) {
         $Emblem, $(if ($isCac) { $CacLogo } else { '' }))
       $pick = $r.Pick; $gap = $r.Gap
       if ($r.Action -ne 'turn') { break }
-      # turn that shot 180 degrees: redone from the camera file, so the photo is still only saved once
+      # turn that shot 180 degrees (90 for a capsule): redone from the camera file, so the photo is still only saved once
       $f = $shots[$pick]
       Write-Host "   turning $($f.Name)..."
-      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, 1 - $preps[$pick].Turn)
+      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $(if ($capsule) { ($preps[$pick].Turn + 1) % 4 } else { 1 - $preps[$pick].Turn }), $capsule)
       $fits[$pick] = $preps[$pick].Fit
     }
     $action = $r.Action

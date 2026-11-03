@@ -48,7 +48,7 @@ public class ReviewForm : Form
         bPrev = Btn("< Other shot", delegate { Shot(-1); });
         bNext = Btn("Other shot >", delegate { Shot(1); });
         bReset = Btn("Back to guess", delegate { ResetCircle(); });
-        bTurn = Btn("Turn 180\u00B0", delegate { Finish("turn"); });
+        bTurn = Btn("Turn", delegate { Finish("turn"); });
         bOk = Btn("Looks right - use it", delegate { Finish("ok"); });
         bSkip = Btn("Skip this coin", delegate { Finish("skip"); });
         bOk.BackColor = Color.FromArgb(40, 110, 60); bOk.Font = new Font("Segoe UI", 11, FontStyle.Bold);
@@ -58,7 +58,7 @@ public class ReviewForm : Form
             "Not right?  Click 3 or more points on the coin's TRUE edge (spread around the coin). Right-click = undo a point.\n" +
             "Fine-tune: arrow keys move the circle, + / - or the mouse wheel resize it (hold Shift for bigger steps).\n" +
             "[ and ] = coin smaller / bigger inside the mask (small coins start smaller so they aren't over-magnified).\n" +
-            "T = turn the shot 180\u00B0 (slab or coin upside down).  PgUp / PgDn = other shot of this side.  R = back to the guess.\n" +
+            "T = turn the shot (slabs 180\u00B0, coins in capsules 90\u00B0 at a time).  PgUp / PgDn = other shot of this side.  R = back to the guess.\n" +
             "Enter = use it.  Esc = stop for now (finished coins are kept)." };
         Controls.Add(help);
         DoLayout();
