@@ -65,7 +65,7 @@ export default {
         name: 'hero',
         type: 'boolean',
         title: "Homepage hero",
-        description: "The big coin at the top of the homepage (new site design). Turn this on for ONE unsold coin; if several are on, the oldest wins. With none on, the priciest coin in stock is used."
+        description: "Adds this coin to the homepage hero rotation (the big coin at the top changes on every visit). Optional: the 16 priciest items in stock (ingots included) rotate on their own; turn this on to make sure a particular coin is included."
       },
       {
           name: 'sold',

@@ -1,7 +1,9 @@
 // Google reviews shown in the homepage carousel (copied word for word from Google).
-// Add new ones at the top; the trust strip's count reads reviews.length.
+// Add new ones at the top. `count` = the total on Google (some reviews are stars only, with no
+// words to quote), so update it by hand when new reviews come in.
 module.exports = {
   rating: '5.0',
+  count: 27,
   googleUrl: 'https://g.page/r/CZ7rbteqtp6cEAE/review',
   items: [
     { who: 'Lily B.', q: 'Not only was Tony very helpful, but he kept me informed and stayed on top of my sale, reassuring me during the entire process. I was promptly wired the money for my coins once he was able to inspect them. I recommend Cabbage Coins for knowledge, prompt attention, and the personal touch.' },

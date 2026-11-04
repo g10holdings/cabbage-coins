@@ -10,15 +10,17 @@ navtitle: Home
 title: Cabbage Coins | Rare Coins, Gold & Silver
 ---
 {% set inStock = collections.listingsNewest | inStockNewest %}
-{# hero = the coin Tony switched on in Studio ("Homepage hero"); with none on, the priciest coin in stock #}
-{% set heroPick = hero or (collections.listingsNewest | heroCoin(featured)) %}
+{# hero = a ROTATION: the coins Tony switched on in Studio ("Homepage hero") + the 16 priciest in stock (ingots included).
+   The page is built with the first one; the script under it swaps in a different one on every visit. #}
+{% set heroList = collections.listingsNewest | heroPool(hero, featured, 16) %}
+{% set heroPick = heroList[0] %}
 {% set imgq = "&q=90&auto=format&fit=max" %}
 
 {# ---------- Hero ---------- #}
 <section class="cc26-wrap cc26-hero">
     <div class="cc26-hero__copy">
-        <div class="cc26-eyebrow">Rare coins · Gold · Silver</div>
-        <h1>Rare coins,<br>chosen one<br>at a time.</h1>
+        <div class="cc26-eyebrow">Quality Rare Coins &amp; Ingots</div>
+        <h1>Elevate the<br>Quality of<br>Your Collection.</h1>
         <p>Cabbage Coins buys and sells certified U.S. rare coins, gold and silver. Every coin is hand-picked, graded by PCGS, NGC or CAC, and photographed in-house so you see exactly what you get.</p>
         <div class="cc26-hero__ctas">
             <a class="cc26-btn cc26-btn--gold cc26-btn--lg" href="/inventory/">Browse the inventory</a>
@@ -26,22 +28,40 @@ title: Cabbage Coins | Rare Coins, Gold & Silver
         </div>
     </div>
     {% if heroPick %}
-    <a class="cc26-hero__coin" href="/listings/{{ heroPick.slug.current | slug }}/">
+    <a class="cc26-hero__coin" id="cc26-hero-coin" href="/listings/{{ heroPick.slug.current | slug }}/">
         <img src="{{ heroPick.imageUrl }}?w=1100{{ imgq }}" alt="{{ heroPick.name }}" width="760" height="760">
         <span class="cc26-hero__caption">
             <span class="cc26-hero__name">{{ heroPick.name }}</span>
             <span class="cc26-hero__price">${{ heroPick.price | money }} →</span>
         </span>
     </a>
+    {% if heroList.length > 1 %}
+    {# Runs right away (before the photo loads) so visitors never see the coin switch. Picks at random,
+       never the same coin twice in a row for the same visitor (remembered in their browser). #}
+    <script>
+    (function () {
+        var pool = [{% for c in heroList %}{u:"/listings/{{ c.slug.current | slug }}/",i:{{ (c.imageUrl + "?w=1100" + imgq) | dump | safe }},n:{{ c.name | dump | safe }},p:"${{ c.price | money }} →"}{% if not loop.last %},{% endif %}{% endfor %}];
+        var last = null; try { last = localStorage.getItem('cc26-hero'); } catch (e) {}
+        var left = pool.filter(function (c) { return c.u !== last; });
+        var c = left[Math.floor(Math.random() * left.length)];
+        try { localStorage.setItem('cc26-hero', c.u); } catch (e) {}
+        var a = document.getElementById('cc26-hero-coin'); if (!a) return;
+        a.href = c.u;
+        var img = a.querySelector('img'); img.src = c.i; img.alt = c.n;
+        a.querySelector('.cc26-hero__name').textContent = c.n;
+        a.querySelector('.cc26-hero__price').textContent = c.p;
+    })();
+    </script>
+    {% endif %}
     {% endif %}
 </section>
 
-{# ---------- Trust strip ---------- #}
+{# ---------- Trust strip (condensed to a 2×2 on phones; see site2026.css) ---------- #}
 <section class="cc26-trust" aria-label="Why collectors trust us">
     <div class="cc26-wrap cc26-trust__grid">
         <a class="cc26-trust__item" href="#reviews">
             <span class="cc26-trust__big">{{ reviews.rating }} <span class="cc26-gold">★★★★★</span></span>
-            <span class="cc26-trust__small cc26-gold">Read all {{ reviews.items.length }} Google reviews ↓</span>
+            <span class="cc26-trust__small cc26-gold">{{ reviews.count }} five-star Google reviews ↓</span>
         </a>
         <div class="cc26-trust__item">
             <span class="cc26-trust__big">PCGS · NGC · CAC</span>
@@ -193,7 +213,7 @@ title: Cabbage Coins | Rare Coins, Gold & Silver
 <section class="cc26-wrap cc26-section" id="reviews">
     <div class="cc26-section__head">
         <div>
-            <div class="cc26-eyebrow">{{ reviews.rating }} ★★★★★ · {{ reviews.items.length }} reviews on Google</div>
+            <div class="cc26-eyebrow">{{ reviews.rating }} ★★★★★ · {{ reviews.count }} reviews on Google</div>
             <h2>What collectors say</h2>
         </div>
         <div class="cc26-reviews__ctrl">

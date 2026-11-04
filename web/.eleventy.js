@@ -112,13 +112,21 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("inStockNewest", (list) =>
     (list || []).filter((l) => !l.sold).slice().reverse());
 
-  // The homepage hero coin: the priciest COIN in stock (ingots don't make a good round hero image),
-  // skipping the featured one (it has its own section).
-  eleventyConfig.addFilter("heroCoin", (list, featured) => {
+  // The homepage hero ROTATION: every coin Tony switched on in Studio ("Homepage hero") plus the
+  // n priciest items in stock, ingots included (not the featured one). The page picks a different one on
+  // each visit (see the script under the hero in index.njk), so nobody has to pick one by hand.
+  eleventyConfig.addFilter("heroPool", (list, picked, featured, n) => {
     const skip = featured && featured._id;
-    return (list || [])
-      .filter((l) => !l.sold && l._id !== skip && l.imageUrl && l.category !== "Vintage Ingot")
-      .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))[0] || null;
+    const ok = (l) => l && !l.sold && l._id !== skip && l.imageUrl;
+    const pool = (picked || []).filter(ok);
+    const auto = (list || [])
+      .filter(ok)
+      .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+    for (const l of auto) {
+      if (pool.length >= (n || 16) + (picked || []).length) break;
+      if (!pool.some((p) => p._id === l._id)) pool.push(l);
+    }
+    return pool;
   });
 
   // The next n coin shows that haven't ended, flattened out of coinshows' month groups.

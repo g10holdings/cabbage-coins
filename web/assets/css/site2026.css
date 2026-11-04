@@ -325,14 +325,17 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
   .cc26-ways { grid-template-columns: minmax(0, 1fr); }
   .cc26 .cc26-ways > a, .cc26-ways > button { border-left: none; padding-left: 0; padding-right: 0; border-bottom: 1px solid var(--line-2); }
   .cc26-reviews { grid-auto-columns: 86%; }
+  /* trust strip, condensed: a 2×2 of the big lines only, so New arrivals comes up sooner */
+  .cc26-trust__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 10px; padding-bottom: 10px; row-gap: 6px; }
+  .cc26 .cc26-trust__item { padding: 2px 8px !important; border: none !important; align-items: center; text-align: center; }
+  .cc26 .cc26-trust__item:nth-child(even) { border-left: 1px solid var(--line-3) !important; }
+  .cc26-trust__big { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+  .cc26-trust__small { display: none; }
 }
 @media (max-width: 560px) {
   .cc26-logo img { height: 54px; }
   .cc26-topbar__tag { display: none; }
   .cc26-header .cc26-btn--sm { padding: 0 16px; }
-  .cc26-trust__grid { grid-template-columns: minmax(0, 1fr); }
-  .cc26 .cc26-trust__item { border-left: none !important; padding-left: 0 !important; border-top: 1px solid var(--line); }
-  .cc26 .cc26-trust__item:first-child { border-top: none; }
   .cc26-footer__grid { grid-template-columns: minmax(0, 1fr); }
   .cc26-joinbanner { min-height: 0; }
 }
