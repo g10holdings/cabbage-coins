@@ -55,8 +55,14 @@ export function planSiteSold(listings, rows, today = ymd(new Date())) {
     if (hasCert(l.gradenumber) && STAND_INS.has(certKey(l.gradenumber))) continue;
     if (isSold(l)) {
       const date = saleDate(l);
-      const note = !date ? 'no Sell Date in the workbook, using today' : date > today ? 'Sell Date is in the FUTURE in the workbook (typo?)' : null;
-      const soldDate = date ?? today;
+      // Layaway (Tony, 2026-11-11): Sold with a FUTURE Sell Date = sold, waiting on the final payment. The coin is
+      // gone now, so its sale date is the day it was first marked sold. A sale date already on the listing that is
+      // EARLIER than the workbook's is kept, so a layaway that gets its real (later) Sell Date doesn't come back
+      // onto Inventory for another 10 days.
+      const layaway = !!date && date > today;
+      const note = !date ? 'no Sell Date in the workbook, using today' : layaway ? 'layaway (Sell Date in the future)' : null;
+      let soldDate = layaway || !date ? (l.soldDate ?? today) : date;
+      if (l.soldDate && l.soldDate < soldDate) soldDate = l.soldDate;
       if (!l.sold) plan.markSold.push({ listing: l, soldDate, note });
       else if (l.soldDate !== soldDate) plan.fixDate.push({ listing: l, soldDate, was: l.soldDate ?? null, note });
     } else if (l.sold) {

@@ -26,7 +26,10 @@ Studio that the workbook still calls Active is named on screen and left alone.
 **Past sales:** a sold coin stays on Inventory (faded, SOLD tag) for **10 days after its Sell Date**, then moves to
 the **Past sales** page (small link at the bottom right of Inventory). Its listing keeps the same address but shows
 only the photos and the coin's details: no price, caption, "Tony says" or video. The move happens on its own on
-the right day; no rebuild needed. A wrong Sell Date in the workbook (say, a future one) is flagged by step 4.
+the right day; no rebuild needed.
+
+**Layaway:** mark it Sold with a **future** Sell Date, as you do now. The website treats it as sold from the day
+step 4 first sees it (shown as "layaway"), and keeps that date when you later enter the real final-payment date.
 
 ### A coin sold at a show while it was on eBay
 If you end the eBay listing yourself, mark the coin **Sold in the workbook** before the next step 4.

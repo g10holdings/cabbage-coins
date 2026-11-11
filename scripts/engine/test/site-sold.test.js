@@ -21,6 +21,11 @@ test('workbook Sold -> marked sold with its Sell Date; dates filled on already-s
     { _id: 'e', name: 'x', gradenumber: '6042153-049', sold: false },
   ], rows, '2026-11-11');
   assert.deepEqual(plan.markSold.map((x) => [x.listing._id, x.soldDate]), [['a', '2026-11-11']]);
-  assert.deepEqual(plan.fixDate.map((x) => [x.listing._id, x.soldDate, !!x.note]), [['c', '2026-12-30', true]]);   // future date flagged
+  // Layaway (future Sell Date): sold as of today, noted on screen.
+  assert.deepEqual(plan.fixDate.map((x) => [x.listing._id, x.soldDate, x.note]), [['c', '2026-11-11', 'layaway (Sell Date in the future)']]);
+  // A layaway that later gets its real (later) Sell Date keeps the earlier sale date.
+  const later = planSiteSold([{ _id: 'c', name: 'x', gradenumber: '222', sold: true, soldDate: '2026-11-11' }],
+    [row('222', '1900 Lafayette', 'Sold', '2026-11-28')], '2026-12-01');
+  assert.equal(later.fixDate.length, 0);
   assert.deepEqual(plan.studioOnly.map((x) => [x.listing._id, x.soldDate]), [['d', '2026-11-11']]);
 });
