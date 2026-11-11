@@ -295,6 +295,12 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 .cc26-toggle:has(input:checked) { border-color: var(--gold); }
 .cc26-toggle--cac:has(input:checked) { border-color: #4a9e6b; background: rgba(74,158,107,.12); }
 .cc26-inv__empty { margin: 40px 0 0; text-align: center; color: var(--muted); }
+/* The quiet "Past sales →" link at the bottom right of /inventory/ (and "← Back" on /past-sales/). */
+.cc26 .cc26-inv__more { margin: 48px 0 0; text-align: right; }
+.cc26 .cc26-inv__more .cc26-textlink { font-size: 14px; font-weight: 500; color: var(--muted); }
+.cc26 .cc26-inv__more .cc26-textlink:hover { color: var(--gold-hi); }
+.cc26-card__soldon { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.cc26-card--past[hidden] { display: none; }
 /* Phones / small tablets: four short lines instead of a tall block, so the coins start sooner.
    Type and Graded by each sit on one line you swipe sideways (edge to edge, fading at the right to show there's
    more); then CAC Only + Show sold; then Sort. */

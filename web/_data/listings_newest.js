@@ -27,6 +27,7 @@ async function getListings () {
     dateshown,
     featured,
     sold,
+    soldDate,
     cac,
     imagesGallery,
     "galleryImageUrl": imagesGallery[].asset->url,

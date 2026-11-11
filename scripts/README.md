@@ -37,7 +37,7 @@ the cert #**, e.g. `1895-O-10-Dollar-MS62-59080489`. The rest of the name can be
 | 2 | `2_Import-Listings` | Shows the new listings (Website = R coins) and whether each one's photos are ready, then asks. Yes: it creates the drafts, puts the 4 photos on each, and fills in PCGS population. |
 | 3 | `3_Choose-Captions` | Suggests captions from the photos; you pick or write your own in the browser. |
 | *you* | *the Studio* | Write the "Tony says…" description, click **Generate** on the slug, check alt text and caption, **Publish**. Then set the coin to **Website = Y** in the workbook. |
-| 4 | `4_After-Publishing-or-Selling` | Files the published coins' photo folders (camera shots deleted, 4 photos to `doneUnsold`; sold coins to `doneSOLD`), then CAC and eBay. Each part shows what it would do and asks. |
+| 4 | `4_After-Publishing-or-Selling` | Marks coins Sold in the workbook as sold on the website (with their Sell Date) and rebuilds the site, files the published coins' photo folders (camera shots deleted, 4 photos to `doneUnsold`; sold coins to `doneSOLD`), then CAC and eBay. Each part shows what it would do and asks. |
 | 5 | `5_Status-Report` | Any time: one page showing where every coin stands and its next step, plus the workbook check. Changes nothing. |
 
 **Also run step 4** whenever you mark a coin **Sold**, change a price, or tick **Keep off

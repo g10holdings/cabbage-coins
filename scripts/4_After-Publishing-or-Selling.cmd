@@ -1,11 +1,15 @@
 @echo off
 REM Step 4: run after publishing coins, marking coins Sold, changing prices, or ticking "Keep off eBay".
 REM Each part shows what it would do and asks first:
+REM   website - marks coins Sold in the workbook as sold on the site, with their Sell Date, then rebuilds the site
 REM   photos - files published coins' folders in doneUnsold (camera shots deleted), sold ones in doneSOLD
 REM   CAC    - adds new coins to CAC's marketplace, updates changed ones, takes sold ones down
 REM   eBay   - lists new coins, updates prices/shipping, ends sold or kept-off coins
 REM   CAC pop - saves CAC population on CAC coins (needs a site build to show)
 cd /d "%~dp0engine"
+echo ===== WEBSITE =====
+node site-sold.js --ask
+echo.
 echo ===== PHOTO FOLDERS =====
 node file-photos.js --ask
 echo.

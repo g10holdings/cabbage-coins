@@ -9,10 +9,13 @@ parent: Inventory
 {% set isFeatured = featured and listing.slug.current == featured.slug.current %}
 {% set imgq = "&q=90&auto=format&fit=max" %}
 {% set photos = listing | listingPhotos %}
+{# Archived = sold more than 10 days ago (isArchived in .eleventy.js): same URL, slimmed down to the photos and the
+   coin's details. No price, caption, "Tony says" or video. #}
+{% set archived = listing | isArchived %}
 
-<div class="cc26-wrap cc26-listing{% if isFeatured %} cc26-listing--featured{% endif %}">
+<div class="cc26-wrap cc26-listing{% if isFeatured %} cc26-listing--featured{% endif %}{% if archived %} cc26-listing--archived{% endif %}">
     <nav class="cc26-crumbs cc26-listing__crumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/inventory/">Inventory</a><span aria-hidden="true">/</span><span class="cc26-crumbs__here" aria-current="page">{{ listing.name }}</span>
+        <a href="/">Home</a><span aria-hidden="true">/</span>{% if archived %}<a href="/past-sales/">Past sales</a>{% else %}<a href="/inventory/">Inventory</a>{% endif %}<span aria-hidden="true">/</span><span class="cc26-crumbs__here" aria-current="page">{{ listing.name }}</span>
     </nav>
 
     <div class="cc26-lcard">
@@ -20,7 +23,7 @@ parent: Inventory
         <div class="cc26-lgrid">
             {# ---------- Photos: four large shots, stacked. Click any one for the zoom viewer. ---------- #}
             <div class="cc26-lphotos">
-                {% if listing.image.caption %}<p class="cc26-lphotos__caption">“{{ listing.image.caption }}”</p>{% endif %}
+                {% if listing.image.caption and not archived %}<p class="cc26-lphotos__caption">“{{ listing.image.caption }}”</p>{% endif %}
                 <div class="cc26-lphotos__track" data-carousel-track>
                     {% for src in photos %}
                     <a class="cc26-lphoto" href="{{ src }}" data-zoom="coin" aria-label="Zoom photo {{ loop.index }} of {{ photos.length }}">
@@ -43,7 +46,9 @@ parent: Inventory
                 <h1 class="cc26-linfo__title">{{ listing.name }}</h1>
 
                 <div class="cc26-linfo__price">
-                    {% if listing.sold %}
+                    {% if archived %}
+                    <span class="cc26-status cc26-status--sold">Sold {{ listing.soldDate | monthYear("long") }}</span>
+                    {% elif listing.sold %}
                     <span class="cc26-linfo__amount is-sold">${{ listing.price | money }}</span>
                     <span class="cc26-status cc26-status--sold">Sold</span>
                     {% else %}
@@ -105,7 +110,7 @@ parent: Inventory
                 {% set cacPopData = listing.cacPop %}{% include "cacpop.njk" %}
                 {% endif %}
 
-                {% if listing.description %}
+                {% if listing.description and not archived %}
                 <section class="cc26-tonysays{% if isFeatured %} cc26-tonysays--gold{% endif %}" aria-labelledby="cc26-tonysays-title">
                     <div class="cc26-tonysays__head">
                         <img src="/assets/img/CabbageCoins_Emblem_Small_White.png" alt="">
@@ -117,7 +122,7 @@ parent: Inventory
 
                 {# The coin's YouTube Short ("YouTube video" field in Studio). #}
                 {% set videoId = listing.youtubeUrl | youtubeId %}
-                {% if videoId %}
+                {% if videoId and not archived %}
                 <section class="cc26-short" aria-labelledby="cc26-short-title">
                     <h2 id="cc26-short-title">Watch this coin</h2>
                     <div class="cc26-short__frame">

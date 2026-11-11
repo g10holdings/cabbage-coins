@@ -29,9 +29,10 @@ module.exports = function(eleventyConfig) {
   });
 
   // "2026-10-10" → "Oct 2026" (the PCGS population "as of" date on listings).
-  eleventyConfig.addFilter("monthYear", (iso) => {
+  // monthYear("long") → "November 2026" (sale dates on archived listings).
+  eleventyConfig.addFilter("monthYear", (iso, style) => {
     const d = new Date(String(iso).slice(0, 10) + "T12:00:00Z");
-    return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+    return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: style || "short", year: "numeric", timeZone: "UTC" });
   });
 
    eleventyConfig.addFilter("readableDate", dateObj => {
@@ -171,6 +172,32 @@ module.exports = function(eleventyConfig) {
       return { l, score, i };
     }).sort((a, b) => b.score - a.score || b.i - a.i).slice(0, n || 6).map((x) => x.l);
   });
+
+  // ---- Past Sales archive ----
+  // A sold coin stays on /inventory/ for ARCHIVE_DAYS after its sale date (soldDate, filled from the workbook by
+  // scripts/engine/site-sold.js), then shows on /past-sales/ instead, and its listing page drops the price,
+  // "Tony says", pop boxes and video. The build decides with today's date in Lancaster; the pages also re-check in
+  // the browser (data-archive-on), so a coin moves on the right day even when the site hasn't been rebuilt.
+  const ARCHIVE_DAYS = 10;
+  const todayET = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });   // "2026-11-11"
+  const archiveOn = (soldDate) => {
+    if (!soldDate) return "";
+    const d = new Date(String(soldDate).slice(0, 10) + "T12:00:00Z");
+    if (isNaN(d)) return "";
+    d.setUTCDate(d.getUTCDate() + ARCHIVE_DAYS);
+    return d.toISOString().slice(0, 10);
+  };
+  // A sold coin with no sale date yet stays on Inventory until step 4 gives it one.
+  const isArchived = (l) => !!(l && l.sold && l.soldDate && archiveOn(l.soldDate) <= todayET());
+  eleventyConfig.addFilter("archiveOn", (l) => (l && l.sold ? archiveOn(l.soldDate) : ""));
+  eleventyConfig.addFilter("isArchived", isArchived);
+  eleventyConfig.addFilter("notArchived", (list) => (list || []).filter((l) => !isArchived(l)));
+  eleventyConfig.addFilter("onlyArchived", (list) => (list || []).filter(isArchived));
+  // Every sold coin with a sale date, most recent sale first. /past-sales/ shows the archived ones and keeps the
+  // rest hidden until their day comes.
+  eleventyConfig.addFilter("pastSales", (list) => (list || [])
+    .filter((l) => l.sold && l.soldDate && l.imageUrl)
+    .slice().sort((a, b) => String(b.soldDate).localeCompare(String(a.soldDate))));
 
   // 1350 → "1,350"
   eleventyConfig.addFilter("money", (n) =>

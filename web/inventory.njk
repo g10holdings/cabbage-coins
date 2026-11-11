@@ -14,7 +14,7 @@ title: Cabbage Coins | Inventory
     <div class="cc26-inv__head">
         <div>
             <div class="cc26-eyebrow">Inventory</div>
-            <h1 class="cc26-inv__count" data-inv-count aria-live="polite">{{ collections.listingsNewest.length }} items</h1>
+            <h1 class="cc26-inv__count" data-inv-count aria-live="polite">{{ (collections.listingsNewest | notArchived).length }} items</h1>
         </div>
         <span class="cc26-muted">Last updated: {{ buildInfo.lastUpdated }}</span>
     </div>
@@ -64,10 +64,11 @@ title: Cabbage Coins | Inventory
     </div>
 
     <div class="cc26-grid cc26-grid--inv" data-inv-grid>
-        {% for listing in collections.listingsNewest | reverse %}
+        {# Sold coins move to /past-sales/ 10 days after their sale (isArchived in .eleventy.js; the script re-checks the date). #}
+        {% for listing in collections.listingsNewest | notArchived | reverse %}
         <a class="cc26-card{% if listing.sold %} cc26-card--sold{% endif %}" href="/listings/{{ listing.slug.current | slug }}/"
            data-cat="{{ listing.category }}" data-cac="{{ 'true' if listing.cac else 'false' }}" data-cert="{{ listing.gradingCompany }}"
-           data-sold="{{ 'true' if listing.sold else 'false' }}" data-price="{{ listing.price }}" data-catno="{{ listing.pcgsCatalogNumber }}" data-newest="{{ loop.index0 }}">
+           data-sold="{{ 'true' if listing.sold else 'false' }}"{% if listing.sold %} data-archive-on="{{ listing | archiveOn }}"{% endif %} data-price="{{ listing.price }}" data-catno="{{ listing.pcgsCatalogNumber }}" data-newest="{{ loop.index0 }}">
             <span class="cc26-card__img">
                 <img src="{{ listing.imageUrl }}?w=640{{ imgq }}" alt="{{ listing.name }}" loading="lazy">
                 {% if listing.galleryImageUrl and listing.galleryImageUrl[0] %}
@@ -85,5 +86,6 @@ title: Cabbage Coins | Inventory
         {% endfor %}
     </div>
     <p class="cc26-inv__empty" data-inv-empty hidden>No coins match those filters right now. <button type="button" class="cc26-textlink cc26-gold" data-join-open>Tell Tony what you're looking for →</button></p>
+    <p class="cc26-inv__more"><a class="cc26-textlink" href="/past-sales/">Past sales →</a></p>
 </div>
 <script src="/assets/js/inventory2026.js" defer></script>

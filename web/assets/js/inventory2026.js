@@ -2,6 +2,13 @@
 (function () {
   var grid = document.querySelector('[data-inv-grid]');
   if (!grid) return;
+  // A sold coin moves to /past-sales/ on its data-archive-on day, even if the site hasn't been rebuilt since.
+  var today = (function () { var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); })();
+  Array.prototype.slice.call(grid.children).forEach(function (card) {
+    var on = card.getAttribute('data-archive-on');
+    if (on && on <= today) grid.removeChild(card);
+  });
   var cards = Array.prototype.slice.call(grid.children);
   var countEl = document.querySelector('[data-inv-count]');
   var emptyEl = document.querySelector('[data-inv-empty]');

@@ -14,14 +14,19 @@ Situations beyond the monthly steps in [`README.md`](README.md). When in doubt, 
 
 ## Selling and pricing
 
-### A coin sold (on the website, at a show, anywhere but eBay)
-1. **Studio:** tick **Sold** on the listing and Publish.
-2. **Workbook:** update the row as you normally do (Status = Sold). The scripts only read it.
-3. **`4_After-Publishing-or-Selling`:** answer `y` to each part. It moves the coin's photo folder to `doneSOLD`, takes it off CAC, and ends it on eBay.
+### A coin sold (anywhere: eBay, the website, a show)
+1. **Workbook:** Status = Sold and the **Sell Date**, as you normally do. **Save it** (step 4 reads the saved file).
+2. **`4_After-Publishing-or-Selling`:** answer `y` to each part. The **website** part ticks Sold on the listing,
+   copies the Sell Date into its **Sale date**, and starts a site build. Then the photo folder moves to `doneSOLD`,
+   CAC takes it down, and eBay ends it (or, if it sold on eBay, just notes it).
 
-Step 4 goes by **either** one: Sold in the workbook or Sold in the Studio. So a sale marked only
-in the workbook still comes off CAC and eBay. But the website keeps showing the coin for sale until
-you tick Sold in the Studio, and `5_Status-Report` flags it until you do.
+You no longer need to tick Sold in the Studio yourself (it still works if you do). A coin ticked Sold in the
+Studio that the workbook still calls Active is named on screen and left alone.
+
+**Past sales:** a sold coin stays on Inventory (faded, SOLD tag) for **10 days after its Sell Date**, then moves to
+the **Past sales** page (small link at the bottom right of Inventory). Its listing keeps the same address but shows
+only the photos and the coin's details: no price, caption, "Tony says" or video. The move happens on its own on
+the right day; no rebuild needed. A wrong Sell Date in the workbook (say, a future one) is flagged by step 4.
 
 ### A coin sold at a show while it was on eBay
 If you end the eBay listing yourself, mark the coin **Sold in the workbook** before the next step 4.
@@ -30,9 +35,8 @@ on the website it shows under **"Ended on eBay by hand"** and asks *"list … ag
 `n` (or just Enter) and it stays off eBay.
 
 ### A coin sold on eBay
-Step 4's eBay part lists it under **"SOLD ON EBAY: mark these sold on the website"**.
-1. **Studio:** tick **Sold** and Publish. **Workbook:** Status = Sold.
-2. Run **`4_After-Publishing-or-Selling`** again: CAC takes it down and the photos move to `doneSOLD`.
+Same as above: mark it Sold in the workbook (with the Sell Date), save, and run step 4. Its eBay part lists the
+coin under **"SOLD ON EBAY"**, and the website and CAC parts take care of the rest in the same run.
 
 ### Change a price
 1. **Studio:** change **Price** and Publish. The website, CAC and eBay all follow the Studio.

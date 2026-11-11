@@ -1,0 +1,44 @@
+---
+layout: layouts/dark.njk
+title: Cabbage Coins | Past Sales
+---
+{# Sold coins, 10 days after their sale (see "Past Sales archive" in .eleventy.js). No prices and no "Tony says":
+   a record of what's been through the shop. Linked quietly from the bottom of /inventory/, not in the menu. #}
+{% set imgq = "&q=90&auto=format&fit=max" %}
+{% set past = collections.listingsNewest | pastSales %}
+<div class="cc26-wrap cc26-wrap--wide cc26-inv cc26-past">
+    <nav class="cc26-crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/inventory/">Inventory</a><span aria-hidden="true">/</span><span class="cc26-crumbs__here" aria-current="page">Past sales</span>
+    </nav>
+    <div class="cc26-inv__head">
+        <div>
+            <div class="cc26-eyebrow">Past sales</div>
+            {% set archivedCount = (past | onlyArchived).length %}
+            <h1 class="cc26-inv__count" data-past-count>{{ archivedCount }} coins</h1>
+        </div>
+        <span class="cc26-muted">Coins that have found new homes.</span>
+    </div>
+
+    <div class="cc26-grid cc26-grid--inv" data-past-grid>
+        {% for listing in past %}
+        <a class="cc26-card cc26-card--past" href="/listings/{{ listing.slug.current | slug }}/"
+           data-archive-on="{{ listing | archiveOn }}"{% if not (listing | isArchived) %} hidden{% endif %}>
+            <span class="cc26-card__img">
+                <img src="{{ listing.imageUrl }}?w=640{{ imgq }}" alt="{{ listing.name }}" loading="lazy">
+                {% if listing.galleryImageUrl and listing.galleryImageUrl[0] %}
+                <img class="cc26-card__back" src="{{ listing.galleryImageUrl[0] }}?w=640{{ imgq }}" alt="" loading="lazy">
+                {% endif %}
+            </span>
+            <span class="cc26-card__meta">
+                <span>{{ listing.gradingCompany }} {{ listing.grade | replace(" CAC", "") }}</span>
+                {% if listing.cac %}<img src="/assets/img/caccoin.png" alt="CAC approved" class="cc26-cac">{% endif %}
+            </span>
+            <span class="cc26-card__name">{{ listing.name }}</span>
+            <span class="cc26-card__soldon">Sold {{ listing.soldDate | monthYear }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    <p class="cc26-inv__empty" data-past-empty{% if archivedCount %} hidden{% endif %}>Nothing here yet. Sold coins move here 10 days after they sell.</p>
+    <p class="cc26-inv__more"><a class="cc26-textlink" href="/inventory/">← Back to the inventory</a></p>
+</div>
+<script src="/assets/js/pastsales2026.js" defer></script>

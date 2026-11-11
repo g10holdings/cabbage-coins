@@ -73,6 +73,14 @@ export default {
           title: "Sold"
       },
       {
+        // Filled by scripts/engine/site-sold.js (step 4) from the workbook's Sell Date.
+        name: 'soldDate',
+        type: 'date',
+        title: 'Sale date',
+        description: "Filled in from the workbook's Sell Date when you run step 4. Sold coins stay on Inventory for 10 days after this date, then move to Past Sales.",
+        hidden: ({document}) => !document?.sold
+      },
+      {
         name: 'cac',
         type: 'boolean',
         title: "CAC"
