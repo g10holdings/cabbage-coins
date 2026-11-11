@@ -44,6 +44,20 @@ test('photos are found by cert, in the listing\'s slot order', () => {
   }
 });
 
+test('an ingot has just 2 photos: front (main image), then back', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'photos-test-'));
+  try {
+    const folder = '4oz-Engelhard-Top-Logo-999-Plus-02592';
+    fs.mkdirSync(path.join(root, folder));
+    for (const n of [1, 2]) fs.writeFileSync(path.join(root, folder, `4oz-Engelhard-Top-Logo-999-Plus-${n}.jpg`), '');
+    const found = findPhotos('02592', photoFolders(root), root);
+    assert.equal(found.ready, true);
+    assert.deepEqual(found.files.map((f) => path.basename(f).slice(-5)), ['1.jpg', '2.jpg']);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('folder name check: a wrong year, mint or grade stops; a wrong series word is just noted', () => {
   const peace = { name: '1934-D $1 Peace Silver Dollar PCGS MS65 CAC (Toned)', dateShown: '1934-D', grade: 'MS65 CAC' };
   let [block, notes] = compare('1934-D-Morgan-Silver-Dollar-PCGS-MS65-CAC-Toned', peace);

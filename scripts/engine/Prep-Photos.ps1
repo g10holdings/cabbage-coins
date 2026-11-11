@@ -1,4 +1,4 @@
-<#
+﻿<#
   Makes the 4 website photos for every coin folder in waiting_website, from the camera shots (DSC*.jpg).
   Tony ends each folder name with the cert number. photo-folders.js (run first) renames the folder from the
   workbook, as "<item description>-<cert number>", and the photos are named from the description alone:
@@ -133,7 +133,9 @@ foreach ($coin in $coins) {
   if ($Only -and $folder.Name -notlike "*$Only*") { continue }
   $origDir = Join-Path $folder.FullName 'originals'
   $stateFile = Join-Path $origDir 'photo-prep.txt'
-  $outs = 1..4 | ForEach-Object { Join-Path $folder.FullName "$($coin.base)-$_.jpg" }
+  $ingot = "$($coin.kind)" -eq 'ingot'   # the workbook's Type says Bar/Ingot (photo-folders.js)
+  # an ingot gets 2 photos, front (-1) and back (-2); everything else gets 4
+  $outs = (1..$(if ($ingot) { 2 } else { 4 })) | ForEach-Object { Join-Path $folder.FullName "$($coin.base)-$_.jpg" }
   $finished = -not ($outs | Where-Object { -not (Test-Path -LiteralPath $_) })
   $shotsHere = @(Get-ChildItem -LiteralPath $folder.FullName -File -Filter 'DSC*.jpg')
   if ($finished -and -not $Redo) { Write-Host "  (done already: $($folder.Name) - use -Redo to check it again)" -ForegroundColor DarkGray; continue }
@@ -145,45 +147,49 @@ foreach ($coin in $coins) {
   $mm = Get-CoinMM $coin.name
   $isCac = [bool]$coin.cac
   $medal = Test-MedalTurn $coin.name
-  # no grading service in the name = a raw coin in a round capsule (e.g. Tony's 2024 Latvia cabbage coin)
-  # the workbook's Type says ingot (Bar/Ingot) or ancient (photo-folders.js)
-  $ingot = "$($coin.kind)" -eq 'ingot'
-  $landscape = "$($coin.kind)" -eq 'ancient'   # NGC Ancients holders are read sideways: don't stand them up
-  $capsule = -not $ingot -and $coin.name -notmatch '\b(PCGS|NGC|CACG|ANACS|ICG|SEGS)\b'
+  # NGC Ancients holder (the workbook's Type, photo-folders.js): stood up like any other slab (label across the top,
+  # coin upright below it), but its coin sits low on BOTH sides, so the reverse isn't turned 180 (Tony, 2026-11-11).
+  $ancient = "$($coin.kind)" -eq 'ancient'
+  # a raw coin in a round capsule (e.g. Tony's 2024 Latvia cabbage coin): no grading company in the workbook's
+  # Certification column AND none in the name. Either one is enough for a slab: "1911-S 1C Lincoln Cent CAC MS65BN"
+  # is a CACG slab by its Certification, and the Justinian solidus (Certification 0) is NGC by its name.
+  $slabbed = ($coin.company -and $coin.company -ne 'Ungraded') -or $coin.name -match '\b(PCGS|NGC|CACG|CAC|ANACS|ICG|SEGS)\b'
+  $capsule = -not $ingot -and -not $slabbed
 
   if ($ingot) {
-    # No slab, no circle and no check window: each side's best exposure, framed with a margin all round.
-    # -1/-3 = the whole ingot with room around it, -2/-4 = closer (still a margin), with the logo.
+    # No slab, no circle and no check window: each side's best exposure, framed with a margin all round, with the
+    # logo. Just 2 photos, front (-1) and back (-2) (Tony, 2026-11-11).
     Write-Host ''
     Write-Host "== $($folder.Name)" -ForegroundColor Cyan
-    Write-Host '   ingot: framed with a margin on every side (no check window - look at the 4 photos afterwards)'
+    Write-Host '   ingot: front and back, framed with a margin on every side (no check window - look at the 2 photos afterwards)'
     $sides = Split-Sides $sources
-    $n = 1; $lines = @()
+    $n = 0; $lines = @()
     foreach ($side in 'obv', 'rev') {
       $shots = $sides[$side]
       $stats = @($shots | ForEach-Object { [CoinPhoto]::IngotStats($_.FullName) })
       $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($stats[$_].ClipPct) }, { - $stats[$_].MeanLum })[0]
       $src = $shots[$pick].FullName
       Write-Host "   $(if ($side -eq 'obv') { 'front' } else { 'back' }): using $($shots[$pick].Name)"
-      [CoinPhoto]::Ingot($src, $outs[$n - 1], 1044, 0.70, '', (New-Object System.Drawing.Rectangle(0, 0, 1, 1)), 0, 95)
       [CoinPhoto]::Ingot($src, $outs[$n], 1044, 0.86, $Emblem, (New-Object System.Drawing.Rectangle(75, 869, 124, 124)), 0.8, 95)
       $lines += ($side, $shots[$pick].Name, 'ingot') -join "`t"
-      $n += 2
+      $n++
     }
+    # -3/-4 from the earlier 4-photo ingot layout would make it look like a coin's set: they go
+    foreach ($k in 3, 4) { $old = Join-Path $folder.FullName "$($coin.base)-$k.jpg"; if (Test-Path -LiteralPath $old) { Remove-Item -LiteralPath $old } }
     New-Item -ItemType Directory -Force $origDir | Out-Null
     foreach ($f in $shotsHere) { Move-Item -LiteralPath $f.FullName -Destination $origDir }
     Set-Content -LiteralPath $stateFile $lines
-    Write-Host "   saved $($coin.base)-1.jpg ... -4.jpg (camera shots moved to originals\)" -ForegroundColor Green
+    Write-Host "   saved $($coin.base)-1.jpg and -2.jpg (camera shots moved to originals\)" -ForegroundColor Green
     $done += $folder.Name
     continue
   }
   $coinPx = if ($mm -gt 0) { [math]::Min(880, $mm * $MAX_PX_PER_MM) } else { 880 }
   # Ancients aren't round: start them smaller in the mask so a lumpy edge isn't cut off ([ and ] still adjust)
-  if ($landscape) { $coinPx = [math]::Min($coinPx, 820) }
+  if ($ancient) { $coinPx = [math]::Min($coinPx, 820) }
   $defaultGap = [int][math]::Round(450 - $coinPx / 2)
   Write-Host ''
   Write-Host "== $($folder.Name)" -ForegroundColor Cyan
-  Write-Host ("   {0}{1}{2}{3}" -f $(if ($capsule) { 'raw coin in a capsule (size found from the photo)' } elseif ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }), $(if ($landscape) { ', NGC Ancients holder (kept sideways)' }))
+  Write-Host ("   {0}{1}{2}{3}" -f $(if ($capsule) { 'raw coin in a capsule (size found from the photo)' } elseif ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }), $(if ($ancient) { ', NGC Ancients holder' }))
   $saved = @{}
   if (Test-Path -LiteralPath $stateFile) { foreach ($l in Get-Content -LiteralPath $stateFile) { $p = $l -split "`t"; if ($p.Count -ge 6) { $saved[$p[0]] = $p } } }
 
@@ -193,13 +199,13 @@ foreach ($coin in $coins) {
   $results = @{}; $action = 'ok'
   foreach ($side in 'obv', 'rev') {
     $shots = $sides[$side]
-    $coinLow = ($side -eq 'obv') -or $medal
+    $coinLow = ($side -eq 'obv') -or $medal -or $ancient   # an NGC Ancients slab stood up has its coin low on both sides
     $sv = $saved[$side]
     $preps = @(for ($k = 0; $k -lt $shots.Count; $k++) {
       $f = $shots[$k]
       Write-Host ("   {0}: finding the slab and coin in {1} ({2} of {3})..." -f $(if ($side -eq 'obv') { 'obverse' } else { 'reverse' }), $f.Name, ($k + 1), $shots.Count)
       $turn = if ($sv -and $sv[1] -eq $f.Name) { [int]$sv[2] } else { -1 }
-      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn, $capsule, $landscape)
+      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn, $capsule, $false)
     })
     $fits = @($preps | ForEach-Object { $_.Fit })
     $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($fits[$_].ClipPct) }, { - $fits[$_].MeanLum })[0]
@@ -227,7 +233,7 @@ foreach ($coin in $coins) {
       # turn that shot 180 degrees (90 for a capsule): redone from the camera file, so the photo is still only saved once
       $f = $shots[$pick]
       Write-Host "   turning $($f.Name)..."
-      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $(if ($capsule) { ($preps[$pick].Turn + 1) % 4 } else { 1 - $preps[$pick].Turn }), $capsule, $landscape)
+      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $(if ($capsule) { ($preps[$pick].Turn + 1) % 4 } else { 1 - $preps[$pick].Turn }), $capsule, $false)
       $fits[$pick] = $preps[$pick].Fit
     }
     $action = $r.Action

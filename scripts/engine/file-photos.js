@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Files away each coin's photo folder once the coin moves on (Tony's choice, 2026-10-18):
  *
  *   published  waiting_website -> doneUnsold   the camera shots (originals\) are DELETED; the 4 website photos move
@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { photoFolders, splitCert } from './listing-photos.js';
+import { photoFolders, splitCert, photoSet } from './listing-photos.js';
 import { readInventory, certKey, nameKey, hasCert, denominationOf } from './workbook.js';
 import { workbookSales, STAND_INS } from './sold.js';
 import { settings, sanity } from './settings.js';
@@ -125,11 +125,12 @@ async function main() {
     if (!l) continue;   // a draft, or not imported yet: stays put
     const dir = path.join(inProgress, folder);
     const base = splitCert(folder, l.gradenumber);
-    const four = [1, 2, 3, 4].map((n) => `${base}-${n}.jpg`);
+    const set = photoSet(dir, base);   // 4 photos, or an ingot's 2
+    const four = set.map((n) => `${base}-${n}.jpg`);
     const files = fs.readdirSync(dir);
     const soldNow = isSold(l);
-    if (!four.every((f) => files.includes(f))) { moves.push({ skip: `${folder}: its 4 photos aren't all there, so it stays` }); continue; }
-    if (!soldNow && l.photos < 4) { moves.push({ skip: `${folder}: the listing doesn't have its photos yet, so it stays` }); continue; }
+    if (!four.every((f) => files.includes(f))) { moves.push({ skip: `${folder}: its ${set.length} photos aren't all there, so it stays` }); continue; }
+    if (!soldNow && l.photos < set.length) { moves.push({ skip: `${folder}: the listing doesn't have its photos yet, so it stays` }); continue; }
     const del = files.filter((f) => f === 'originals' || /^DSC.*\.jpe?g$/i.test(f)).map((f) => path.join(dir, f));
     const extras = files.filter((f) => !four.includes(f) && f !== 'originals' && !/^DSC.*\.jpe?g$/i.test(f));
     moves.push({ from: dir, to: path.join(soldNow ? sold : listed, folder), del, extras, name: l.name, why: soldNow ? 'sold' : 'published' });
@@ -151,13 +152,13 @@ async function main() {
   if (!todo.length) console.log('  Nothing to file.');
   for (const m of todo) {
     const freed = m.del.reduce((t, p) => t + sizeOf(p), 0);
-    console.log(`  ${m.why === 'sold' ? '$' : '→'} ${m.name}`);
+    console.log(`  ${m.why === 'sold' ? '$' : 'â†’'} ${m.name}`);
     console.log(`      ${path.basename(path.dirname(m.from))} -> ${path.basename(path.dirname(m.to))}${m.del.length ? `, deleting the camera shots (${mb(freed)})` : ''}`);
     if (m.how) console.log(`      ${m.how}`);
-    if (m.extras.length) console.log(`      also moving (not one of the 4 photos): ${m.extras.join(', ')}`);
-    if (clash.includes(m)) console.log(`      ✗ can't: "${path.basename(m.to)}" is already there — sort that out by hand`);
+    if (m.extras.length) console.log(`      also moving (not one of the website photos): ${m.extras.join(', ')}`);
+    if (clash.includes(m)) console.log(`      âœ— can't: "${path.basename(m.to)}" is already there â€” sort that out by hand`);
   }
-  for (const m of moves.filter((x) => x.skip)) console.log(`  · ${m.skip}`);
+  for (const m of moves.filter((x) => x.skip)) console.log(`  Â· ${m.skip}`);
 
   const ok = todo.filter((m) => !clash.includes(m));
   if (!ok.length) return;
@@ -169,14 +170,14 @@ async function main() {
     for (const p of m.del) fs.rmSync(p, { recursive: true, force: true });
     fs.mkdirSync(path.dirname(m.to), { recursive: true });
     try { fs.renameSync(m.from, m.to); } catch { fs.cpSync(m.from, m.to, { recursive: true }); fs.rmSync(m.from, { recursive: true, force: true }); }
-    console.log(`  ✓ ${path.basename(m.to)}`);
+    console.log(`  âœ“ ${path.basename(m.to)}`);
   }
   console.log(`\nFiled ${ok.length} folder(s).`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
-    console.error(`\n✗ ${err.message}`);
+    console.error(`\nâœ— ${err.message}`);
     process.exitCode = 1;
   });
 }

@@ -109,7 +109,8 @@ function main() {
     // kind (from the workbook's Type/category): 'ingot' = no slab, framed with a margin; 'ancient' = NGC Ancients
     // holder, which is read sideways (label on the right), so its shots are NOT stood upright.
     const kind = w.category === 'Vintage Ingot' ? 'ingot' : /ancient/i.test(w.type) ? 'ancient' : '';
-    work.push({ folder: target, base, cert: w.cert, cac: w.cac, name: w.name, kind });
+    // company: the workbook's grading company; 'Ungraded' = a raw coin in a capsule (a "CAC MS65" name is a CACG slab)
+    work.push({ folder: target, base, cert: w.cert, cac: w.cac, name: w.name, kind, company: w.gradingCompany });
   }
 
   console.log(renamed ? `\n${APPLY ? 'Renamed' : 'Would rename'} ${renamed} folder(s) to the workbook's names.` : '\nEvery folder already has its workbook name.');

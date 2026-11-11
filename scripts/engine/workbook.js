@@ -76,6 +76,9 @@ const DESIGNATION = /^(DMPL|DPL|PL|DCAM|CAM|UCAM|UC|BN|RB|RD|FB|FBL|FH|FS|FT|\d?
  * when the CAC column says so or the coin is in a CACG holder; "OGH" and pedigree words are left out.
  */
 export function gradeOf(description, { cac, company } = {}) {
+  // NGC Ancients: grade, optional star, then strike and surface out of 5, kept as Tony writes it ("MS Star 5/5 4/5")
+  const anc = /(?:^|\s)((?:Ch |Gem )?(?:MS|AU|XF|EF|VF|VG|AG|Fr|F|G)(?:\s*(?:Star|★))?)\s+([1-5]\/5)\s+([1-5]\/5)(?=\s|$)/.exec(str(description));
+  if (anc) return `${anc[1]} ${anc[2]} ${anc[3]}`.replace(/\s+/g, ' ');
   const words = str(description).replace(/[(),]/g, ' ').replace(/Ultra Cameo/gi, 'UC').split(/\s+/);
   let i = words.findIndex((w) => COMPANY.test(w));
   const at = (k) => words[k] ?? '';
@@ -97,16 +100,28 @@ export function datesOf(description) {
   const d = str(description);
   const bc = /^(\d{1,4})\s*BC\b/i.exec(d);
   if (bc) return { dateShown: `${bc[1]} BC`, date: `-${bc[1]}` };
+  // ancients dated AD anywhere in the name: "Justinian I Gold Solidus AD 527 NGC ..." -> { "AD 527", "527" }
+  const ad = /\bAD\s*(\d{1,4})\b/.exec(d);
+  if (ad) return { dateShown: `AD ${ad[1]}`, date: ad[1] };
   const m = /^(\d{3,4})(\S*)/.exec(d);
   if (!m) return { dateShown: '', date: '' };
   return { dateShown: m[1] + m[2], date: m[1] };
 }
 
 const DENOM = /^(\d+\/\d+C|\d+C|H10C|3CN|3CS|[A-Z][a-z]?\$\d+(\.\d+)?|\$\d+(\.\d+)?|Peso)$/;
+const ANCIENT_DENOM = /\b(solidus|tremissis|semissis|aureus|denarius|antoninianus|follis|siliqua|tetradrachm|didrachm|drachm|hemidrachm|stater|obol|shekel)\b/i;
 /** The first word after the date that's a denomination: "50C", "$1", "T$1", "G$10", "1/2C", "Pd$25". */
 export function denominationOf(description) {
   const w = str(description).split(/\s+/);
-  const d = w.find((x, i) => i > 0 && DENOM.test(x)) ?? (/\bhalf cent\b/i.test(str(description)) ? '1/2C' : '');   // "1854 1/2 … Half Cent"
+  const d = w.find((x, i) => i > 0 && DENOM.test(x))
+    ?? (/\bhalf cent\b/i.test(str(description)) ? '1/2C' : '');   // "1854 1/2 … Half Cent"
+  if (!d) {
+    // ancients name their coin: "Justinian I Gold Solidus ..."
+    const anc = ANCIENT_DENOM.exec(str(description));
+    if (anc) return anc[1][0].toUpperCase() + anc[1].slice(1).toLowerCase();
+    // the modern Flowing Hair gold (2024, high relief, w/privy) is a gold dollar (Tony, 2026-11-11)
+    if (/\bflowing hair\b/i.test(description) && /\bgold\b/i.test(description) && Number(datesOf(description).date) >= 2020) return 'G$1';
+  }
   return d.replace(/\$(\d+)\.5$/, '$$$1.50');   // "$2.5" -> "$2.50", as the site writes it
 }
 

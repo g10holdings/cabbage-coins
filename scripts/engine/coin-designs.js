@@ -254,6 +254,7 @@ function normalizeDenomination(denomination, name) {
   // The spreadsheet writes dollar coins as bare numbers ("1", "2.5", "10"). A bare number is ambiguous ("5" could
   // be $5 gold or a 5C nickel), so the name's "$2.5" / "5C" decides; failing that it's read as dollars.
   if (!d || /^\d+(\.\d+)?$/.test(d)) d = inName ?? (d ? `$${d}` : '');
+  if (/^S\$/.test(d)) d = d.slice(1);   // Tony's "S$1" (silver dollar) is the table's "$1"
   if (/^G?\$2\.50?$/.test(d)) d = '$2.50';
   if (/^G\$/.test(d) && d !== 'G$1') d = d.slice(1);
   return d;

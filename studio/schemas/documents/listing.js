@@ -182,6 +182,8 @@ export default {
     {name: 'higherThanTop', type: 'number', title: 'Graded above the grid'},
     {name: 'maxPop', type: 'number', title: 'Largest cell'},
     {name: 'coinFactsUrl', type: 'url', title: 'PCGS CoinFacts link'},
+    // One-off (2026 Flowing Hair, 2026-11-11): counts combined by hand across two PCGS #s; fill-pcgs-pop leaves it alone
+    {name: 'note', type: 'string', title: 'Extra line (set by hand)'},
     {
       name: 'cells',
       type: 'array',

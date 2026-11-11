@@ -9,7 +9,7 @@
         <h3 class="cc-pop-title" id="cc-pop-title">PCGS Population</h3>
         <a class="cc-pop-logo" href="{{ pop.coinFactsUrl }}" target="_blank" rel="noopener"><img src="/assets/img/pcgs-logo.png" alt="PCGS CoinFacts for this coin" width="95" height="31"></a>
     </div>
-    <p class="cc-pop-lead">This coin is <strong>1 of {{ pop.thisPop }}</strong> graded {{ pop.grade }} by PCGS{% if pop.thisHigher > 0 %}, with <strong>{{ pop.thisHigher }}</strong> graded higher{% else %}, and none graded higher{% endif %}.</p>
+    <p class="cc-pop-lead">This coin is <strong>1 of {{ pop.thisPop }}</strong> graded {{ pop.grade }} by PCGS{% if pop.thisHigher > 0 %}, with <strong>{{ pop.thisHigher }}</strong> graded higher{% else %}, and none graded higher{% endif %}.{% if pop.note %} {{ pop.note }}{% endif %}</p>
 
     <table class="cc-pop-grid">
         <thead><tr><th scope="col"><span class="cc-sr">Grade</span></th>{% for c in pop.cells %}{% if not c.plus %}<th scope="col">{{ c.label }}</th>{% endif %}{% endfor %}</tr></thead>

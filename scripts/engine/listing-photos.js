@@ -56,12 +56,21 @@ export function splitCert(folder, cert) {
   return null;
 }
 
-/** The folder carrying this cert #, and whether its 4 photos exist. */
+/**
+ * The file numbers that make up a folder's photo set, in slot order. Usually the 4 above. An ingot gets just 2,
+ * front (-1) and back (-2), with no -3/-4 (Tony, 2026-11-11), so its main image is the front.
+ */
+export function photoSet(dir, base) {
+  const has = (n) => fs.existsSync(path.join(dir, `${base}-${n}.jpg`));
+  return has(1) && has(2) && !has(3) && !has(4) ? [1, 2] : SLOTS;
+}
+
+/** The folder carrying this cert #, and whether its photos (4, or an ingot's 2) exist. */
 export function findPhotos(cert, folders, root = PHOTO_ROOT) {
   const folder = folders.find((f) => splitCert(f, cert) != null);
   if (!folder) return null;
   const base = splitCert(folder, cert);
-  const files = SLOTS.map((n) => path.join(root, folder, `${base}-${n}.jpg`));
+  const files = photoSet(path.join(root, folder), base).map((n) => path.join(root, folder, `${base}-${n}.jpg`));
   return { folder, files, ready: files.every((f) => fs.existsSync(f)) };
 }
 
@@ -82,6 +91,6 @@ export async function putPhotos(client, draft, found) {
 /** One line saying where a listing's photos stand. */
 export function photoStatus(cert, found) {
   if (!found) return `no photo folder ending in "${cert || '(no cert)'}" (fine for ingots and one-offs: add those photos in the Studio)`;
-  if (!found.ready) return `folder "${found.folder}" found, but its 4 photos aren't made yet (run 1_Prep-Photos)`;
+  if (!found.ready) return `folder "${found.folder}" found, but its photos aren't made yet (run 1_Prep-Photos)`;
   return `ready in "${found.folder}"`;
 }

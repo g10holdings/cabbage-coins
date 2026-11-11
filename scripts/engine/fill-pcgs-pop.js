@@ -75,6 +75,8 @@ const certOf = (doc) => String(doc.gradenumber ?? '').trim().replace(/_\d+$/, ''
 function needsPop(doc) {
   const p = doc.pcgsPop;
   if (!p?.cells?.length) return 'missing';
+  // Set by hand (the 2024 Flowing Hair, counts combined across two PCGS #s): never overwritten
+  if (p.note) return null;
   if (p.v !== VERSION) return 'saved by an older version';
   if (p.cert !== certOf(doc)) return 'cert changed';
   // Saved before the catalog number counted (2026-10-16): redo only the ones that used a variety's number.
