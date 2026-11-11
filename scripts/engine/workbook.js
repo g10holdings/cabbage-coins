@@ -173,6 +173,7 @@ export function listingFromRow(r) {
     pcgsPopNumber: pcgs.popNumber,
     price: Number.isFinite(price) ? price : null,
     category: categoryOf({ description, denomination, type: r.Type }),
+    type: str(r.Type),
     website: str(r.Website).toUpperCase(),
     status: str(r.Status),
     flags,

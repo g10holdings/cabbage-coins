@@ -58,7 +58,11 @@ function Get-CoinMM([string]$name) {
     if ($sizes.ContainsKey($face)) { return $sizes[$face] }
   }
   if ($n -match '\b(gold|platinum)\b' -and $n -match '\b1 ?oz\b') { return 32.7 }
+  # 2024 Flowing Hair gold high relief (PCGS PR70DCAM, 85 of 230): measured 30.6 mm on the stand, 2026-11-11
+  if ($n -match 'flowing hair' -and $n -match '\bgold\b') { return 30.6 }
   switch -Regex ($n) {
+    # Ancients vary coin to coin; the edge search allows 5% either way. Justinian I solidus measured 20.5 mm.
+    '\bsolid(us|i)\b'                                { return 20.5 }
     # Many sizes changed over the years: the early (pre-1840ish) sizes come first in each line, from the Red Book.
     # U.S.-Philippines centavos and pesos are their own sizes: large 1903-06, reduced from 1907 (20C measured on the 1913-S)
     'philippines' {
@@ -142,12 +146,44 @@ foreach ($coin in $coins) {
   $isCac = [bool]$coin.cac
   $medal = Test-MedalTurn $coin.name
   # no grading service in the name = a raw coin in a round capsule (e.g. Tony's 2024 Latvia cabbage coin)
-  $capsule = $coin.name -notmatch '\b(PCGS|NGC|CACG|ANACS|ICG|SEGS)\b'
+  # the workbook's Type says ingot (Bar/Ingot) or ancient (photo-folders.js)
+  $ingot = "$($coin.kind)" -eq 'ingot'
+  $landscape = "$($coin.kind)" -eq 'ancient'   # NGC Ancients holders are read sideways: don't stand them up
+  $capsule = -not $ingot -and $coin.name -notmatch '\b(PCGS|NGC|CACG|ANACS|ICG|SEGS)\b'
+
+  if ($ingot) {
+    # No slab, no circle and no check window: each side's best exposure, framed with a margin all round.
+    # -1/-3 = the whole ingot with room around it, -2/-4 = closer (still a margin), with the logo.
+    Write-Host ''
+    Write-Host "== $($folder.Name)" -ForegroundColor Cyan
+    Write-Host '   ingot: framed with a margin on every side (no check window - look at the 4 photos afterwards)'
+    $sides = Split-Sides $sources
+    $n = 1; $lines = @()
+    foreach ($side in 'obv', 'rev') {
+      $shots = $sides[$side]
+      $stats = @($shots | ForEach-Object { [CoinPhoto]::IngotStats($_.FullName) })
+      $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($stats[$_].ClipPct) }, { - $stats[$_].MeanLum })[0]
+      $src = $shots[$pick].FullName
+      Write-Host "   $(if ($side -eq 'obv') { 'front' } else { 'back' }): using $($shots[$pick].Name)"
+      [CoinPhoto]::Ingot($src, $outs[$n - 1], 1044, 0.70, '', (New-Object System.Drawing.Rectangle(0, 0, 1, 1)), 0, 95)
+      [CoinPhoto]::Ingot($src, $outs[$n], 1044, 0.86, $Emblem, (New-Object System.Drawing.Rectangle(75, 869, 124, 124)), 0.8, 95)
+      $lines += ($side, $shots[$pick].Name, 'ingot') -join "`t"
+      $n += 2
+    }
+    New-Item -ItemType Directory -Force $origDir | Out-Null
+    foreach ($f in $shotsHere) { Move-Item -LiteralPath $f.FullName -Destination $origDir }
+    Set-Content -LiteralPath $stateFile $lines
+    Write-Host "   saved $($coin.base)-1.jpg ... -4.jpg (camera shots moved to originals\)" -ForegroundColor Green
+    $done += $folder.Name
+    continue
+  }
   $coinPx = if ($mm -gt 0) { [math]::Min(880, $mm * $MAX_PX_PER_MM) } else { 880 }
+  # Ancients aren't round: start them smaller in the mask so a lumpy edge isn't cut off ([ and ] still adjust)
+  if ($landscape) { $coinPx = [math]::Min($coinPx, 820) }
   $defaultGap = [int][math]::Round(450 - $coinPx / 2)
   Write-Host ''
   Write-Host "== $($folder.Name)" -ForegroundColor Cyan
-  Write-Host ("   {0}{1}{2}{3}" -f $(if ($capsule) { 'raw coin in a capsule (size found from the photo)' } elseif ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }), '')
+  Write-Host ("   {0}{1}{2}{3}" -f $(if ($capsule) { 'raw coin in a capsule (size found from the photo)' } elseif ($mm) { "$mm mm" } else { 'coin size unknown (add it to Get-CoinMM)' }), $(if ($isCac) { ', CAC logo' }), $(if ($medal) { ', medal turn' }), $(if ($landscape) { ', NGC Ancients holder (kept sideways)' }))
   $saved = @{}
   if (Test-Path -LiteralPath $stateFile) { foreach ($l in Get-Content -LiteralPath $stateFile) { $p = $l -split "`t"; if ($p.Count -ge 6) { $saved[$p[0]] = $p } } }
 
@@ -163,7 +199,7 @@ foreach ($coin in $coins) {
       $f = $shots[$k]
       Write-Host ("   {0}: finding the slab and coin in {1} ({2} of {3})..." -f $(if ($side -eq 'obv') { 'obverse' } else { 'reverse' }), $f.Name, ($k + 1), $shots.Count)
       $turn = if ($sv -and $sv[1] -eq $f.Name) { [int]$sv[2] } else { -1 }
-      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn, $capsule)
+      [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $turn, $capsule, $landscape)
     })
     $fits = @($preps | ForEach-Object { $_.Fit })
     $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($fits[$_].ClipPct) }, { - $fits[$_].MeanLum })[0]
@@ -191,7 +227,7 @@ foreach ($coin in $coins) {
       # turn that shot 180 degrees (90 for a capsule): redone from the camera file, so the photo is still only saved once
       $f = $shots[$pick]
       Write-Host "   turning $($f.Name)..."
-      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $(if ($capsule) { ($preps[$pick].Turn + 1) % 4 } else { 1 - $preps[$pick].Turn }), $capsule)
+      $preps[$pick] = [CoinPhoto]::Prepare($f.FullName, (Join-Path $wdir $f.Name), $SLAB_MARGIN, $mm * $PX_PER_MM, $coinLow, $(if ($capsule) { ($preps[$pick].Turn + 1) % 4 } else { 1 - $preps[$pick].Turn }), $capsule, $landscape)
       $fits[$pick] = $preps[$pick].Fit
     }
     $action = $r.Action

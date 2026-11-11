@@ -84,7 +84,10 @@ function main() {
     if (block.length) { problems.push(`${folder}\n      left alone: the name says ${block.join('; ')}. Is cert ${w.cert} right? (workbook: ${w.name})`); continue; }
 
     if (w.website !== 'R') notes.push(`Website is "${w.website || 'blank'}" in the workbook, not R, so 2_Import-Listings won't list it`);
-    const base = fileBase(w.name);
+    let base = fileBase(w.name);
+    // "4oz Engelhard ... #02592" with ID 02592: the number is already at the end, so don't say it twice
+    // (findPhotos takes the base as the folder name minus "-<cert>", so the two have to agree).
+    if (base.toLowerCase().endsWith(`-${w.cert.toLowerCase()}`)) base = base.slice(0, -(w.cert.length + 1));
     const target = `${base}-${w.cert}`;
     if (target !== folder) {
       const from = path.join(ROOT, folder), to = path.join(ROOT, target);
@@ -103,7 +106,10 @@ function main() {
       renamed++;
     }
     if (notes.length && target === folder) console.log(`  ${folder}\n      note: ${notes.join('; ')}`);
-    work.push({ folder: target, base, cert: w.cert, cac: w.cac, name: w.name });
+    // kind (from the workbook's Type/category): 'ingot' = no slab, framed with a margin; 'ancient' = NGC Ancients
+    // holder, which is read sideways (label on the right), so its shots are NOT stood upright.
+    const kind = w.category === 'Vintage Ingot' ? 'ingot' : /ancient/i.test(w.type) ? 'ancient' : '';
+    work.push({ folder: target, base, cert: w.cert, cac: w.cac, name: w.name, kind });
   }
 
   console.log(renamed ? `\n${APPLY ? 'Renamed' : 'Would rename'} ${renamed} folder(s) to the workbook's names.` : '\nEvery folder already has its workbook name.');

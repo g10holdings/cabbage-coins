@@ -36,6 +36,13 @@ public static class CoinPhoto
     // cabbage coin included): see FindCoinInCapsule.
     public static PrepResult Prepare(string src, string dst, int margin, double expectedDia, bool coinLow, int turn, bool capsule)
     {
+        return Prepare(src, dst, margin, expectedDia, coinLow, turn, capsule, false);
+    }
+
+    // landscape: a holder that's read sideways (NGC Ancients: label down the right side, coin upright in the
+    // landscape frame). The frame is cropped but NOT turned 90 degrees, and never turned 180 on its own.
+    public static PrepResult Prepare(string src, string dst, int margin, double expectedDia, bool coinLow, int turn, bool capsule, bool landscape)
+    {
         if (capsule) return PrepareCapsule(src, dst, margin, turn);
         using (var raw = new Bitmap(src))
         {
@@ -46,7 +53,7 @@ public static class CoinPhoto
             {
                 if (isRaw)
                 {
-                    raw.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    if (!landscape) raw.RotateFlip(RotateFlipType.Rotate270FlipNone);
                     var box = FindSlab(raw);
                     int x0 = Math.Max(0, box.Left - margin), y0 = Math.Max(0, box.Top - margin);
                     int x1 = Math.Min(raw.Width, box.Right + 1 + margin), y1 = Math.Min(raw.Height, box.Bottom + 1 + margin);
@@ -54,7 +61,7 @@ public static class CoinPhoto
                     res.Cropped = true; res.TiltDeg = box.TiltDeg;
                 }
                 var fit = FindCircle(b, expectedDia);
-                if (turn < 0) turn = (isRaw && expectedDia > 0 && (fit.Cy > b.Height / 2.0) != coinLow) ? 1 : 0;
+                if (turn < 0) turn = (isRaw && !landscape && expectedDia > 0 && (fit.Cy > b.Height / 2.0) != coinLow) ? 1 : 0;
                 if (turn == 1)
                 {
                     b.RotateFlip(RotateFlipType.Rotate180FlipNone);
@@ -276,8 +283,11 @@ public static class CoinPhoto
         int f1 = 8, w1, h1; var L1 = Lum(src, f1, out w1, out h1);
         var buf = new double[360];
         var top = new List<double[]>();   // score, cx, cy, r (full-res px)
+        // Upright slabs keep the coin in the middle third across. A sideways (landscape) holder like NGC Ancients
+        // has it off to one side, so the search runs nearly the full width there.
+        double xa = src.Width > src.Height ? 0.10 : 0.35, xb = src.Width > src.Height ? 0.90 : 0.65;
         for (int y = (int)(h1 * 0.20); y < h1 * 0.80; y += 2)
-            for (int x = (int)(w1 * 0.35); x < w1 * 0.65; x += 2)
+            for (int x = (int)(w1 * xa); x < w1 * xb; x += 2)
                 for (double r = 0.95 * E / f1; r <= 1.05 * E / f1; r += 0.5)
                     top.Add(new[] { RingScore(L1, w1, h1, x, y, r, 2, 90, buf), x * f1 + f1 / 2.0, y * f1 + f1 / 2.0, r * f1 });
         top.Sort((p, q) => q[0].CompareTo(p[0]));
@@ -444,6 +454,51 @@ public static class CoinPhoto
             int dw = (int)Math.Round(s.Width * k), dh = (int)Math.Round(s.Height * k);
             using (var ia = new ImageAttributes()) { ia.SetWrapMode(WrapMode.TileFlipXY); g.DrawImage(s, new Rectangle((size - dw) / 2, (size - dh) / 2, dw, dh), 0, 0, s.Width, s.Height, GraphicsUnit.Pixel, ia); }
             SaveJpeg(o, dst, q);
+        }
+    }
+
+    // ---------- ingots: no slab and no circle ----------
+
+    // Exposure check for an ingot shot (blown-out share and brightness inside its face), to pick the best frame.
+    public static CoinFit IngotStats(string src)
+    {
+        using (var b = new Bitmap(src))
+        {
+            var box = FindSlab(b);
+            var fit = new CoinFit { Cx = (box.Left + box.Right) / 2.0, Cy = (box.Top + box.Bottom) / 2.0, R = Math.Min(box.Right - box.Left, box.Bottom - box.Top) / 2.0, Note = "ingot" };
+            Exposure(b, fit);
+            return fit;
+        }
+    }
+
+    // The ingot centred on its own background (the photo, not painted black), filling `fill` of the square's width
+    // or height, whichever is longer, so there's a margin on every side. The brightness scan finds the bright top
+    // face; the darker sides are added back with a 3% pad. No turning: ingots are shot lying the right way up.
+    public static void Ingot(string src, string dst, int size, double fill, string emblem, Rectangle emblemBox, float emblemOpacity, long q)
+    {
+        using (var s = new Bitmap(src))
+        {
+            var box = FindSlab(s);
+            double pad = 0.03 * (box.Right - box.Left);
+            double w = box.Right - box.Left + 2 * pad, h = box.Bottom - box.Top + 2 * pad;
+            double cx = (box.Left + box.Right) / 2.0, cy = (box.Top + box.Bottom) / 2.0;
+            double side = Math.Min(Math.Max(w, h) / fill, Math.Min(s.Width, s.Height));
+            double x0 = Math.Max(0, Math.Min(s.Width - side, cx - side / 2)), y0 = Math.Max(0, Math.Min(s.Height - side, cy - side / 2));
+            using (var o = new Bitmap(size, size, PixelFormat.Format24bppRgb))
+            {
+                using (var g = Graphics.FromImage(o))
+                {
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.PixelOffsetMode = PixelOffsetMode.HighQuality; g.CompositingQuality = CompositingQuality.HighQuality;
+                    using (var ia = new ImageAttributes()) { ia.SetWrapMode(WrapMode.TileFlipXY); g.DrawImage(s, new Rectangle(0, 0, size, size), (float)x0, (float)y0, (float)side, (float)side, GraphicsUnit.Pixel, ia); }
+                    if (!string.IsNullOrEmpty(emblem))
+                        using (var e = new Bitmap(emblem)) using (var ia = new ImageAttributes())
+                        {
+                            ia.SetColorMatrix(new ColorMatrix { Matrix33 = emblemOpacity });
+                            g.DrawImage(e, emblemBox, 0, 0, e.Width, e.Height, GraphicsUnit.Pixel, ia);
+                        }
+                }
+                SaveJpeg(o, dst, q);
+            }
         }
     }
 

@@ -30,6 +30,8 @@ export function photoFolders(root = PHOTO_ROOT) {
 export function fileBase(description) {
   return String(description ?? '')
     .replace(/(?:\b([A-Za-z]{1,2}))?\$(\d+(?:\.\d+)?)/g, (m, pre, n) => ` ${n} Dollar${pre && /^g$/i.test(pre) ? ' Gold' : ''} `)
+    // NGC Ancients' strike/surface scores: "MS Star 5/5 4/5" -> "MS Star Strike 5 Surface 4"
+    .replace(/\b([1-5])\/5\s+([1-5])\/5\b/g, 'Strike $1 Surface $2')
     .replace(/\+/g, ' Plus ')
     .replace(/&/g, ' and ')
     .replace(/[^A-Za-z0-9.]+/g, '-')
