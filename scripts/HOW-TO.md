@@ -42,9 +42,21 @@ Same as above: mark it Sold in the workbook (with the Sell Date), save, and run 
 coin under **"SOLD ON EBAY"**, and the website and CAC parts take care of the rest in the same run.
 
 ### Change a price
-1. **Studio:** change **Price** and Publish. The website, CAC and eBay all follow the Studio.
-2. **Workbook:** change **listPrice** too, so the two agree. `5_Status-Report` flags any coin whose prices differ.
-3. **`4_After-Publishing-or-Selling`:** CAC and eBay pick up the new price. eBay's price is recalculated so you still net the website price; see [`REFERENCE.md`](REFERENCE.md#ebay).
+The **workbook's listPrice drives the price everywhere** (since 2026-11-14): workbook → website → CAC and eBay.
+1. **Workbook:** change **listPrice** and **save**.
+2. **`4_After-Publishing-or-Selling`:** the website part's **WORKBOOK CHECK** shows `PRICE CHANGE … $old -> $new`.
+   Answer `y`: it sets the website price (an open Studio draft of that coin too) and rebuilds the site. The CAC and eBay
+   parts in the same run then pick up the new price. eBay's price is recalculated so you still net the website price;
+   see [`REFERENCE.md`](REFERENCE.md#ebay).
+
+There's no need to change the price in the Studio. If you do change it only there, the next step 4 sets it back to
+the workbook's listPrice.
+
+### WORKBOOK CHECK lists a coin as not "Y"
+The coin is live on the website, but its **Active** row in the workbook doesn't say `Y` in the Website column
+(common after a buyback: the new `_2` row starts blank). Put `Y` in that row and save. Nothing on the website changes.
+"No Active row in the workbook" means step 4 couldn't find the coin at all: check the cert # in the Studio against the
+workbook's inventoryID (or, for an item without a cert, that the names match exactly).
 
 ### Take a coin off the website without selling it
 1. **Studio:** unpublish the listing (or delete it).

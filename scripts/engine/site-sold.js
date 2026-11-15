@@ -1,5 +1,14 @@
 /**
- * The website part of 4_After-Publishing-or-Selling: marks coins sold on cabbagecoins.com from the WORKBOOK.
+ * The website part of 4_After-Publishing-or-Selling: makes cabbagecoins.com match the WORKBOOK.
+ *
+ * First, the workbook check (Tony, 2026-11-14) — the workbook drives the website, and the website drives eBay and
+ * CAC (the later parts of step 4 read the website's prices):
+ *   - every coin live on the website should say "Y" in the workbook's Website column (or have a row at all);
+ *     the ones that don't are listed, nothing is changed — that's fixed in the workbook;
+ *   - every live coin's website price is set to the workbook's listPrice where they differ (an open Studio
+ *     draft of that listing gets the new price too, so publishing it later doesn't bring the old price back).
+ *
+ * Then the sold coins:
  *
  * For each published listing whose coin is Sold in the workbook (sold.js rules: by cert, every row for it Sold; no-cert
  * items by name), it ticks the Studio's Sold box and copies the workbook's Sell Date into `soldDate`. A coin already
@@ -72,6 +81,47 @@ export function planSiteSold(listings, rows, today = ymd(new Date())) {
   return plan;
 }
 
+const isActive = (r) => !/^sold$/i.test(String(r.Status ?? '').trim());
+
+/**
+ * The coin's ACTIVE workbook row(s): by cert (a "_2" row back in stock counts), else — for items whose listing
+ * number isn't the workbook ID, like ingot "535" = row "SF_535" — the one active row with exactly the same name.
+ */
+export function activeRowsOf(l, rows) {
+  const cert = hasCert(l.gradenumber) ? certKey(l.gradenumber) : null;
+  const live = rows.filter((r) => r.inventoryID != null && isActive(r));
+  const byCert = cert ? live.filter((r) => hasCert(r.inventoryID) && certKey(r.inventoryID) === cert) : [];
+  if (byCert.length) return byCert;
+  const byName = live.filter((r) => nameKey(r.itemDescription) === nameKey(l.name));
+  return byName.length === 1 ? byName : [];
+}
+
+/**
+ * The workbook check. Pure, like planSiteSold. `listings` are the published ones; coins already ticked Sold, or
+ * about to be marked sold by this run (`soldNow`, listing ids), aren't live and are skipped, as are STAND_INS.
+ * Returns { notY, noRow, several, price, noPrice }.
+ */
+export function planWorkbookCheck(listings, rows, soldNow = new Set()) {
+  const plan = { notY: [], noRow: [], several: [], price: [], noPrice: [] };
+  for (const l of listings) {
+    if (l.sold || soldNow.has(l._id)) continue;
+    if (hasCert(l.gradenumber) && STAND_INS.has(certKey(l.gradenumber))) continue;
+    const mine = activeRowsOf(l, rows);
+    if (!mine.length) { plan.noRow.push({ listing: l }); continue; }
+    if (mine.length > 1) { plan.several.push({ listing: l, ids: mine.map((r) => r.inventoryID) }); continue; }
+    const r = mine[0];
+    if (String(r.Website ?? '').trim().toUpperCase() !== 'Y') {
+      plan.notY.push({ listing: l, inventoryID: r.inventoryID, website: String(r.Website ?? '').trim() });
+    }
+    const want = Number(r.listPrice);
+    if (!(want > 0)) plan.noPrice.push({ listing: l, inventoryID: r.inventoryID });
+    else if (Math.abs(want - (Number(l.price) || 0)) > 0.005) {
+      plan.price.push({ listing: l, inventoryID: r.inventoryID, from: l.price ?? null, to: want });
+    }
+  }
+  return plan;
+}
+
 async function startBuild() {
   const cfgPath = path.join(process.env.APPDATA ?? '', 'netlify', 'Config', 'config.json');
   let token;
@@ -94,12 +144,44 @@ async function main() {
   const ASK = args.includes('--ask');
   let APPLY = args.includes('--apply');
 
-  const { rows, savedAt } = readInventory(undefined, ['inventoryID', 'itemDescription', 'Status', 'Sell Date']);
-  console.log(`Workbook last saved ${savedAt.toLocaleString()}. (A sale you just typed in counts only once Excel has SAVED it.)`);
+  const { rows, savedAt } = readInventory(undefined, ['inventoryID', 'itemDescription', 'Status', 'Sell Date', 'Website', 'listPrice']);
+  console.log(`Workbook last saved ${savedAt.toLocaleString()}. (A change you just typed in counts only once Excel has SAVED it.)`);
   const client = sanity();
-  const listings = await client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]{_id, name, gradenumber, sold, soldDate}`);
+  const listings = await client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]{_id, name, gradenumber, sold, soldDate, price}`);
+  const drafts = new Set(await client.fetch(`*[_type == "listing" && _id in path("drafts.**")]._id`));
   const plan = planSiteSold(listings, rows);
+  const check = planWorkbookCheck(listings, rows, new Set(plan.markSold.map((x) => x.listing._id)));
 
+  // The workbook check comes first.
+  const usd = (n) => (n == null ? 'no price' : `$${Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 })}`);
+  console.log('\n  WORKBOOK CHECK');
+  if (check.notY.length) {
+    console.log(`  Live on the website but not "Y" in the workbook's Website column (${check.notY.length}) — fix in the workbook:`);
+    check.notY.forEach((x) => console.log(`    ${x.listing.name}  (row ${x.inventoryID}: Website is ${x.website ? `"${x.website}"` : 'blank'})`));
+  }
+  if (check.noRow.length) {
+    console.log(`  Live on the website but no Active row in the workbook (${check.noRow.length}) — check the cert # / name:`);
+    check.noRow.forEach((x) => console.log(`    ${x.listing.name}  (${x.listing.gradenumber ?? 'no cert #'})`));
+  }
+  if (check.several.length) {
+    console.log(`  Several Active workbook rows for one coin (${check.several.length}) — price not changed:`);
+    check.several.forEach((x) => console.log(`    ${x.listing.name}  (rows ${x.ids.join(', ')})`));
+  }
+  if (!check.notY.length && !check.noRow.length && !check.several.length) {
+    console.log('  Every coin live on the website says "Y" in the workbook.');
+  }
+  if (check.noPrice.length) {
+    console.log(`  No listPrice in the workbook (${check.noPrice.length}) — website price left as it is:`);
+    check.noPrice.forEach((x) => console.log(`    ${x.listing.name}  (row ${x.inventoryID}; website ${usd(x.listing.price)})`));
+  }
+  if (check.price.length) {
+    console.log(`  PRICE CHANGE from the workbook's listPrice (${check.price.length}):`);
+    check.price.forEach((x) => console.log(`    ${x.listing.name}  ${usd(x.from)} -> ${usd(x.to)}${drafts.has(`drafts.${x.listing._id}`) ? '  (its open Studio draft too)' : ''}`));
+  } else {
+    console.log('  Prices: every live coin\'s website price matches the workbook\'s listPrice.');
+  }
+
+  console.log('\n  SOLD COINS');
   const line = (x) => `    ${x.listing.name}  (sold ${x.soldDate})${x.note ? `  ! ${x.note}` : ''}`;
   if (plan.markSold.length) {
     console.log(`\n  MARK SOLD on the website (${plan.markSold.length}):`);
@@ -114,20 +196,28 @@ async function main() {
     console.log(`\n  Sold on the website but NOT Sold in the workbook (${plan.studioOnly.length}) — left as they are:`);
     plan.studioOnly.forEach((x) => console.log(`    ${x.listing.name}  (${x.listing.gradenumber})${x.needsDate ? `  — gets today's date (${x.soldDate}) for the archive` : ''}`));
   }
-  const changes = [...plan.markSold, ...plan.fixDate, ...undated];
-  if (!changes.length) {
-    console.log('\n  Website is up to date: every coin sold in the workbook is marked sold, with its sale date.');
+  const soldChanges = [...plan.markSold, ...plan.fixDate, ...undated];
+  if (!soldChanges.length) console.log('  Every coin sold in the workbook is marked sold on the website, with its sale date.');
+  const total = soldChanges.length + check.price.length;
+  if (!total) {
+    console.log('\n  Website is up to date with the workbook.');
     return;
   }
 
-  if (ASK && !APPLY) APPLY = await askYes(`\nUpdate ${changes.length} listing(s) on the website and rebuild the site? (y/N) `);
+  const what = [check.price.length && `${check.price.length} price(s)`, soldChanges.length && `${soldChanges.length} sold coin(s)`]
+    .filter(Boolean).join(' and ');
+  if (ASK && !APPLY) APPLY = await askYes(`\nUpdate ${what} on the website and rebuild the site? (y/N) `);
   if (!APPLY) { console.log('  Nothing changed.'); return; }
 
   const tx = client.transaction();
+  for (const x of check.price) {
+    tx.patch(x.listing._id, (p) => p.set({ price: x.to }));
+    if (drafts.has(`drafts.${x.listing._id}`)) tx.patch(`drafts.${x.listing._id}`, (p) => p.set({ price: x.to }));
+  }
   for (const x of plan.markSold) tx.patch(x.listing._id, (p) => p.set({ sold: true, soldDate: x.soldDate }));
   for (const x of [...plan.fixDate, ...undated]) tx.patch(x.listing._id, (p) => p.set({ soldDate: x.soldDate }));
   await tx.commit();
-  console.log(`  ✔ ${changes.length} listing(s) updated.`);
+  console.log(`  ✔ Updated ${what}.`);
   await startBuild();
 }
 
