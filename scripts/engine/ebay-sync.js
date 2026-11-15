@@ -39,7 +39,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
 import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
@@ -182,6 +182,19 @@ async function itemInfo(id) {
 
 const GRADER = { PCGS: '14', NGC: '15', CACG: '16' };
 const LETTER = [[/^(MS|PR|PF|SP)/, '18'], [/^AU/, '19'], [/^(XF|EF)/, '20'], [/^VF/, '46'], [/^F/, '47'], [/^VG/, '48'], [/^G/, '49']];
+
+/**
+ * A slab grade as eBay's two graded fields: the letter grade (MS/PR, AU…) and the number written RIGHT AFTER it
+ * ("MS64", "PR70DCAM", "AU58" → 64, 70, 58). NGC Ancients grades have no 1–70 number ("MS Star 5/5 4/5",
+ * "Ch XF 4/5 3/5"): num is then null, and eBay gets its own "None" value — never a made-up equivalent
+ * (Tony, 2026-11-14). The "Ch" (Choice) in front of an ancients grade is skipped.
+ */
+export function gradeParts(grade) {
+  const g = String(grade ?? '').replace(/\s/g, '').toUpperCase().replace(/^CH(?=[A-Z])/, '');
+  // a number followed by "/" is an ancients strike/surface score ("XF 4/5"), not the grade
+  const num = /^(MS|PR|PF|SP|AU|XF|EF|VF|VG|AG|FR|F|G|P)(\d{1,2})(?![\d/])/.exec(g)?.[2];
+  return { letter: LETTER.find(([re]) => re.test(g))?.[1] ?? null, num: num == null ? null : String(Number(num)) };
+}
 const MINT = { P: 'Philadelphia', D: 'Denver', S: 'San Francisco', O: 'New Orleans', CC: 'Carson City', W: 'West Point', C: 'Charlotte' };
 const COMPOSITION = { Silver: 'Silver', Gold: 'Gold', 'Copper/Bronze': 'Copper', 'Vintage Ingot': 'Silver' };
 // Categories decided by rule, before eBay's own suggestion (which put commemoratives in Jefferson nickels and the
@@ -292,11 +305,9 @@ async function conditionXml(categoryId, coin) {
   const policy = conditionCache.get(categoryId);
   const graded = policy?.itemConditions?.find((c) => c.conditionId === '2750');
   if (!graded || !GRADER[coin.gradingCompany]) return '';   // bullion categories / ungraded: no condition
-  const grade = String(coin.grade ?? '').replace(/\s/g, '').toUpperCase();
-  const num = /^[A-Z]+(\d{1,2})/.exec(grade)?.[1];
+  const { letter, num } = gradeParts(coin.grade);
   const numDescriptor = graded.conditionDescriptors?.find((d) => d.conditionDescriptorId === '4');
-  const numValue = numDescriptor?.conditionDescriptorValues?.find((v) => v.conditionDescriptorValueName === String(Number(num)))?.conditionDescriptorValueId;
-  const letter = LETTER.find(([re]) => re.test(grade))?.[1];
+  const numValue = numDescriptor?.conditionDescriptorValues?.find((v) => v.conditionDescriptorValueName === (num ?? 'None'))?.conditionDescriptorValueId;
   const d = (name, value, extra = '') => `<ConditionDescriptor><Name>${name}</Name>${value ? `<Value>${value}</Value>` : ''}${extra}</ConditionDescriptor>`;
   return `<ConditionID>2750</ConditionID><ConditionDescriptors>${d(1, GRADER[coin.gradingCompany])}${letter ? d(3, letter) : ''}${numValue ? d(4, numValue) : ''}${
     hasCert(coin.gradenumber) ? d(5, '', `<AdditionalInfo>${esc(String(coin.gradenumber).replace(/_\d{1,2}$/, ''))}</AdditionalInfo>`) : ''}</ConditionDescriptors>`;
@@ -543,7 +554,9 @@ async function main() {
   if (failed.length) { console.log(`✗ ${failed.length} failed (they'll be tried again next run):`); for (const f of failed) console.log(`  ${f}`); }
 }
 
-main().catch((err) => {
-  console.error(`\n✗ ${err.message}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(`\n✗ ${err.message}`);
+    process.exitCode = 1;
+  });
+}
