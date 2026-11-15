@@ -28,6 +28,21 @@ import { settings } from './settings.js';
 const SHEET = 'inventory';
 const NEEDED = ['inventoryID', 'Type', 'itemDescription', 'Certification', 'CAC', 'PCGS Num', 'Website', 'Status', 'listPrice'];
 
+/**
+ * Some sheets of a workbook (default: the real one) as a SheetJS workbook, read from a throwaway copy — the
+ * original is never opened for writing. Dates stay Excel serial numbers. Used by deal-numbers.js.
+ */
+export function readWorkbookSheets(names, file = settings.workbook) {
+  if (!fs.existsSync(file)) throw new Error(`Workbook not found: ${file}`);
+  const copy = path.join(os.tmpdir(), `cabbage-workbook-${process.pid}-${Date.now()}.xlsx`);
+  fs.copyFileSync(file, copy);   // opens the original for reading only
+  try {
+    return XLSX.read(fs.readFileSync(copy), { type: 'buffer', sheets: names });
+  } finally {
+    fs.rmSync(copy, { force: true });
+  }
+}
+
 /** All rows of the inventory sheet, read from a throwaway copy. */
 export function readInventory(file = settings.workbook, needed = NEEDED) {
   if (!fs.existsSync(file)) throw new Error(`Workbook not found: ${file}`);

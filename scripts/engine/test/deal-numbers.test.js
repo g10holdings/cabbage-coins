@@ -1,0 +1,107 @@
+// Deal numbers (deal-numbers.js): how sales, purchases and money rows are tied to one deal.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { toDay, ymd, normId, baseId, certsIn, samePerson, proposeDeals } from '../deal-numbers.js';
+
+test('dates from Excel serials and Zoho strings land on the same day', () => {
+  assert.equal(toDay(46335), toDay('2026-11-09'));          // Excel serial 46335 = 2026-11-09
+  assert.equal(ymd(toDay('2026-11-09')), '2026-11-09');
+  assert.equal(toDay(null), null);
+});
+
+test('inventory IDs: leading zeros and "#" ignored; a _2 row is the same coin back in stock', () => {
+  assert.equal(normId('#01234567'), normId(1234567));
+  assert.equal(baseId('8314282_2'), '8314282');
+  assert.equal(baseId('4161120-003'), '4161120-003');       // NGC's -003 is part of the cert
+});
+
+test('cert numbers are read from Zoho coin lines; "#85 of 230" is not a cert', () => {
+  assert.deepEqual(certsIn('1924-D 25C Standing Liberty Quarter PCGS MS64 / #12345678'), ['12345678']);
+  assert.deepEqual(certsIn('2024 Flowing Hair Gold w/Privy High Relief #85 of 230 PCGS PR70DCAM / #4161120-003'), ['4161120-003']);
+});
+
+test('same person: middle initials, "&" vs "and", an extra LLC', () => {
+  assert.ok(samePerson('Brian Fowler', 'Brian J. Fowler'));
+  assert.ok(samePerson('Tri-State Gold & Silver', 'Tri-State Gold and Silver LLC'));
+  assert.ok(!samePerson('Andrew Pike', 'David Pike'));
+  assert.ok(!samePerson('Tony Reyes', ''));
+});
+
+test('same person: the ways names are really written in the workbook', () => {
+  assert.ok(samePerson('Harbor Rare Coins', 'Harbor Rare Coin'));                       // plural
+  assert.ok(samePerson('MVRC', 'Mill Valley Rare Coin'));                                     // initials
+  assert.ok(samePerson('Tony Marsh', 'Anthony Marsh'));                                      // nickname
+  assert.ok(samePerson('Lakeside Numismatics (Victor Lane)', 'Victor Lane (Lakeside Numis)'));     // the person in ( )
+  assert.ok(samePerson('Justin Hale (R&T Coin)', 'Justin Hale (R&T Coins)'));
+  assert.ok(samePerson('LibertyBellCoins', 'LibertyBell Coins (Doug Smith)'));             // run together
+  assert.ok(samePerson("Baxter's (Dayton Ohio)", "Baxter's (Dayton, OH)"));
+  assert.ok(!samePerson('K&K Coins (Rick Moss)', 'R&T Coins (Justin)'));                      // different shops
+  assert.ok(!samePerson('Harbor Rare Coins', 'Mill Valley Rare Coin'));                   // "Rare Coin" alone isn't a name
+  assert.ok(!samePerson('Richard Vance', 'Monroe Vance'));
+});
+
+test('a purchase paid in parts over a few days, and an auction house paid weeks later', () => {
+  const d0 = toDay('2026-02-04');
+  const purchases = [
+    { sheet: 'purchases', row: 2, id: 'W1', day: d0, who: 'Dwight Ames', amount: 8250, medium: 'Check' },
+    { sheet: 'purchases', row: 3, id: 'T1', day: toDay('2026-02-24'), who: 'Harbor Rare Coin', amount: 14750, medium: 'Wire' },
+  ];
+  const out = (row, day, who, amount) => ({ sheet: 'outflows', row, day: toDay(day), who, amount, category: 'Inventory', minor: 'Purchase of Inventory' });
+  const outflows = [out(2, '2026-02-04', 'Dwight Ames', 5000), out(3, '2026-02-05', 'Dwight Ames', 1000),
+    out(4, '2026-02-06', 'Dwight Ames', 2250), out(5, '2026-04-10', 'Harbor Rare Coins', 14750)];
+  const deals = proposeDeals({ sales: [], purchases, inflows: [], outflows, zohoDocs: [] });
+  assert.deepEqual(outflows.slice(0, 3).map((r) => r.deal), Array(3).fill(purchases[0].deal));
+  assert.match(outflows[0].how, /paid in 3 parts/);
+  assert.equal(deals.get(purchases[0].deal).off, 0);
+  assert.equal(outflows[3].deal, purchases[1].deal);            // 45 days later, but the exact amount
+});
+
+test('a show day: Zoho invoice by cert, a trade-in joins it, a lump check, a paper-slip sale', () => {
+  const day = toDay('2026-11-07');
+  const sale = (row, id, who, amount, medium = 'Check') => ({ sheet: 'sales', row, id, day, who, amount, collected: amount, medium });
+  const sales = [
+    sale(2, '01234567', 'Greg Holt', 3400, 'Trade & Check'),
+    sale(3, '57000001', 'Greg Holt', 1300, 'Trade & Check'),
+    sale(4, '11111111', 'Walk Up Buyer', 500, 'Cash'),
+  ];
+  const purchases = [
+    { sheet: 'purchases', row: 2, id: '22222222', day: day + 1, who: 'Greg Holt', amount: 1000, medium: 'Trade' },
+    { sheet: 'purchases', row: 3, id: 'ASE_1001', day, who: 'G10 Solutions', amount: 300, transfer: true },
+  ];
+  const inflows = [
+    { sheet: 'inflows', row: 2, id: '01234567', day, who: 'Greg Holt', amount: 3700, category: 'Sale of Inventory' },
+    { sheet: 'inflows', row: 3, id: 'N/A', day, who: 'G10 Solutions LLC', amount: 2000, category: 'Capital Injection' },
+  ];
+  const zohoDocs = [{ kind: 'invoice', number: 'INV-000165', date: '2026-11-07', customer_name: 'Greg Holt', status: 'paid',
+    line_items: [{ description: '1922 G$1 Grant / #01234567', price: 3400 }, { description: '1857-O H10C / #57000001', price: 1300 }] }];
+
+  const deals = proposeDeals({ sales, purchases, inflows, outflows: [], zohoDocs });
+  assert.equal(sales[0].deal, 'INV-000165');
+  assert.match(sales[0].how, /cert/);
+  assert.equal(sales[1].deal, 'INV-000165');
+  assert.equal(purchases[0].deal, 'INV-000165');            // the trade-in, a day later, joins the invoice's deal
+  assert.match(purchases[0].how, /not on the Zoho record/);
+  assert.equal(inflows[0].deal, 'INV-000165');              // the check names one coin but pays the whole deal
+  const inv = deals.get('INV-000165');
+  assert.equal(inv.off, 0);                                 // (4700 − 1000) − (3700 − 0)
+  assert.equal(sales[2].deal, 'D-261107-01');               // paper slip: made-up number
+  assert.equal(purchases[1].deal, undefined);               // transfer from G10 Solutions: no deal
+  assert.equal(inflows[1].deal, undefined);
+  assert.match(inflows[1].how, /not a deal/);
+});
+
+test('money out goes to the deal it pays exactly, among same-person deals', () => {
+  const d1 = toDay('2026-11-01'), d2 = toDay('2026-11-04');
+  const purchases = [
+    { sheet: 'purchases', row: 2, id: 'A1', day: d1, who: 'Paul Ricci', amount: 3700, medium: 'Check' },
+    { sheet: 'purchases', row: 3, id: 'A2', day: d2, who: 'Paul Ricci', amount: 3250, medium: 'Check' },
+  ];
+  const outflows = [
+    { sheet: 'outflows', row: 9, day: d2, who: 'Paul Ricci', amount: 3700, category: 'Inventory', minor: 'Purchase of Inventory' },
+    { sheet: 'outflows', row: 10, day: d2, who: 'Diner', amount: 20, category: 'Bus Expense', minor: 'Meals' },
+  ];
+  proposeDeals({ sales: [], purchases, inflows: [], outflows, zohoDocs: [] });
+  assert.equal(outflows[0].deal, purchases[0].deal);        // nearer in date to the 11-04 deal, but the amount fits 11-01
+  assert.equal(outflows[0].how, 'by name + exact amount');
+  assert.equal(outflows[1].deal, undefined);
+});

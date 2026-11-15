@@ -30,13 +30,27 @@ test('reading a workbook leaves it exactly as it was', () => {
   }
 });
 
+// The one exception: write-deal-copy.ps1 fills a TEST COPY Tony asked for (2026-11-14) and must refuse the real file.
+const COPY_WRITER = 'write-deal-copy.ps1';
+
 test('no script has code that could write a workbook', () => {
   const offenders = [];
   for (const f of fs.readdirSync(ENGINE).filter((n) => /\.(js|mjs|ps1|cs)$/.test(n))) {
     const src = fs.readFileSync(path.join(ENGINE, f), 'utf8');
+    if (f === COPY_WRITER) continue;   // checked on its own below
     if (/XLSX\.(write|writeFile|writeFileXLSX)\b|book_append_sheet|\.SaveAs\(|Excel\.Application/.test(src)) offenders.push(`${f}: writes spreadsheets`);
     // only workbook.js (which reads a temp copy) and settings.js (which names it) may touch the workbook's path
     if (/settings\.workbook|WORKBOOK_PATH/.test(src) && !['workbook.js', 'settings.js'].includes(f)) offenders.push(`${f}: uses the workbook path`);
   }
   assert.deepEqual(offenders, []);
+});
+
+test('the test-copy writer refuses the real workbook and anything not named TEST', () => {
+  const src = fs.readFileSync(path.join(ENGINE, COPY_WRITER), 'utf8');
+  assert.match(src, /settings\.json'\) -Raw \| ConvertFrom-Json\)\.workbook/);   // knows the real path
+  assert.match(src, /if \(\$target -ieq \$real .*throw "Refusing to write the real workbook/);
+  assert.match(src, /-notmatch 'TEST'\) \{ throw/);
+  assert.doesNotMatch(src, /\.SaveAs\(/);                                         // saves only the file it opened
+  // the refusals come before Excel is started
+  assert.ok(src.indexOf('-notmatch \'TEST\'') < src.indexOf('New-Object -ComObject Excel.Application'));
 });

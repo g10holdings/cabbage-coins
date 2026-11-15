@@ -29,3 +29,7 @@ scripts/engine/.thumbnail-history.json
 
 # Tony's original photos (may hold GPS location data): never commit
 photo-originals/
+
+# Zoho: downloaded invoices/quotes/payments (customer names, amounts) and the 1-hour access token (scripts/engine/zoho*.js)
+scripts/engine/.zoho/
+scripts/engine/.zoho-access.json

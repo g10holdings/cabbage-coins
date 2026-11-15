@@ -11,16 +11,12 @@
  * Usage: node connect-ebay.js
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import process from 'node:process';
 import readline from 'node:readline/promises';
 import { exec } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+import { ENV_FILE, saveEnv } from './env-file.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ENV_FILE = path.join(__dirname, '.env');
 dotenv.config({ path: ENV_FILE });
 
 // What the scripts may do on the account: list/revise/end items (inventory), read business policies
@@ -31,26 +27,6 @@ const SCOPES = [
   'https://api.ebay.com/oauth/api_scope/sell.account',
   'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
 ];
-
-/** Set keys in .env, keeping every other line exactly as it was. */
-function saveEnv(values) {
-  const old = fs.existsSync(ENV_FILE) ? fs.readFileSync(ENV_FILE, 'utf8') : '';
-  if (old) fs.writeFileSync(`${ENV_FILE}.bak`, old);
-  const lines = old.split(/\r?\n/);
-  for (const [key, value] of Object.entries(values)) {
-    // Quoted: eBay tokens contain "#", which .env otherwise reads as the start of a comment (cutting the token to 5 chars).
-    const line = `${key}="${String(value).replace(/"/g, '\\"')}"`;
-    const i = lines.findIndex((l) => l.startsWith(`${key}=`));
-    if (i >= 0) lines[i] = line;
-    else lines.splice(lines.at(-1) === '' ? lines.length - 1 : lines.length, 0, line);
-  }
-  fs.writeFileSync(ENV_FILE, lines.join('\n'));
-  // The PCGS token once vanished from .env during an edit: make sure nothing else was lost.
-  const now = fs.readFileSync(ENV_FILE, 'utf8');
-  const missing = old.split(/\r?\n/).map((l) => /^([A-Za-z_][A-Za-z0-9_]*)=/.exec(l)?.[1]).filter(Boolean)
-    .filter((k) => !now.includes(`${k}=`));
-  if (missing.length) throw new Error(`.env lost ${missing.join(', ')} — restore it from .env.bak`);
-}
 
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });

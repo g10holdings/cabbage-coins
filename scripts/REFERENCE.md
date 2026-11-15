@@ -254,6 +254,11 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `photo-order.js` | Slab-shots-first ordering for CAC/eBay |
 | `settings.js`, `ask.js` | Shared settings and the y/N question |
 | `connect-ebay.js` | One-time eBay sign-in (`Extras\Connect-eBay`) |
+| `connect-zoho.js`, `zoho.js` | One-time Zoho Billing sign-in, READ ONLY (`Extras\Connect-Zoho`), and the Zoho reader |
+| `zoho-pull.js` | Downloads Zoho invoices (INV-), quotes (PO-), payments and line items into `engine\.zoho\` (private, never committed) |
+| `env-file.js` | Saves keys into `engine\.env` for the connect scripts |
+| `deal-numbers.js` | Proposes a deal number (INV-, PO-, or made-up D-YYMMDD-NN) for every sales, purchases, inflows and outflows row; reads only, writes `engine\.zoho\deal-proposal.json` |
+| `write-deal-copy.ps1` | Puts that proposal into a TEST COPY of the workbook through Excel (adds `dealID` + `dealMatch` at the end of each table, and a `dealCheck` sheet); refuses the real file |
 | `Rename-Photos.ps1` | The old hand-photo renamer (`Extras`) |
 | `test\` | The rule checks (`Extras\Check-Rules`, or `npm test`) |
 | `docs-page.js` | Builds the shareable Playbook page from README, HOW-TO and REFERENCE |
