@@ -116,9 +116,12 @@ module.exports = function(eleventyConfig) {
   // The homepage hero ROTATION: every coin Tony switched on in Studio ("Homepage hero") plus the
   // n priciest items in stock, ingots included (not the featured one). The page picks a different one on
   // each visit (see the script under the hero in index.njk), so nobody has to pick one by hand.
+  // Studio "Keep out of homepage hero" (heroOff) drops a coin, through its optional heroOffUntil date (inclusive).
   eleventyConfig.addFilter("heroPool", (list, picked, featured, n) => {
     const skip = featured && featured._id;
-    const ok = (l) => l && !l.sold && l._id !== skip && l.imageUrl;
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }); // YYYY-MM-DD
+    const keptOut = (l) => l.heroOff && (!l.heroOffUntil || l.heroOffUntil >= today);
+    const ok = (l) => l && !l.sold && l._id !== skip && l.imageUrl && !keptOut(l);
     const pool = (picked || []).filter(ok);
     const auto = (list || [])
       .filter(ok)

@@ -12,11 +12,14 @@ export default {
         name: 'slug',
         type: 'slug', 
         title: 'Slug',
-        description: 'Some frontends will require a slug to be set to be able to show the person',
+        description: "The coin's web address. Click Generate after filling in the name. Required: a listing without one stops the whole website from building.",
         options: {
           source: 'name',
           maxLength: 96
-        }
+        },
+        // A published listing with no slug fails EVERY site build (2026-11-13), so Studio won't publish one.
+        validation: Rule => Rule.required().custom(slug =>
+          slug && slug.current && slug.current.trim() ? true : 'Click "Generate" to make the web address before publishing.')
       },
       {
         name: 'image',
@@ -66,6 +69,19 @@ export default {
         type: 'boolean',
         title: "Homepage hero",
         description: "Adds this coin to the homepage hero rotation (the big coin at the top changes on every visit). Optional: the 16 priciest items in stock (ingots included) rotate on their own; turn this on to make sure a particular coin is included."
+      },
+      {
+        name: 'heroOff',
+        type: 'boolean',
+        title: "Keep out of homepage hero",
+        description: "Keeps this coin out of the homepage hero rotation, even if it's one of the priciest (the next priciest coin takes its place). Wins over \"Homepage hero\". Takes effect on the next site build."
+      },
+      {
+        name: 'heroOffUntil',
+        type: 'date',
+        title: 'Keep out until',
+        description: "Optional. The coin rejoins the rotation on the first site build after this date. Leave blank to keep it out until you uncheck the box.",
+        hidden: ({document}) => !document?.heroOff
       },
       {
           name: 'sold',

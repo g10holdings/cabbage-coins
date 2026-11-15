@@ -16,6 +16,8 @@ async function getHero () {
     name,
     slug,
     hero,
+    heroOff,
+    heroOffUntil,
     sold,
     cac,
     grade,

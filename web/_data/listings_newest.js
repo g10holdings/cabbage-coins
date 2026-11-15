@@ -26,6 +26,8 @@ async function getListings () {
     date,
     dateshown,
     featured,
+    heroOff,
+    heroOffUntil,
     sold,
     soldDate,
     cac,
