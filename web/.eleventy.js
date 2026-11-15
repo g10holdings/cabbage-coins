@@ -122,12 +122,15 @@ module.exports = function(eleventyConfig) {
     const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }); // YYYY-MM-DD
     const keptOut = (l) => l.heroOff && (!l.heroOffUntil || l.heroOffUntil >= today);
     const ok = (l) => l && !l.sold && l._id !== skip && l.imageUrl && !keptOut(l);
+    // Exactly the n priciest eligible coins, plus the switched-on ones that aren't among them — no topping up.
+    // (It used to fill to n + the number switched on, so a switched-on coin that was featured, or already in the
+    // top n, pulled extra cheaper coins in: the 2002 Lunar at #19, 2026-11-14.)
     const pool = (picked || []).filter(ok);
     const auto = (list || [])
       .filter(ok)
-      .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+      .sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0))
+      .slice(0, n || 16);
     for (const l of auto) {
-      if (pool.length >= (n || 16) + (picked || []).length) break;
       if (!pool.some((p) => p._id === l._id)) pool.push(l);
     }
     return pool;
