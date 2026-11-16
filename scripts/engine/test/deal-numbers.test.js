@@ -1,7 +1,7 @@
 // Deal numbers (deal-numbers.js): how sales, purchases and money rows are tied to one deal.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { toDay, ymd, normId, baseId, certsIn, samePerson, proposeDeals } from '../deal-numbers.js';
+import { toDay, ymd, normId, baseId, certsIn, samePerson, setSamePeople, setDealLinks, proposeDeals } from '../deal-numbers.js';
 
 test('dates from Excel serials and Zoho strings land on the same day', () => {
   assert.equal(toDay(46335), toDay('2026-11-09'));          // Excel serial 46335 = 2026-11-09
@@ -18,6 +18,15 @@ test('inventory IDs: leading zeros and "#" ignored; a _2 row is the same coin ba
 test('cert numbers are read from Zoho coin lines; "#85 of 230" is not a cert', () => {
   assert.deepEqual(certsIn('1924-D 25C Standing Liberty Quarter PCGS MS64 / #12345678'), ['12345678']);
   assert.deepEqual(certsIn('2024 Flowing Hair Gold w/Privy High Relief #85 of 230 PCGS PR70DCAM / #4161120-003'), ['4161120-003']);
+});
+
+test("same person: Tony's same-people list (two first names, one person)", () => {
+  setSamePeople([['Richard Vance', 'Monroe Vance']]);
+  try {
+    assert.ok(samePerson('Richard Vance', 'Monroe Vance'));
+    assert.ok(samePerson('Rick Vance', 'Monroe Vance'));                                       // nickname still works
+    assert.ok(!samePerson('Richard Vance', 'Andrew Vance'));
+  } finally { setSamePeople([]); }
 });
 
 test('same person: middle initials, "&" vs "and", an extra LLC', () => {
@@ -104,4 +113,85 @@ test('money out goes to the deal it pays exactly, among same-person deals', () =
   assert.equal(outflows[0].deal, purchases[0].deal);        // nearer in date to the 11-04 deal, but the amount fits 11-01
   assert.equal(outflows[0].how, 'by name + exact amount');
   assert.equal(outflows[1].deal, undefined);
+});
+
+test('grading and services invoices: no coins expected, paid when the money-in row matches', () => {
+  const inflow = (row, date, who, amount, category) => ({ sheet: 'inflows', row, id: null, day: toDay(date), who, amount, category });
+  const inflows = [
+    inflow(2, '2026-09-20', 'Kyle Brandt', 180, 'Reimbursement'),
+    inflow(3, '2026-01-24', 'Nora Ellis', 925, 'Services Rendered'),
+    inflow(4, '2025-08-20', 'Old Friend', 100, 'Reimbursement'),            // before Zoho: stays "not a deal"
+  ];
+  const zohoDocs = [
+    { kind: 'invoice', number: 'INV-000903', date: '2026-09-13', customer_name: 'Kyle Brandt', total: 180,
+      line_items: [{ name: 'PCGS Grading Fees (Order# 123)' }, { name: 'Cabbage Coins Handling Fee (10%)' }] },
+    { kind: 'invoice', number: 'INV-000904', date: '2026-01-23', customer_name: 'Nora Ellis', total: 925,
+      line_items: [{ name: '(1) Year User Access to an exchange' }] },
+    { kind: 'invoice', number: 'INV-000905', date: '2026-10-01', customer_name: 'Kyle Brandt', total: 600,
+      line_items: [{ name: 'CAC Grading Submission #201' }] },                // not paid in the workbook
+  ];
+  const deals = proposeDeals({ sales: [], purchases: [], inflows, outflows: [], zohoDocs });
+  assert.equal(deals.get('INV-000903').type, 'Grading');
+  assert.equal(deals.get('INV-000904').type, 'Services');
+  assert.equal(inflows[0].deal, 'INV-000903');
+  assert.equal(inflows[1].deal, 'INV-000904');
+  assert.equal(deals.get('INV-000903').off, 0);
+  assert.equal(deals.get('INV-000905').off, 600);                          // invoiced, no money in yet
+  assert.equal(inflows[2].deal, undefined);
+  assert.match(inflows[2].how, /not a deal/);
+});
+
+test('money back from a seller Tony overpaid joins that purchase', () => {
+  const day = toDay('2026-08-20');
+  const purchases = [{ sheet: 'purchases', row: 2, id: '33333333', day, who: 'Ned Price', amount: 1000, medium: 'Zelle' }];
+  const outflows = [{ sheet: 'outflows', row: 2, day, who: 'Ned Price', amount: 1150, category: 'Inventory' }];
+  const inflows = [{ sheet: 'inflows', row: 2, id: null, day: day + 6, who: 'Ned Price', amount: 150, category: 'Sale of Inventory' }];
+  const deals = proposeDeals({ sales: [], purchases, inflows, outflows, zohoDocs: [] });
+  assert.equal(inflows[0].deal, purchases[0].deal);
+  assert.match(inflows[0].how, /refund/);
+  assert.equal(deals.get(purchases[0].deal).off, 0);
+});
+
+test('a trade with an invoice AND a PO is one deal; a PO minus-line coin is looked up in sales', () => {
+  const day = toDay('2026-01-23');
+  const sales = [
+    { sheet: 'sales', row: 2, id: '4400101-001', day: day + 1, who: 'Lou Carver', amount: 4790, collected: 4790, medium: 'Trade' },
+    { sheet: 'sales', row: 3, id: '4400102-002', day: day + 1, who: 'Lou Carver', amount: 6500, collected: 6500, medium: 'Trade' },
+  ];
+  const purchases = [
+    // Tony bought this coin from someone else two weeks earlier: the PO's minus line must NOT land here
+    { sheet: 'purchases', row: 2, id: '4400102-002', day: day - 15, who: 'Ann Reed', amount: 5100, medium: 'Check' },
+    { sheet: 'purchases', row: 3, id: 'LIB_1001', day: day + 3, who: 'Lou Carver', amount: 11290, medium: 'Trade' },
+  ];
+  const zohoDocs = [
+    { kind: 'estimate', number: 'PO-000901', date: '2026-01-23', customer_name: 'Lou Carver', reference_number: 'Trade and Check',
+      line_items: [{ name: 'Silver Libertad Collection', price: 11290 }, { name: '1907 $20 #4400101-001', price: -4790 },
+        { name: '1877-CC $20 #4400102-002', price: -6500 }] },
+    { kind: 'invoice', number: 'INV-000901', date: '2026-01-24', customer_name: 'Lou Carver', reference_number: 'Trade',
+      line_items: [{ name: '1907 $20 #4400101-001', price: 4790 }, { name: '1877-CC $20 #4400102-002', price: 6500 }] },
+  ];
+  const deals = proposeDeals({ sales, purchases, inflows: [], outflows: [], zohoDocs });
+  assert.equal(deals.has('PO-000901'), false);
+  assert.deepEqual(deals.get('INV-000901').linked, ['PO-000901']);
+  assert.deepEqual([...sales, purchases[1]].map((r) => r.deal), ['INV-000901', 'INV-000901', 'INV-000901']);
+  assert.notEqual(purchases[0].deal, 'INV-000901');
+  assert.equal(deals.get('INV-000901').off, 0);
+});
+
+test("Tony's links list joins an invoice and a PO a week apart", () => {
+  const sales = [{ sheet: 'sales', row: 2, id: '90000011', day: toDay('2026-08-15'), who: 'Hal Moss', amount: 13000, collected: 13000, medium: 'Trade' }];
+  const purchases = [{ sheet: 'purchases', row: 2, id: '4400103-003', day: toDay('2026-08-22'), who: 'Hal Moss', amount: 13450, medium: 'Cash & Trade' }];
+  const outflows = [{ sheet: 'outflows', row: 2, day: toDay('2026-08-24'), who: 'Hal Moss', amount: 450, category: 'Inventory' }];
+  const zohoDocs = [
+    { kind: 'invoice', number: 'INV-000902', date: '2026-08-15', customer_name: 'Hal Moss', reference_number: 'Trade Credit', line_items: [{ name: 'coin #90000011', price: 13000 }] },
+    { kind: 'estimate', number: 'PO-000902', date: '2026-08-22', customer_name: 'Hal Moss', reference_number: 'Trade & Zelle', line_items: [{ name: 'coin #4400103-003', price: 13450 }] },
+  ];
+  setDealLinks([['INV-000902', 'PO-000902']]);
+  try {
+    const deals = proposeDeals({ sales, purchases, inflows: [], outflows, zohoDocs });
+    assert.equal(deals.has('PO-000902'), false);
+    assert.equal(purchases[0].deal, 'INV-000902');
+    assert.equal(outflows[0].deal, 'INV-000902');
+    assert.equal(deals.get('INV-000902').off, 0);
+  } finally { setDealLinks([]); }
 });

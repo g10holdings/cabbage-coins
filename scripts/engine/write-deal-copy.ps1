@@ -7,7 +7,9 @@
 #   dealID     INV-…, PO-…, or a made-up D-YYMMDD-NN
 #   dealMatch  how the row was matched (cert #, name + amount, made up…) — for review; can be deleted afterwards
 # and a dealCheck sheet: one row per deal, live SUMIFS of each table by dealID, and whether the deal balances:
-#   (sales collected - purchases) - (money in - money out) = 0
+#   (sales collected + other invoiced - purchases) - (money in - money out) = 0
+# dealType: Coin, or Grading / Services for Zoho invoices that are not coin sales (otherInvoiced = the invoice total;
+# the deal balances when the customer has paid it).
 # Before writing, every row is checked against the proposal (inventoryID, or person|amount); any mismatch stops it
 # with nothing saved.
 #
@@ -15,8 +17,10 @@
 
 param(
   [Parameter(Mandatory = $true)][string]$Workbook,
-  [string]$Proposal = (Join-Path $PSScriptRoot '.zoho\deal-proposal.json')
+  [string]$Proposal
 )
+# (Windows PowerShell 5.1 has no $PSScriptRoot yet while reading param defaults, so the default is set here.)
+if (-not $Proposal) { $Proposal = Join-Path $PSScriptRoot '.zoho\deal-proposal.json' }
 $ErrorActionPreference = 'Stop'
 # The ONE script allowed to write a spreadsheet (test\workbook-readonly.test.js checks these two refusals exist):
 # never the real workbook (its path from settings.json, compared in full), and only a file named as a TEST copy.
@@ -84,11 +88,20 @@ try {
       $dealArr[$i, 0] = [string]$r.deal
       $howArr[$i, 0] = [string]$r.how
     }
+    # A filtered table takes values only into its VISIBLE rows (learned 2026-11-15: purchases was filtered to 2 rows
+    # and got no deal numbers). Show every row in the copy first.
+    if ($lo.AutoFilter -and $lo.AutoFilter.FilterMode) { $lo.AutoFilter.ShowAllData(); Write-Output "${sheet}: filter cleared in the copy" }
     $dc = Ensure-Column $lo 'dealID'
     $hc = Ensure-Column $lo 'dealMatch'
     $dc.DataBodyRange.NumberFormat = '@'
     $dc.DataBodyRange.Value2 = $dealArr
     $hc.DataBodyRange.Value2 = $howArr
+    # Read it all back: every proposed deal number must be in its row.
+    $back = $dc.DataBodyRange.Value2
+    foreach ($r in $rows) {
+      $i = $r.row - $first + 1
+      if ([string]$back[$i, 1] -ne [string]$r.deal) { throw "${sheet} row $($r.row): wrote '$($r.deal)' but the cell holds '$($back[$i, 1])'. Nothing saved." }
+    }
     Write-Output ("{0}: {1} rows, {2} with a deal" -f $sheet, $n, @($rows | Where-Object { $_.deal }).Count)
   }
 
@@ -99,38 +112,40 @@ try {
   $ws = $wb.Worksheets.Add([Type]::Missing, $wb.Worksheets.Item($wb.Worksheets.Count))
   $ws.Name = 'dealCheck'
   $deals = @($p.deals | Sort-Object date, id)
-  $heads = 'dealID', 'source', 'person', 'date', 'salesCollected', 'purchases', 'moneyIn', 'moneyOut', 'off', 'status', 'zohoLinesNotInWorkbook', 'personOff'
+  $heads = 'dealID', 'dealType', 'source', 'person', 'date', 'salesCollected', 'otherInvoiced', 'purchases', 'moneyIn', 'moneyOut', 'off', 'status', 'zohoLinesNotInWorkbook', 'personOff'
   $data = New-Object 'object[,]' ($deals.Count + 1), $heads.Count
   for ($c = 0; $c -lt $heads.Count; $c++) { $data[0, $c] = $heads[$c] }
   for ($i = 0; $i -lt $deals.Count; $i++) {
     $d = $deals[$i]
     $r = $i + 1   # (not inline: in $data[$i + 1, 0] PowerShell reads "1, 0" as a list first)
     $data[$r, 0] = [string]$d.id
-    $data[$r, 1] = [string]$d.source
-    $data[$r, 2] = [string]$d.who
-    $data[$r, 3] = [string]$d.date
-    $data[$r, 10] = (@($d.unmatchedLines) -join ' ; ')
+    $data[$r, 1] = [string]$d.type
+    $data[$r, 2] = if ($d.linked) { "$($d.source) + $($d.linked)" } else { [string]$d.source }   # a trade's second Zoho record
+    $data[$r, 3] = [string]$d.who
+    $data[$r, 4] = [string]$d.date
+    $data[$r, 6] = [double]$d.invoiced   # Zoho total of a Grading/Services invoice (0 for coin deals)
+    $data[$r, 12] = (@($d.unmatchedLines) -join ' ; ')
   }
   $last = $deals.Count + 1
   $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item($last, $heads.Count)).Value2 = $data
   $ws.Range("A2:A$last").NumberFormat = '@'
-  $ws.Range("D2:D$last").Value2 = $ws.Range("D2:D$last").Value2   # date text -> real dates
-  $ws.Range("D2:D$last").NumberFormat = 'yyyy-mm-dd'
-  $t = $ws.ListObjects.Add(1, $ws.Range("A1:L$last"), $null, 1)
+  $ws.Range("E2:E$last").Value2 = $ws.Range("E2:E$last").Value2   # date text -> real dates
+  $ws.Range("E2:E$last").NumberFormat = 'yyyy-mm-dd'
+  $t = $ws.ListObjects.Add(1, $ws.Range("A1:N$last"), $null, 1)
   $t.Name = 'dealCheck'
   $t.ListColumns.Item('salesCollected').DataBodyRange.Formula = '=SUMIFS(sales[totalCollected],sales[dealID],[@dealID])'
   $t.ListColumns.Item('purchases').DataBodyRange.Formula = '=SUMIFS(purchases[purchaseAmount],purchases[dealID],[@dealID])'
   $t.ListColumns.Item('moneyIn').DataBodyRange.Formula = '=SUMIFS(inflows[inflowAmount],inflows[dealID],[@dealID])'
   $t.ListColumns.Item('moneyOut').DataBodyRange.Formula = '=SUMIFS(outflows[outflowAmount],outflows[dealID],[@dealID])'
-  $t.ListColumns.Item('off').DataBodyRange.Formula = '=ROUND(([@salesCollected]-[@purchases])-([@moneyIn]-[@moneyOut]),2)'
+  $t.ListColumns.Item('off').DataBodyRange.Formula = '=ROUND(([@salesCollected]+[@otherInvoiced]-[@purchases])-([@moneyIn]-[@moneyOut]),2)'
   # Dealers with a running account: one invoice's payment often lands on another, so "off" amounts cancel out
   # across their deals. personOff = all of that person's deals together; 0 means they're settled overall.
   $t.ListColumns.Item('personOff').DataBodyRange.Formula = '=ROUND(SUMIFS([off],[person],[@person]),2)'
   $t.ListColumns.Item('status').DataBodyRange.Formula = '=IF(ABS([@off])<0.5,"balanced",IF(ABS([@personOff])<0.5,"balanced with person''s other deals","CHECK"))'
-  $ws.Range("E2:I$last").NumberFormat = '#,##0.00;[Red]-#,##0.00'
-  $ws.Range("L2:L$last").NumberFormat = '#,##0.00;[Red]-#,##0.00'
-  $ws.Columns.Item('A:J').AutoFit() | Out-Null
-  $ws.Columns.Item('K').ColumnWidth = 60
+  $ws.Range("F2:K$last").NumberFormat = '#,##0.00;[Red]-#,##0.00'
+  $ws.Range("N2:N$last").NumberFormat = '#,##0.00;[Red]-#,##0.00'
+  $ws.Columns.Item('A:L').AutoFit() | Out-Null
+  $ws.Columns.Item('M').ColumnWidth = 60
   $xl.Calculate()
   $st = $t.ListColumns.Item('status').DataBodyRange
   $bal = $xl.WorksheetFunction.CountIf($st, 'balanced')

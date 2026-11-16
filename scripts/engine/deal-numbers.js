@@ -84,12 +84,31 @@ function sameAlias(x, y) {
   return s.length === 1 && s[0].length >= 3 && l.length === s[0].length && l.map((w) => w[0]).join('') === s[0];
 }
 
-/** Same person or business, however it was typed (see aliases / sameAlias). */
+// Names Tony says are one person though they look different ("Richard X" = "Monroe X"). Kept in the gitignored
+// .zoho/same-people.json as [["name", "other name", …], …] — never in code (the repo is public).
+let SAME_GROUP = new Map();
+// Zoho records Tony says are one deal; the first number is kept (set from .zoho/deal-links.json).
+let DEAL_LINKS = [];
+export function setDealLinks(groups) { DEAL_LINKS = groups; }
+export function setSamePeople(groups) {
+  SAME_GROUP = new Map();
+  groups.forEach((g, i) => g.forEach((n) => aliases(n).forEach((a) => SAME_GROUP.set(a.join(' '), i))));
+}
+const groupOf = (name) => aliases(name).map((a) => SAME_GROUP.get(a.join(' '))).find((g) => g != null);
+
+/** Same person or business, however it was typed (see aliases / sameAlias, plus Tony's same-people list). */
 export function samePerson(a, b) {
   const xs = aliases(a), ys = aliases(b);
-  return xs.some((x) => ys.some((y) => sameAlias(x, y)));
+  if (xs.some((x) => ys.some((y) => sameAlias(x, y)))) return true;
+  const ga = groupOf(a);
+  return ga != null && ga === groupOf(b);
 }
 
+// Zoho invoice lines that aren't coins. An invoice is Grading/Services only when EVERY line matches.
+const GRADING = /grading|submission|\bCAC S-|\bPCGS\b.*\bfee|\bNGC\b.*\bfee/i;
+const NON_COIN = /grading|submission|\bCAC S-|consult|handling fee|user access|subscription|\bfees?\b/i;
+
+const sumOf = (rows, f) => rows.reduce((a, r) => a + (Number(r[f]) || 0), 0);
 const near = (a, b, days) => a != null && b != null && Math.abs(a - b) <= days;
 const money = (v) => Number(v) || 0;
 const sameMoney = (a, b) => Math.abs(money(a) - money(b)) < 0.5;
@@ -102,7 +121,7 @@ const isTrade = (medium) => /trade/i.test(medium ?? '');
 export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) {
   const deals = new Map();
   const newDeal = (id, source, who, day) => {
-    const d = { id, source, who, day, sales: [], purchases: [], inflows: [], outflows: [], unmatchedLines: [] };
+    const d = { id, type: 'Coin', source, who, day, sales: [], purchases: [], inflows: [], outflows: [], unmatchedLines: [] };
     deals.set(id, d);
     return d;
   };
@@ -116,22 +135,62 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     const pool = doc.kind === 'invoice' ? sales : purchases;
     const d = newDeal(doc.number, 'Zoho', doc.customer_name, toDay(doc.date));
     for (const li of doc.line_items) {
+      // A negative line is the other side of a trade: on a PO, a coin Tony gave (a sale); on an invoice, a coin he took
+      // in (a purchase). Looking in the wrong sheet once tied a coin to whoever had sold it to Tony weeks earlier.
+      const price = Number(li.price ?? li.rate ?? li.item_total) || 0;
+      const lpool = price >= 0 ? pool : (doc.kind === 'invoice' ? purchases : sales);
       let hit = null;
       for (const cert of certsIn(`${li.description ?? ''} ${li.name ?? ''}`)) {
-        const c = pool.filter((r) => !r.deal && baseId(r.id) === baseId(cert) && near(r.day, d.day, 60));
+        const c = lpool.filter((r) => !r.deal && baseId(r.id) === baseId(cert) && near(r.day, d.day, 60));
         hit = c.sort((a, b) => Math.abs(a.day - d.day) - Math.abs(b.day - d.day))[0];
         if (hit) { assign(hit, d, `Zoho ${doc.number}: cert #`); break; }
       }
       if (hit) continue;
-      hit = pool.filter((r) => !r.deal && samePerson(r.who, doc.customer_name) && near(r.day, d.day, 21)
-        && sameMoney(r.amount, li.price ?? li.item_total)).sort((a, b) => Math.abs(a.day - d.day) - Math.abs(b.day - d.day))[0];
+      hit = lpool.filter((r) => !r.deal && samePerson(r.who, doc.customer_name) && near(r.day, d.day, 21)
+        && sameMoney(r.amount, Math.abs(price))).sort((a, b) => Math.abs(a.day - d.day) - Math.abs(b.day - d.day))[0];
       if (hit) assign(hit, d, `Zoho ${doc.number}: name + amount`);
       else d.unmatchedLines.push(`${li.name ?? ''} ${li.description ?? ''}`.trim());
     }
   }
 
+  // 1b. Invoices that aren't coin sales: grading reimbursements (CAC/PCGS fees) and services (consulting, access,
+  //     handling fees). No coins expected; the check is whether the invoice was paid. Coin deals have type Coin.
+  for (const doc of zohoDocs) {
+    const d = deals.get(doc.number);
+    if (!d || doc.kind !== 'invoice' || d.sales.length || !doc.line_items.length) continue;
+    const lines = doc.line_items.map((li) => `${li.name ?? ''} ${li.description ?? ''}`);
+    if (!lines.every((t) => NON_COIN.test(t))) continue;
+    d.type = lines.some((t) => GRADING.test(t)) ? 'Grading' : 'Services';
+    d.invoiced = money(doc.total);
+    d.unmatchedLines = [];
+  }
+  const nonCoin = [...deals.values()].filter((d) => d.type !== 'Coin');
+
+  // 1c. A trade sometimes got TWO Zoho records: an invoice for the coins Tony sold and a PO for the coins he took in,
+  //     same person, within 3 days, the invoice paid by Trade (an invoice paid by wire
+  //     next to a trade PO is a separate deal). That's one deal: it keeps the invoice number.
+  const docOf = new Map(zohoDocs.map((z) => [z.number, z]));
+  //     Tony's links list (.zoho/deal-links.json, [["INV-000123", "PO-000045"], …]) joins records the rule can't see
+  //     (coins handed over a week after the sale).
+  const linkedTo = new Map();
+  for (const g of DEAL_LINKS) for (const n of g.slice(1)) linkedTo.set(n, g[0]);
+  for (const po of [...deals.values()].filter((d) => d.source === 'Zoho' && (linkedTo.has(d.id) || docOf.get(d.id)?.kind !== 'invoice'))) {
+    const inv = linkedTo.has(po.id) ? deals.get(linkedTo.get(po.id))
+      : [...deals.values()].filter((d) => d.source === 'Zoho' && d.type === 'Coin' && docOf.get(d.id)?.kind === 'invoice'
+        && samePerson(d.who, po.who) && near(d.day, po.day, 3)
+        && isTrade(docOf.get(d.id).reference_number))   // the INVOICE says it was paid (partly) by trade
+        .sort((a, b) => Math.abs(a.day - po.day) - Math.abs(b.day - po.day))[0];
+    if (!inv || inv === po) continue;
+    for (const s of ['sales', 'purchases', 'inflows', 'outflows']) {
+      for (const r of po[s]) { r.deal = inv.id; r.how = `${r.how} (trade: ${po.id} is part of ${inv.id})`; inv[s].push(r); }
+    }
+    inv.unmatchedLines.push(...po.unmatchedLines.map((l) => `${po.id}: ${l}`));
+    inv.linked = [...(inv.linked ?? []), po.id];
+    deals.delete(po.id);
+  }
+
   // 2. Same person, same day (trades: 3 days) as a Zoho deal → that deal.
-  const zohoDeals = [...deals.values()];
+  const zohoDeals = [...deals.values()].filter((d) => d.type === 'Coin');
   for (const r of [...sales, ...purchases].filter((x) => !x.deal && !x.transfer)) {
     const win = isTrade(r.medium) ? 3 : 0;
     const d = zohoDeals.filter((z) => people(z).some((p) => samePerson(p, r.who)) && days(z).some((x) => near(x, r.day, win)))
@@ -162,6 +221,14 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   const saleById = new Map(sales.map((r) => [normId(r.id), r]));
   const withSales = [...deals.values()].filter((d) => d.sales.length);
   for (const r of inflows) {
+    if (/reimbursement|services rendered/i.test(r.category ?? '')) {
+      // Paying a grading/services invoice: same person, exact amount, within 45 days after it (or a few days before).
+      const d = nonCoin.filter((x) => !x.inflows.length && samePerson(x.who, r.who) && sameMoney(x.invoiced, r.amount)
+        && r.day != null && r.day >= x.day - 3 && r.day <= x.day + 45).sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
+      if (d) { assign(r, d, `pays ${d.id} (${d.type}): name + amount`); continue; }
+      r.how = `not a deal (${r.category}; no Zoho invoice)`;
+      continue;
+    }
     if (!/sale of inventory/i.test(r.category ?? '')) { r.how = `not a deal (${r.category ?? 'no category'})`; continue; }
     const coin = saleById.get(normId(r.id)) ?? sales.find((s) => baseId(s.id) === baseId(r.id) && near(s.day, r.day, 60));
     if (coin?.deal) { assign(r, deals.get(coin.deal), `via coin #${coin.id}`); continue; }
@@ -195,6 +262,15 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     else r.how = 'NO MATCH: no purchase from this person within 14 days';
   }
 
+  // 6. Money in that paid for no sale may be a refund on a purchase (Tony overpaid; the seller sent the difference
+  //    back): the same person's purchase deal within 60 days that is over-paid by exactly that amount.
+  const offNow = (d) => (sumOf(d.sales, 'collected') - sumOf(d.purchases, 'amount')) - (sumOf(d.inflows, 'amount') - sumOf(d.outflows, 'amount'));
+  for (const r of inflows.filter((x) => !x.deal && /^NO MATCH/.test(x.how ?? ''))) {
+    const d = withPurchases.filter((x) => people(x).some((p) => samePerson(p, r.who)) && days(x).some((y) => near(y, r.day, 60))
+      && sameMoney(offNow(x), r.amount)).sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
+    if (d) assign(r, d, 'refund of an overpayment on this purchase (name + exact amount)');
+  }
+
   // Balances: (sales collected − purchases) − (money in − money out).
   for (const d of deals.values()) {
     const sum = (rows, f) => rows.reduce((a, r) => a + money(r[f]), 0);
@@ -202,7 +278,8 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     d.purchaseTotal = sum(d.purchases, 'amount');
     d.inTotal = sum(d.inflows, 'amount');
     d.outTotal = sum(d.outflows, 'amount');
-    d.off = Math.round(((d.salesTotal - d.purchaseTotal) - (d.inTotal - d.outTotal)) * 100) / 100;
+    d.invoiced ??= 0;                                         // grading/services invoices only
+    d.off = Math.round(((d.salesTotal + d.invoiced - d.purchaseTotal) - (d.inTotal - d.outTotal)) * 100) / 100;
   }
   return deals;
 }
@@ -234,6 +311,10 @@ function main() {
   const args = process.argv.slice(2);
   const i = args.indexOf('--workbook');
   const file = i >= 0 ? args[i + 1] : undefined;   // undefined = the real workbook (read-only)
+  const samePath = path.join(ZOHO_DIR, 'same-people.json');
+  if (fs.existsSync(samePath)) setSamePeople(JSON.parse(fs.readFileSync(samePath, 'utf8')));
+  const linksPath = path.join(ZOHO_DIR, 'deal-links.json');
+  if (fs.existsSync(linksPath)) setDealLinks(JSON.parse(fs.readFileSync(linksPath, 'utf8')));
   const sheets = readSheets(file);
   const details = JSON.parse(fs.readFileSync(path.join(ZOHO_DIR, 'details.json'), 'utf8'));
   const status = new Map([...JSON.parse(fs.readFileSync(path.join(ZOHO_DIR, 'invoices.json'), 'utf8')),
@@ -245,7 +326,7 @@ function main() {
     made: new Date().toISOString(), workbook: file,
     rows: Object.fromEntries(['sales', 'purchases', 'inflows', 'outflows'].map((s) => [s,
       sheets[s].map((r) => ({ row: r.row, key: r.key, deal: r.deal ?? '', how: r.how ?? '' }))])),
-    deals: [...deals.values()].map((d) => ({ id: d.id, source: d.source, who: d.who, date: d.day != null ? ymd(d.day) : '',
+    deals: [...deals.values()].map((d) => ({ id: d.id, linked: (d.linked ?? []).join(" "), type: d.type, invoiced: d.invoiced, source: d.source, who: d.who, date: d.day != null ? ymd(d.day) : '',
       sales: d.sales.length, purchases: d.purchases.length, inflows: d.inflows.length, outflows: d.outflows.length,
       salesTotal: d.salesTotal, purchaseTotal: d.purchaseTotal, inTotal: d.inTotal, outTotal: d.outTotal, off: d.off,
       unmatchedLines: d.unmatchedLines })),
@@ -267,7 +348,8 @@ function main() {
   console.log(`  balanced: ${all.filter((d) => d.off === 0).length}; off: ${all.filter((d) => d.off !== 0).length}`);
   console.log(`  Zoho records with coin lines not found in the workbook: ${z.filter((d) => d.unmatchedLines.length).length}`
     + ` (${z.reduce((a, d) => a + d.unmatchedLines.length, 0)} lines)`);
-  console.log(`  Zoho records with no workbook rows at all: ${z.filter((d) => !d.sales.length && !d.purchases.length).length}`);
+  console.log(`  Zoho records with no workbook rows at all: ${z.filter((d) => d.type === 'Coin' && !d.sales.length && !d.purchases.length).length}`);
+  for (const t of ['Grading', 'Services']) console.log(`  ${t} invoices: ${all.filter((d) => d.type === t).map((d) => `${d.id} ${d.off === 0 ? 'paid' : 'off ' + d.off}`).join(', ') || 'none'}`);
   console.log(`\nSaved ${path.join(ZOHO_DIR, 'deal-proposal.json')}`);
 }
 
