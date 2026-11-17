@@ -276,7 +276,8 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   }
 
   // 4. Money in: the coin it names → that coin's deal; otherwise person + date.
-  const saleById = new Map(sales.map((r) => [normId(r.id), r]));
+  const saleById = new Map();                                // id → every sale with it (house numbers get reused)
+  for (const s of sales) saleById.set(normId(s.id), [...(saleById.get(normId(s.id)) ?? []), s]);
   const withSales = [...deals.values()].filter((d) => d.sales.length);
   for (const r of inflows) {
     if (r.deal) continue;                                    // an eBay payout, placed in 1d
@@ -289,8 +290,17 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
       continue;
     }
     if (!/sale of inventory/i.test(r.category ?? '')) { r.how = `not a deal (${r.category ?? 'no category'})`; continue; }
-    const coin = saleById.get(normId(r.id)) ?? sales.find((s) => baseId(s.id) === baseId(r.id) && near(s.day, r.day, 60));
-    if (coin?.deal) { assign(r, deals.get(coin.deal), `via coin #${coin.id}`); continue; }
+    // The inventoryID field may hold a deal number (Tony's practice from 2026-11-17 on), or one or more coin IDs ("107,
+    // 108"). A coin ID only counts when that coin was sold within 120 days of the payment: small house numbers (109,
+    // 110…) get reused, and a payment once jumped six months to a later coin with the same number.
+    const ref = String(r.id ?? '').trim().toUpperCase();
+    if (deals.has(ref)) { assign(r, deals.get(ref), 'deal # written on the row'); continue; }
+    const coin = [ref, ...(/[,;&]/.test(ref) ? ref.split(/\s*[,;&]\s*/) : [])].filter(Boolean).map((id) => {
+      const exact = (saleById.get(normId(id)) ?? []).filter((s) => near(s.day, r.day, 120))
+        .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
+      return exact ?? sales.find((s) => baseId(s.id) === baseId(id) && near(s.day, r.day, 60));
+    }).find((c) => c?.deal);
+    if (coin) { assign(r, deals.get(coin.deal), `via coin #${coin.id}`); continue; }
     const d = withSales.filter((x) => people(x).some((p) => samePerson(p, r.who)) && days(x).some((y) => near(y, r.day, 14)))
       .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
     if (d) assign(r, d, 'by name + date (check)');

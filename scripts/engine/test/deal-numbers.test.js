@@ -248,3 +248,18 @@ test('a trade split across two spellings of one person is one deal; a coin given
     assert.match(sales[1].how, /capital distribution/);
   } finally { setSamePeople([]); }
 });
+
+test('money in: a reused house number only counts near its own sale; a deal # on the row is used as is', () => {
+  const sale = (row, date, id, who, amount) => ({ sheet: 'sales', row, id, day: toDay(date), who, amount, collected: amount, medium: 'Cash' });
+  const sales = [sale(2, '2025-04-26', 'AGB_1001', 'Ivo Grant', 6800), sale(3, '2025-10-10', 109, 'Jon Kemp', 425)];
+  const pay = (row, date, who, amount, id) => ({ sheet: 'inflows', row, id, day: toDay(date), who, amount, category: 'Sale of Inventory' });
+  const inflows = [pay(2, '2025-04-26', 'Ivo Grant', 6800, 109),          // wrong number, typed months before coin 109 sold
+    pay(3, '2025-10-10', 'Jon Kemp', 425, 109)];
+  const deals = proposeDeals({ sales, purchases: [], inflows, outflows: [], zohoDocs: [] });
+  assert.equal(inflows[0].deal, sales[0].deal);
+  assert.equal(inflows[1].deal, sales[1].deal);
+  assert.equal(deals.get(sales[0].deal).off, 0);
+  const inflows2 = [pay(4, '2025-05-02', 'Someone Else', 6800, sales[0].deal)];
+  proposeDeals({ sales: sales.map((s) => ({ ...s, deal: undefined })), purchases: [], inflows: inflows2, outflows: [], zohoDocs: [] });
+  assert.match(inflows2[0].how, /deal # written/);
+});
