@@ -136,7 +136,8 @@ try {
   $t.ListColumns.Item('salesCollected').DataBodyRange.Formula = '=SUMIFS(sales[totalCollected],sales[dealID],[@dealID])'
   $t.ListColumns.Item('purchases').DataBodyRange.Formula = '=SUMIFS(purchases[purchaseAmount],purchases[dealID],[@dealID])'
   $t.ListColumns.Item('moneyIn').DataBodyRange.Formula = '=SUMIFS(inflows[inflowAmount],inflows[dealID],[@dealID])'
-  $t.ListColumns.Item('moneyOut').DataBodyRange.Formula = '=SUMIFS(outflows[outflowAmount],outflows[dealID],[@dealID])'
+  # Money out also counts purchases paid with foreign cash on hand (transMedium "FX Cash": the FX tab, not outflows).
+  $t.ListColumns.Item('moneyOut').DataBodyRange.Formula = '=SUMIFS(outflows[outflowAmount],outflows[dealID],[@dealID])+SUMIFS(purchases[purchaseAmount],purchases[dealID],[@dealID],purchases[transMedium],"FX*")'
   $t.ListColumns.Item('off').DataBodyRange.Formula = '=ROUND(([@salesCollected]+[@otherInvoiced]-[@purchases])-([@moneyIn]-[@moneyOut]),2)'
   # Dealers with a running account: one invoice's payment often lands on another, so "off" amounts cancel out
   # across their deals. personOff = all of that person's deals together; 0 means they're settled overall.

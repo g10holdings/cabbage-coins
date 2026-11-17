@@ -119,6 +119,8 @@ const sameMoney = (a, b) => Math.abs(money(a) - money(b)) < 0.5;
 const isTrade = (medium) => /trade/i.test(medium ?? '');
 const isEbay = (s) => /\bebay\b/i.test(s ?? '');
 const cents = (v) => Math.round(money(v) * 100);
+// Purchases paid with foreign cash Tony had on hand (transMedium "FX Cash", logged on the FX tab, not in outflows).
+const fxPaid = (d) => d.purchases.filter((r) => /^fx\b/i.test(r.medium ?? '')).reduce((a, r) => a + money(r.amount), 0);
 const STORE_FEE = 2195;                                       // eBay store subscription, in cents, sometimes netted
 
 /**
@@ -312,7 +314,7 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   //    Otherwise the nearest deal with that person within 14 days, marked for checking.
   const withPurchases = [...deals.values()].filter((d) => d.purchases.length);
   const owed = (d) => d.purchases.reduce((a, r) => a + money(r.amount), 0) - d.sales.reduce((a, r) => a + money(r.collected), 0)
-    - d.outflows.reduce((a, r) => a + money(r.amount), 0);
+    - d.outflows.reduce((a, r) => a + money(r.amount), 0) - fxPaid(d);
   const isInventory = (r) => /^inventory$/i.test(r.category ?? '');
   const byDay = [...outflows].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
   for (const r of byDay) {
@@ -351,7 +353,7 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
 
   // 6. Money in that paid for no sale may be a refund on a purchase (Tony overpaid; the seller sent the difference
   //    back): the same person's purchase deal within 60 days that is over-paid by exactly that amount.
-  const offNow = (d) => (sumOf(d.sales, 'collected') - sumOf(d.purchases, 'amount')) - (sumOf(d.inflows, 'amount') - sumOf(d.outflows, 'amount'));
+  const offNow = (d) => (sumOf(d.sales, 'collected') - sumOf(d.purchases, 'amount')) - (sumOf(d.inflows, 'amount') - sumOf(d.outflows, 'amount') - fxPaid(d));
   for (const r of inflows.filter((x) => !x.deal && /^NO MATCH/.test(x.how ?? ''))) {
     const d = withPurchases.filter((x) => people(x).some((p) => samePerson(p, r.who)) && days(x).some((y) => near(y, r.day, 60))
       && sameMoney(offNow(x), r.amount)).sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
@@ -382,7 +384,7 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     d.salesTotal = sum(d.sales, 'collected');
     d.purchaseTotal = sum(d.purchases, 'amount');
     d.inTotal = sum(d.inflows, 'amount');
-    d.outTotal = sum(d.outflows, 'amount');
+    d.outTotal = sum(d.outflows, 'amount') + fxPaid(d);        // + foreign cash paid out (FX tab)
     d.invoiced ??= 0;                                         // grading/services invoices only
     d.off = Math.round(((d.salesTotal + d.invoiced - d.purchaseTotal) - (d.inTotal - d.outTotal)) * 100) / 100;
   }

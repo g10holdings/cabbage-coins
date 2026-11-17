@@ -263,3 +263,12 @@ test('money in: a reused house number only counts near its own sale; a deal # on
   proposeDeals({ sales: sales.map((s) => ({ ...s, deal: undefined })), purchases: [], inflows: inflows2, outflows: [], zohoDocs: [] });
   assert.match(inflows2[0].how, /deal # written/);
 });
+
+test('purchases paid with foreign cash on hand (FX Cash) count as paid; the wire covers the rest', () => {
+  const buy = (row, amount, medium) => ({ sheet: 'purchases', row, id: String(93000000 + row), day: toDay('2025-12-04'), who: 'Orsini Numismatica', amount, medium });
+  const purchases = [buy(2, 140.88, 'FX Cash'), buy(3, 821.8, 'FX Cash'), buy(4, 4085.58, 'Wire'), buy(5, 900, 'Wire')];
+  const outflows = [{ sheet: 'outflows', row: 2, day: toDay('2025-12-04'), who: 'Orsini Numismatica', amount: 4985.58, category: 'Inventory', minor: 'Purchase of Inventory' }];
+  const deals = proposeDeals({ sales: [], purchases, inflows: [], outflows, zohoDocs: [] });
+  assert.equal(outflows[0].deal, purchases[0].deal);
+  assert.equal(deals.get(purchases[0].deal).off, 0);
+});
