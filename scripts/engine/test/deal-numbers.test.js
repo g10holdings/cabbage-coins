@@ -195,3 +195,56 @@ test("Tony's links list joins an invoice and a PO a week apart", () => {
     assert.equal(deals.get('INV-000902').off, 0);
   } finally { setDealLinks([]); }
 });
+
+test('eBay: each payout (or 2-3 in a row) is one deal with the eBay sales it adds up to', () => {
+  const sale = (row, date, who, amount) => ({ sheet: 'sales', row, id: String(70000000 + row), day: toDay(date), who, amount, collected: amount, medium: 'eBay Payments' });
+  const pay = (row, date, amount) => ({ sheet: 'inflows', row, id: null, day: toDay(date), who: 'eBay', amount, category: 'Sale of Inventory' });
+  const sales = [
+    sale(2, '2026-03-01', 'Ann Pratt', 300), sale(3, '2026-03-01', 'Ben Ruiz', 125.5),        // one payout, two buyers
+    sale(4, '2026-03-08', 'Cal Ortiz', 1000), sale(5, '2026-03-20', 'Dee Fong', 500),        // $2.15 moved to the next payout
+    sale(6, '2026-03-25', 'Eve Lund', 400),                                                    // store fee netted
+    sale(7, '2026-03-30', 'Fay Nash', 99),                                                     // not paid out yet
+  ];
+  const inflows = [pay(2, '2026-03-03', 425.5), pay(3, '2026-03-10', 1002.15), pay(4, '2026-03-22', 497.85), pay(5, '2026-03-28', 378.05)];
+  const deals = proposeDeals({ sales, purchases: [], inflows, outflows: [], zohoDocs: [] });
+  assert.equal(sales[0].deal, 'EB-260303');
+  assert.equal(sales[1].deal, 'EB-260303');
+  assert.equal(sales[2].deal, 'EB-260322');
+  assert.equal(sales[3].deal, 'EB-260322');
+  assert.equal(deals.get('EB-260322').off, 0);
+  assert.equal(sales[4].deal, 'EB-260328');
+  assert.equal(deals.get('EB-260328').off, 21.95);                                             // shows as the fee
+  assert.match(sales[5].deal, /^D-/);                                                          // waits with its buyer
+});
+
+test('one charge to eBay can pay for coins from two eBay sellers', () => {
+  const buy = (row, date, who, amount) => ({ sheet: 'purchases', row, id: String(80000000 + row), day: toDay(date), who, amount, medium: 'Credit Card' });
+  const purchases = [buy(2, '2026-01-10', 'eBay', 300), buy(3, '2026-01-14', 'coinseller99', 4800)];
+  const outflows = [{ sheet: 'outflows', row: 2, day: toDay('2026-01-10'), who: 'Ebay', amount: 5100, category: 'Inventory', minor: 'Purchase of Inventory' }];
+  const deals = proposeDeals({ sales: [], purchases, inflows: [], outflows, zohoDocs: [] });
+  assert.equal(purchases[0].deal, purchases[1].deal);
+  assert.equal(deals.get(purchases[0].deal).off, 0);
+});
+
+test('layaway: payments made before the sale is booked add up to it', () => {
+  const sales = [{ sheet: 'sales', row: 2, id: '91000001', day: toDay('2026-09-26'), who: 'Gus Hale', amount: 2100, collected: 2100, medium: 'PayPal FF' }];
+  const pay = (row, date, amount) => ({ sheet: 'inflows', row, id: null, day: toDay(date), who: 'Gus Hale', amount, category: 'Sale of Inventory' });
+  const inflows = [pay(2, '2026-09-01', 300), pay(3, '2026-09-03', 1000), pay(4, '2026-09-21', 800)];
+  const deals = proposeDeals({ sales, purchases: [], inflows, outflows: [], zohoDocs: [] });
+  assert.ok(inflows.every((r) => r.deal === sales[0].deal));
+  assert.equal(deals.get(sales[0].deal).off, 0);
+});
+
+test('a trade split across two spellings of one person is one deal; a coin given as an owner distribution is no deal', () => {
+  setSamePeople([['Crestline Coins', 'Hank Moreau']]);
+  try {
+    const day = toDay('2026-04-24');
+    const sales = [{ sheet: 'sales', row: 2, id: '92000001', day, who: 'Hank Moreau', amount: 800, collected: 800, medium: 'Trade' },
+      { sheet: 'sales', row: 3, id: '92000002', day, who: 'Tony G', amount: 1500, collected: 1500, medium: 'Capital Distribution' }];
+    const purchases = [{ sheet: 'purchases', row: 2, id: '92000003', day, who: 'Crestline Coins', amount: 13500, medium: 'Trade & Check' }];
+    proposeDeals({ sales, purchases, inflows: [], outflows: [], zohoDocs: [] });
+    assert.equal(sales[0].deal, purchases[0].deal);
+    assert.equal(sales[1].deal, undefined);
+    assert.match(sales[1].how, /capital distribution/);
+  } finally { setSamePeople([]); }
+});

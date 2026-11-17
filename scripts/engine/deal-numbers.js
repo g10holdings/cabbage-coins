@@ -16,7 +16,11 @@
  *      purchases together (that's a trade).
  *   Money in (inflows) follows the coin in its inventoryID; otherwise person + date. Money out (outflows, "Inventory")
  *   matches a deal with purchases by person + date, preferring the exact amount owed.
- * Purchases marked Transfer = Y (moved in from G10 Solutions) and non-inventory money rows get no deal.
+ *   eBay: buyers pay eBay, which pays Tony in lumps, so an eBay deal is one payout + the eBay-paid sales it covers
+ *   (EB-YYMMDD). A charge paid TO eBay can cover purchases from several eBay sellers. Layaway payments made before a
+ *   sale is booked join it when they add up to it.
+ * Purchases marked Transfer = Y (moved in from G10 Solutions), coins given as a Capital Distribution, and non-inventory
+ * money rows get no deal.
  *
  *   node deal-numbers.js [--workbook "path\to\copy.xlsx"]
  */
@@ -113,6 +117,25 @@ const near = (a, b, days) => a != null && b != null && Math.abs(a - b) <= days;
 const money = (v) => Number(v) || 0;
 const sameMoney = (a, b) => Math.abs(money(a) - money(b)) < 0.5;
 const isTrade = (medium) => /trade/i.test(medium ?? '');
+const isEbay = (s) => /\bebay\b/i.test(s ?? '');
+const cents = (v) => Math.round(money(v) * 100);
+const STORE_FEE = 2195;                                       // eBay store subscription, in cents, sometimes netted
+
+/**
+ * The rows (sales: by `collected`) that add up to exactly `target` cents: the fewest rows, then the oldest. Only the
+ * 18 newest candidates are tried (2^18 combinations at most).
+ */
+export function subsetSum(rows, target) {
+  const c = [...rows].sort((a, b) => a.day - b.day || a.row - b.row).slice(-18);
+  let best = null;
+  for (let mask = 1; mask < 1 << c.length; mask++) {
+    let t = 0, n = 0, age = 0;
+    for (let j = 0; j < c.length; j++) if (mask & (1 << j)) { t += cents(c[j].collected ?? c[j].amount); n++; age += c[j].day; }
+    if (t !== target) continue;
+    if (!best || n < best.n || (n === best.n && age < best.age)) best = { mask, n, age };
+  }
+  return best && c.filter((_, j) => best.mask & (1 << j));
+}
 
 /**
  * The proposal. Inputs are plain rows: { row (Excel row), id, day, who, amount, medium, … } per sheet, plus the Zoho
@@ -189,6 +212,34 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     deals.delete(po.id);
   }
 
+  // 1d. eBay. Buyers pay eBay, and eBay pays Tony later in lumps ("eBay" inflows) that cover whatever sold in between,
+  //     sometimes with a few dollars shifted from one payout to the next. So for eBay the deal is the PAYOUT: each
+  //     payout (or 2–3 consecutive ones) + the eBay-paid sales it adds up to, to the cent. A payout can also be short by
+  //     the $21.95 store fee eBay sometimes nets out. Sales with no payout yet stay with their buyer (step 3).
+  const payouts = inflows.filter((r) => isEbay(r.who) && /sale of inventory/i.test(r.category ?? '') && r.day != null)
+    .sort((a, b) => a.day - b.day || a.row - b.row);
+  const ebaySales = sales.filter((r) => !r.deal && isEbay(r.medium) && r.day != null);
+  const perPayDay = new Map();
+  for (let i = 0; i < payouts.length;) {
+    let k = 1, hit = null;
+    for (; k <= 3 && i + k <= payouts.length && !hit; k++) {
+      const group = payouts.slice(i, i + k);
+      const total = cents(sumOf(group, 'amount'));
+      const last = group[k - 1].day;
+      const cands = ebaySales.filter((r) => !r.deal && r.day <= last && r.day >= group[0].day - 30);
+      hit = subsetSum(cands, total) ?? subsetSum(cands, total + STORE_FEE);
+      if (hit) {
+        const n = (perPayDay.get(last) ?? 0) + 1;
+        perPayDay.set(last, n);
+        const d = newDeal(`EB-${ymd(last).slice(2).replace(/-/g, '')}${n > 1 ? `-${n}` : ''}`, 'eBay payout', 'eBay', last);
+        const fee = cents(sumOf(hit, 'collected')) - total;
+        for (const r of hit) assign(r, d, `eBay sale, paid out in ${d.id}`);
+        for (const r of group) assign(r, d, `eBay payout for ${hit.length} sale${hit.length > 1 ? 's' : ''}${fee ? ' (store fee $21.95 netted)' : ''}`);
+      }
+    }
+    i += hit ? k - 1 : 1;
+  }
+
   // 2. Same person, same day (trades: 3 days) as a Zoho deal → that deal.
   const zohoDeals = [...deals.values()].filter((d) => d.type === 'Coin');
   for (const r of [...sales, ...purchases].filter((x) => !x.deal && !x.transfer)) {
@@ -200,11 +251,18 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
 
   // 3. The rest: one made-up deal per person per day (a sale and a purchase together = a trade).
   const groups = new Map();
+  const dayKeys = new Map();
   for (const r of [...sales, ...purchases]) {
     if (r.deal) continue;
     if (r.transfer) { r.how = 'transfer from G10 Solutions (not a deal)'; continue; }
-    const key = r.day != null && personKey(r.who) ? `${r.day}|${personKey(r.who)}` : `row|${r.sheet}|${r.row}`;
-    if (!groups.has(key)) groups.set(key, []);
+    // A coin Tony gave away as an owner distribution (in the ownerTransLog; no money moved): not a deal.
+    if (/capital distribution/i.test(r.medium ?? '')) { r.how = 'capital distribution (not a deal)'; continue; }
+    // Same day + same person, however the name was typed (a shop's name on the purchase, the owner's name on the sale = a trade).
+    const sameDay = dayKeys.get(r.day) ?? [];
+    const key = r.day != null && personKey(r.who)
+      ? sameDay.find((k) => groups.get(k).some((x) => samePerson(x.who, r.who))) ?? `${r.day}|${personKey(r.who)}`
+      : `row|${r.sheet}|${r.row}`;
+    if (!groups.has(key)) { groups.set(key, []); if (r.day != null) dayKeys.set(r.day, [...sameDay, key]); }
     groups.get(key).push(r);
   }
   const perDay = new Map();
@@ -221,6 +279,7 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   const saleById = new Map(sales.map((r) => [normId(r.id), r]));
   const withSales = [...deals.values()].filter((d) => d.sales.length);
   for (const r of inflows) {
+    if (r.deal) continue;                                    // an eBay payout, placed in 1d
     if (/reimbursement|services rendered/i.test(r.category ?? '')) {
       // Paying a grading/services invoice: same person, exact amount, within 45 days after it (or a few days before).
       const d = nonCoin.filter((x) => !x.inflows.length && samePerson(x.who, r.who) && sameMoney(x.invoiced, r.amount)
@@ -249,6 +308,24 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   for (const r of byDay) {
     if (!isInventory(r)) { r.how = `not a deal (${r.category ?? 'no category'}${r.minor ? ` / ${r.minor}` : ''})`; continue; }
     if (r.deal) continue;                                    // already placed as part of a split payment
+    if (isEbay(r.who)) {
+      // Paying eBay: one charge can cover coins bought from several eBay sellers (recorded under the seller's name, or
+      // as "eBay"), up to 14 days apart. Those purchases + the payment become one deal.
+      const open = withPurchases.filter((d) => d.type === 'Coin' && !d.sales.length && !d.outflows.length && days(d).some((y) => near(y, r.day, 14)));
+      const rows = open.flatMap((d) => d.purchases);
+      const hit = subsetSum(rows, cents(r.amount));
+      if (hit) {
+        const target = deals.get(hit[0].deal);
+        for (const p of hit.filter((x) => x.deal !== target.id)) {
+          const from = deals.get(p.deal);
+          from.purchases = from.purchases.filter((x) => x !== p);
+          if (!from.purchases.length && !from.sales.length) { deals.delete(from.id); withPurchases.splice(withPurchases.indexOf(from), 1); }
+          assign(p, target, `${p.how} (bought on eBay, paid together with ${target.id})`);
+        }
+        assign(r, target, `paid to eBay for ${hit.length} purchase${hit.length > 1 ? 's' : ''} (exact amount)`);
+        continue;
+      }
+    }
     const cands = withPurchases.filter((d) => people(d).some((p) => samePerson(p, r.who)) && days(d).some((y) => near(y, r.day, 120)))
       .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day));
     const exact = cands.find((d) => sameMoney(owed(d), r.amount));
@@ -269,6 +346,24 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     const d = withPurchases.filter((x) => people(x).some((p) => samePerson(p, r.who)) && days(x).some((y) => near(y, r.day, 60))
       && sameMoney(offNow(x), r.amount)).sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
     if (d) assign(r, d, 'refund of an overpayment on this purchase (name + exact amount)');
+  }
+
+  // 7. Layaway: the buyer pays in parts, often BEFORE the sale is booked (the coin goes home when it's paid off). A sale
+  //    still short gets the same person's loose payments from up to 120 days before it (or 14 after) that add up to
+  //    exactly the shortfall: unmatched ones, or ones step 4 guessed by date into a deal they over-pay.
+  for (const d of [...deals.values()].filter((x) => x.type === 'Coin' && x.sales.length).sort((a, b) => a.day - b.day)) {
+    const short = cents(offNow(d));
+    if (short <= 0) continue;
+    const loose = inflows.filter((r) => r.id == null && /sale of inventory/i.test(r.category ?? '')
+      && people(d).some((p) => samePerson(p, r.who)) && r.day != null && r.day >= d.day - 120 && r.day <= d.day + 14
+      && (!r.deal || (/by name \+ date/.test(r.how ?? '') && r.deal !== d.id
+        && cents(offNow(deals.get(r.deal))) <= -cents(r.amount))));      // taking it leaves that deal at least even
+    const hit = subsetSum(loose, short);
+    if (!hit) continue;
+    for (const r of hit) {
+      if (r.deal) { const from = deals.get(r.deal); from.inflows = from.inflows.filter((x) => x !== r); }
+      assign(r, d, 'layaway payment (name + payments add up to the sale)');
+    }
   }
 
   // Balances: (sales collected − purchases) − (money in − money out).
