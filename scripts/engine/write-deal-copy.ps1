@@ -18,6 +18,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$Workbook,
   [string]$Proposal,
+  [switch]$LiveDealCheck,   # only (re)build the dealCheck sheet as ONE self-updating formula (dealcheck-formula.txt)
   [switch]$Final   # the copy that becomes the real workbook: no dealMatch review column
 )
 # (Windows PowerShell 5.1 has no $PSScriptRoot yet while reading param defaults, so the default is set here.)
@@ -29,6 +30,38 @@ $real = [IO.Path]::GetFullPath((Get-Content (Join-Path $PSScriptRoot 'settings.j
 $target = [IO.Path]::GetFullPath($Workbook)
 if ($target -ieq $real -or (Split-Path $target -Leaf) -ieq (Split-Path $real -Leaf)) { throw "Refusing to write the real workbook ($real). Point this at a TEST copy." }
 if ((Split-Path $target -Leaf) -notmatch 'TEST') { throw "Refusing: '$target' isn't named as a TEST copy." }
+
+if ($LiveDealCheck) {
+  # The workbook already has its dealID columns: the sheet lists every dealID in the four tables by itself (Excel 365).
+  $formula = (Get-Content (Join-Path $PSScriptRoot 'dealcheck-formula.txt') -Raw -Encoding UTF8).Trim()
+  $xl = New-Object -ComObject Excel.Application
+  $xl.Visible = $false; $xl.DisplayAlerts = $false; $xl.AskToUpdateLinks = $false
+  try {
+    $wb = $xl.Workbooks.Open($Workbook, 0, $false)
+    foreach ($ws in @($wb.Worksheets)) { if ($ws.Name -eq 'dealCheck') { $ws.Delete() } }
+    $ws = $wb.Worksheets.Add([Type]::Missing, $wb.Worksheets.Item($wb.Worksheets.Count))
+    $ws.Name = 'dealCheck'
+    $ws.Range('A1').Formula2 = '=LET(s, INDEX(A3#, , 11), "Deals: " & (ROWS(s) - 1) & "   balanced: " & SUM(--(s = "balanced")) & "   settled with person: " & SUM(--(s = "settled with person")) & "   OPEN: " & SUM(--(s = "OPEN")) & "   (updates by itself; unpaid grading invoices and rows missing a dealID: run 6_Check-Deals)")'
+    $ws.Range('A3').Formula2 = $formula
+    $xl.Calculate()
+    $n = $ws.Range('A3').SpillingToRange.Rows.Count
+    $ws.Range("B4:B$($n + 2)").NumberFormat = 'yyyy-mm-dd'
+    $ws.Range("D4:J$($n + 2)").NumberFormat = '#,##0.00;[Red]-#,##0.00'
+    $ws.Range('A3:K3').Font.Bold = $true
+    $fc = $ws.Range('K4:K5000').FormatConditions.Add(1, 3, '="OPEN"')   # cell value = "OPEN"
+    $fc.Font.Color = 255; $fc.Font.Bold = $true
+    $ws.Columns.Item('A:K').AutoFit() | Out-Null
+    $ws.Range('A4').Select() | Out-Null
+    $xl.ActiveWindow.FreezePanes = $true
+    Write-Output $ws.Range('A1').Text
+    $wb.Save(); $wb.Close($false)
+    Write-Output "Saved $Workbook"
+  } finally {
+    $xl.Quit()
+    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null
+  }
+  return
+}
 
 $p = Get-Content $Proposal -Raw -Encoding UTF8 | ConvertFrom-Json
 $keyCols = @{

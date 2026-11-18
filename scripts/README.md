@@ -39,6 +39,12 @@ the cert #**, e.g. `1895-O-10-Dollar-MS62-59080489`. The rest of the name can be
 | *you* | *the Studio* | Write the "Tony says…" description, click **Generate** on the slug, check alt text and caption, **Publish**. Then set the coin to **Website = Y** in the workbook. |
 | 4 | `4_After-Publishing-or-Selling` | Marks coins Sold in the workbook as sold on the website (with their Sell Date) and rebuilds the site, files the published coins' photo folders (camera shots deleted, 4 photos to `doneUnsold`; sold coins to `doneSOLD`), then CAC and eBay. Each part shows what it would do and asks. |
 | 5 | `5_Status-Report` | Any time: one page showing where every coin stands and its next step, plus the workbook check. Changes nothing. |
+| 6 | `6_Check-Deals` | Any time, e.g. after a show: the **dealID** check. Lists rows with no dealID (and the number to type), deal numbers that look mistyped, deals that don't balance (unpaid, layaway, or something not entered yet), and the next free `D-YYMMDD-NN` for today. Changes nothing. |
+
+**Deal numbers** (in the dealID column of sales, purchases, inflows and outflows): the Zoho number when the deal has
+an invoice or PO (`INV-000123`, `PO-000045`); `EB-YYMMDD` for an eBay payout and the sales it covers; otherwise
+`D-YYMMDD-NN`, the deal's date plus 01, 02… for that day. Every row of one deal (coins sold, coins taken in, money in,
+money out) gets the same number. Expenses and transfers stay blank.
 
 **Also run step 4** whenever you mark a coin **Sold**, change a price, or tick **Keep off
 eBay** in the Studio. It takes sold coins down from CAC and eBay and files their photos.

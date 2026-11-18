@@ -1,0 +1,15 @@
+=LET(
+ all, VSTACK(sales[dealID], purchases[dealID], inflows[dealID], outflows[dealID]),
+ ids, UNIQUE(FILTER(all, all <> "")),
+ sold, SUMIFS(sales[totalCollected], sales[dealID], ids),
+ other, SUMIFS(inflows[inflowAmount], inflows[dealID], ids, inflows[inflowCategory], "Reimbursement") + SUMIFS(inflows[inflowAmount], inflows[dealID], ids, inflows[inflowCategory], "Services Rendered"),
+ bought, SUMIFS(purchases[purchaseAmount], purchases[dealID], ids),
+ moneyIn, SUMIFS(inflows[inflowAmount], inflows[dealID], ids),
+ moneyOut, SUMIFS(outflows[outflowAmount], outflows[dealID], ids) + SUMIFS(purchases[purchaseAmount], purchases[dealID], ids, purchases[transMedium], "FX*"),
+ off, ROUND((sold + other - bought) - (moneyIn - moneyOut), 2),
+ who, IFNA(XLOOKUP(ids, sales[dealID], sales[buyer], NA()) & "", IFNA(XLOOKUP(ids, purchases[dealID], purchases[source], NA()) & "", IFNA(XLOOKUP(ids, inflows[dealID], inflows[inflowCounterparty], NA()) & "", IFNA(XLOOKUP(ids, outflows[dealID], outflows[outflowCounterparty], NA()) & "", "")))),
+ first, BYROW(HSTACK(MINIFS(sales[saleDate], sales[dealID], ids), MINIFS(purchases[purchaseDate], purchases[dealID], ids), MINIFS(inflows[inflowDate], inflows[dealID], ids), MINIFS(outflows[outflowDate], outflows[dealID], ids)), LAMBDA(r, MIN(FILTER(r, r > 0, 0)))),
+ personOff, MAP(who, LAMBDA(w, ROUND(SUM(FILTER(off, who = w)), 2))),
+ status, IF(ABS(off) < 0.5, "balanced", IF(ABS(personOff) < 0.5, "settled with person", "OPEN")),
+ body, SORTBY(HSTACK(ids, first, who, sold, other, bought, moneyIn, moneyOut, off, personOff, status), first, -1),
+ VSTACK({"dealID","date","person","sales","otherInvoiced","purchases","moneyIn","moneyOut","off","personOff","status"}, body))

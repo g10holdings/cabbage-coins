@@ -405,8 +405,9 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
  */
 export function readSheets(file) {
   const wb = readWorkbookSheets(['sales', 'purchases', 'inflows', 'outflows'], file);
+  // dealID = the deal # already in the workbook (since 2026-11-17), kept as `fixed`; the matcher's own guess is `deal`.
   const rows = (name, map) => XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: null })
-    .map((r) => ({ sheet: name, row: r.__rowNum__ + 1, ...map(r) }));
+    .map((r) => ({ sheet: name, row: r.__rowNum__ + 1, fixed: String(r.dealID ?? '').trim().toUpperCase(), ...map(r) }));
   return {
     sales: rows('sales', (r) => ({ id: r.inventoryID, day: toDay(r.saleDate), who: r.buyer, amount: r.saleAmount,
       collected: r.totalCollected ?? r.saleAmount, medium: r.transactionMedium, key: String(r.inventoryID ?? '') }))
@@ -422,10 +423,8 @@ export function readSheets(file) {
   };
 }
 
-function main() {
-  const args = process.argv.slice(2);
-  const i = args.indexOf('--workbook');
-  const file = i >= 0 ? args[i + 1] : undefined;   // undefined = the real workbook (read-only)
+/** The workbook's four tables plus the saved Zoho records, with the same-people and links lists loaded. */
+export function loadInputs(file) {
   const samePath = path.join(ZOHO_DIR, 'same-people.json');
   if (fs.existsSync(samePath)) setSamePeople(JSON.parse(fs.readFileSync(samePath, 'utf8')));
   const linksPath = path.join(ZOHO_DIR, 'deal-links.json');
@@ -435,6 +434,14 @@ function main() {
   const status = new Map([...JSON.parse(fs.readFileSync(path.join(ZOHO_DIR, 'invoices.json'), 'utf8')),
     ...JSON.parse(fs.readFileSync(path.join(ZOHO_DIR, 'quotes.json'), 'utf8'))].map((r) => [r.number, r.status]));
   const zohoDocs = Object.values(details).map((d) => ({ ...d, status: status.get(d.number) }));
+  return { sheets, zohoDocs };
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  const i = args.indexOf('--workbook');
+  const file = i >= 0 ? args[i + 1] : undefined;   // undefined = the real workbook (read-only)
+  const { sheets, zohoDocs } = loadInputs(file);
   const deals = proposeDeals({ ...sheets, zohoDocs });
 
   const out = {
