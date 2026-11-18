@@ -175,8 +175,22 @@ and `doneSOLD`.
 2. Recreate **`engine\.env`**, which isn't in git, with: `SANITY_WRITE_TOKEN`, `PCGS_API_TOKEN`, `ANTHROPIC_API_KEY`, `CAC_API_KEY`, `CAC_API_TOKEN`, `EBAY_APP_ID`, `EBAY_CERT_ID`, `EBAY_RUNAME`, `EBAY_REFRESH_TOKEN`.
 3. For eBay, double-click **`Extras\Connect-eBay`**. It walks you through signing in and saves the token.
 
+### Sell a coin on eBay only (never on the website)
+1. **Workbook:** set its Website column to `E` (Active, with a listPrice).
+2. Shoot it as usual and run **`1_Prep-Photos`** (the folder name ends with the cert #, like any coin).
+3. Double-click **`Extras\eBay-Only`**. It shows each new listing (price, category, photos) with eBay's check, then asks.
+   Yes: the photos go straight to eBay, the listing goes up, and the photo folder moves to doneUnsold (camera shots deleted).
+
+It's built like the website coins' eBay listings: the same price formula on listPrice, free shipping, no returns, offers
+off, slab shots first, then close-ups, then the promo card. When several E coins share a name (the six Trump dollars),
+each title ends with its cert #, so eBay doesn't treat them as duplicates.
+
+**Later:** change listPrice and run it again to update the price. Mark a coin **Sold** in the workbook and run it again:
+it ends the eBay listing (step 4 files the photos in doneSOLD). If it **sold on eBay**, it tells you to mark it Sold in
+the workbook. Step 4 never touches E coins, and they never reach Sanity, the website or CAC.
+
 ### Check that everything still works by the rules
-**`Extras\Check-Rules`** runs 19 checks:
+**`Extras\Check-Rules`** runs the rule checks:
 - the workbook rules against every live listing;
 - that nothing can write the workbook;
 - photo naming, the folder checks, the importer, the status report's next steps, and the photo rules.

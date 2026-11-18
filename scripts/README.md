@@ -50,7 +50,8 @@ money out) gets the same number. Expenses and transfers stay blank.
 eBay** in the Studio. It takes sold coins down from CAC and eBay and files their photos.
 
 **`Extras` folder:** `Redo-Photos`, `Undo-Import`, `Fill-PCGS-Pop`, `Fill-CAC-Pop`, `Check-Rules`,
-`Connect-eBay`, `Make-Video-Graphics` (name banners and the thumbnail for YouTube videos), and the old
+`Connect-eBay`, `eBay-Only` (coins marked Website = E go straight to eBay, never the website or CAC),
+`Make-Video-Graphics` (name banners and the thumbnail for YouTube videos), and the old
 hand-photo rename tools. See [`HOW-TO.md`](HOW-TO.md) for
 when to use each.
 

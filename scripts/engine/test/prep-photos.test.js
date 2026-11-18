@@ -25,6 +25,7 @@ const MM = [
   ['1876-S 50C Liberty Seated Half Dollar PCGS MS65', 30.6],
   ['1776-PTS JR 8 Reales Bolivia PCGS MS61', 39],
   ['1878-S T$1 Trade Dollar CACG AU50', 38.1],
+  ['2026 $1 President Trump July 4 Privy NGC MS66', 26.5],
   ['9.99 ozs Mint of the United States at San Francisco (Type 2) 999.75 Fine #535', 0],
 ];
 const MEDAL = [

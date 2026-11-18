@@ -42,7 +42,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import dotenv from 'dotenv';
 import { createClient } from '@sanity/client';
-import { certKey, hasCert, nameKey, datesOf, denominationOf } from './workbook.js';
+import { certKey, hasCert, nameKey, datesOf, denominationOf, readInventory } from './workbook.js';
 import { slabsFirst } from './photo-order.js';
 import { askYes } from './ask.js';
 import { settings } from './settings.js';
@@ -87,13 +87,13 @@ export function ebayPrice(sitePrice) {
 // eBay API plumbing
 // ---------------------------------------------------------------------------
 
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const unesc = (s) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
-const tag = (xml, t) => { const m = new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`).exec(xml); return m ? m[1] : ''; };
-const tags = (xml, t) => [...xml.matchAll(new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`, 'g'))].map((m) => m[1]);
+export const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+export const unesc = (s) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+export const tag = (xml, t) => { const m = new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`).exec(xml); return m ? m[1] : ''; };
+export const tags = (xml, t) => [...xml.matchAll(new RegExp(`<${t}(?: [^>]*)?>([\\s\\S]*?)</${t}>`, 'g'))].map((m) => m[1]);
 
 let token;
-async function accessToken() {
+export async function accessToken() {
   if (token) return token;
   const { EBAY_APP_ID, EBAY_CERT_ID, EBAY_REFRESH_TOKEN } = process.env;
   if (!EBAY_APP_ID || !EBAY_CERT_ID || !EBAY_REFRESH_TOKEN) throw new Error('eBay keys are missing from engine/.env: run Extras\\Connect-eBay first.');
@@ -108,7 +108,7 @@ async function accessToken() {
 }
 
 /** One Trading API call. Returns { ok, xml, errors: [{severity, message}] }. */
-async function trading(name, body) {
+export async function trading(name, body) {
   const res = await fetch('https://api.ebay.com/ws/api.dll', {
     method: 'POST',
     headers: {
@@ -134,7 +134,7 @@ async function rest(url) {
 // ---------------------------------------------------------------------------
 
 /** Every ACTIVE listing (the "active" list also returns recently ended ones, so each is checked with GetItem). */
-async function liveListings() {
+export async function liveListings() {
   const ids = [];
   for (let page = 1; ; page++) {
     const r = await trading('GetMyeBaySelling', `<ActiveList><Include>true</Include><Pagination><EntriesPerPage>200</EntriesPerPage><PageNumber>${page}</PageNumber></Pagination></ActiveList>`);
@@ -153,7 +153,7 @@ function packageOf(p) {
   return packageKey({ oz: n('WeightMajor') * 16 + n('WeightMinor'), size: [n('PackageLength'), n('PackageWidth'), n('PackageDepth')] });
 }
 
-async function itemInfo(id) {
+export async function itemInfo(id) {
   const r = await trading('GetItem', `<ItemID>${id}</ItemID><DetailLevel>ReturnAll</DetailLevel>`);
   if (!r.ok) return { id, status: 'Unknown', error: r.errors.map((e) => e.message).join('; ') };
   const x = r.xml;
@@ -207,22 +207,23 @@ const CATEGORY_RULES = [
   { test: (c) => /silver eagle|eagle s\$1|\bS\$1\b/i.test(c.name), id: '177653', how: 'bullion rule' },      // Bullion > Silver > Coins
   { test: (c) => /commem/i.test(c.name) && c.category === 'Gold' && yearOf(c) >= 1903 && yearOf(c) <= 1933, id: '179532', how: 'commemorative rule' }, // Commemorative > Gold (1903-1926)
   { test: (c) => /commem|isabella/i.test(c.name) && yearOf(c) >= 1892 && yearOf(c) <= 1954, id: '179531', how: 'commemorative rule' },               // Commemorative > Silver (1892-1954)
-  { test: (c) => yearOf(c) >= 1982 && c.category === 'Gold' && /commem|library of congress|best of the mint/i.test(c.name), id: '179534', how: 'commemorative rule' }, // Commemorative > Modern Gold
-  { test: (c) => yearOf(c) >= 1982 && /commem|best of the mint/i.test(c.name), id: '179533', how: 'commemorative rule' },                         // Commemorative > Modern Silver/Clad
+  { test: (c) => yearOf(c) >= 1982 && c.category === 'Gold' && /commem|library of congress|best of the mint/i.test(`${c.name} ${c.type2 ?? ''}`), id: '179534', how: 'commemorative rule' }, // Commemorative > Modern Gold
+  // (type2 = the workbook's second Type column, e.g. "Clad Commemorative - Modern": eBay-only coins have it; website coins don't)
+  { test: (c) => yearOf(c) >= 1982 && /commem|best of the mint/i.test(`${c.name} ${c.type2 ?? ''}`), id: '179533', how: 'commemorative rule' },   // Commemorative > Modern Silver/Clad
 ];
 // Tony's wording, word for word (2026-10-17), under a copy of the title.
-const STANDARD_TEXT = "I've been selling on eBay for 26 years, since 2000! If you have any questions at all, please don't hesitate to reach out. "
+export const STANDARD_TEXT = "I've been selling on eBay for 26 years, since 2000! If you have any questions at all, please don't hesitate to reach out. "
   + 'Bid with confidence and be sure to look at all the pictures in the listing! The item will come securely packaged and shipped promptly!'
   + '<br>Cabbage Coins is a retailer of US and World Coins located in Lancaster PA';
 // No returns at all, US or international: eBay shows these as "Final sale" (Tony, 2026-10-17, matching his
 // current listings). Used on new listings and set on every revised one.
-const RETURN_POLICY = '<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption>'
+export const RETURN_POLICY = '<ReturnPolicy><ReturnsAcceptedOption>ReturnsNotAccepted</ReturnsAcceptedOption>'
   + '<InternationalReturnsAcceptedOption>ReturnsNotAccepted</InternationalReturnsAcceptedOption></ReturnPolicy>';
 
 // Tony's "Cabbage Coins · follow & message" card (1080×1080): the LAST photo on every listing (Tony, 2026-10-17).
 // Served from the website (web/assets/img), like the coin photos come from Sanity: eBay refuses a listing that
 // mixes its own hosted pictures with outside ones, so the eBay-hosted copy can't be used.
-const PROMO_IMAGE = settings.ebayPromoImage;
+export const PROMO_IMAGE = settings.ebayPromoImage;
 
 const imageUrl = (ref) => {
   const m = /^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/.exec(ref ?? '');
@@ -235,7 +236,7 @@ async function photosFor(coin) {
     .filter((u, i, all) => all.indexOf(u) === i);
   return (await slabsFirst(urls)).slice(0, 11).concat(PROMO_IMAGE);   // eBay allows 12
 }
-const pictureXml = (photos) => `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`;
+export const pictureXml = (photos) => `<PictureDetails>${photos.map((u) => `<PictureURL>${esc(u)}</PictureURL>`).join('')}</PictureDetails>`;
 
 // The whole "Coins & Paper Money" category tree, id -> "Coins: US > Dollars > Morgan (1878-1921)" (loaded once a run).
 let treePaths;
@@ -265,7 +266,7 @@ function denominationGroup(coin) {
   }[d] ?? null;
 }
 
-async function categoryFor(coin) {
+export async function categoryFor(coin) {
   if (coin.ebayCategoryId) return { id: String(coin.ebayCategoryId), how: 'set in the Studio' };
   const rule = CATEGORY_RULES.find((r) => r.test(coin));
   if (rule) return { id: rule.id, how: rule.how };
@@ -290,14 +291,14 @@ async function categoryFor(coin) {
   }
   return { id: null, how: group ? `no category under "${group}" fits: set one in the Studio` : 'no suggestion: set one in the Studio' };
 }
-async function categoryName(id) {
+export async function categoryName(id) {
   if (!id) return '—';
   return (await categoryPaths()).get(id)?.path ?? `#${id}`;
 }
 
 const conditionCache = new Map();
 /** The graded-coin condition fields eBay wants in this category: grader, letter grade, numeric grade, cert #. */
-async function conditionXml(categoryId, coin) {
+export async function conditionXml(categoryId, coin) {
   if (!conditionCache.has(categoryId)) {
     const j = await rest(`https://api.ebay.com/sell/metadata/v1/marketplace/EBAY_US/get_item_condition_policies?filter=categoryIds:{${categoryId}}`).catch(() => null);
     conditionCache.set(categoryId, j?.itemConditionPolicies?.[0] ?? null);
@@ -313,7 +314,7 @@ async function conditionXml(categoryId, coin) {
     hasCert(coin.gradenumber) ? d(5, '', `<AdditionalInfo>${esc(String(coin.gradenumber).replace(/_\d{1,2}$/, ''))}</AdditionalInfo>`) : ''}</ConditionDescriptors>`;
 }
 
-function specifics(coin) {
+export function specifics(coin) {
   const { dateShown, date } = datesOf(coin.name);
   const mint = /-(\w+)$/.exec(dateShown)?.[1];
   const grade = String(coin.grade ?? '').replace(/\s*CAC$/, '');
@@ -334,7 +335,7 @@ function specifics(coin) {
 
 // Ingots weigh more than any standard package: their package is left as Tony set it on eBay.
 const ownPackage = (coin) => coin.category === 'Vintage Ingot';
-const shippingXml = (coin) => {
+export const shippingXml = (coin) => {
   const s = shippingFor(coin.price);
   return `<ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority>`
     + `<ShippingService>${s.service}</ShippingService><ShippingServiceCost currencyID="USD">0.0</ShippingServiceCost><FreeShipping>true</FreeShipping>`
@@ -367,7 +368,7 @@ async function newItemXml(coin) {
   return { xml, cat, photos };
 }
 
-const feesOf = (xml) => tags(xml, 'Fee').map((f) => ({ name: tag(f, 'Name'), amount: Number(tag(f, 'Fee')) })).filter((f) => f.amount > 0);
+export const feesOf = (xml) => tags(xml, 'Fee').map((f) => ({ name: tag(f, 'Name'), amount: Number(tag(f, 'Fee')) })).filter((f) => f.amount > 0);
 
 // ---------------------------------------------------------------------------
 // Ledger (Sanity doc "ebay-ledger"): siteId -> { itemId, price, ship, title, sentAt }
@@ -389,18 +390,27 @@ async function saveLedger(client, ledger) {
 
 const money = (n) => `$${Number(n).toLocaleString()}`;
 
+/** Cert #s of the workbook's eBay-only coins (Website column "E", any status): ebay-only.js lists those, not this sync. */
+export function ebayOnlyCerts(rows = readInventory(undefined, ['inventoryID', 'Website']).rows) {
+  return new Set(rows.filter((r) => /^e$/i.test(String(r.Website ?? '').trim()) && hasCert(r.inventoryID)).map((r) => certKey(r.inventoryID)));
+}
+
 async function main() {
   const { SANITY_WRITE_TOKEN } = process.env;
   if (!SANITY_WRITE_TOKEN) throw new Error('SANITY_WRITE_TOKEN is missing from engine/.env');
   const client = createClient({ projectId: PROJECT, dataset: settings.sanity.dataset, apiVersion: settings.sanity.apiVersion, token: SANITY_WRITE_TOKEN, useCdn: false });
 
-  const [coins, ledger, live] = await Promise.all([
+  const [coins, ledger, liveAll] = await Promise.all([
     client.fetch(`*[_type == "listing" && !(_id in path("drafts.**"))]
       {_id, name, sold, price, grade, gradenumber, gradingCompany, category, notOnEbay, ebayOffers, ebayPrice, ebayCategoryId, image, imagesGallery}`),
     loadLedger(client),
     liveListings(),
   ]);
   // Sold = the workbook says Sold, or the website's Sold box (sold.js): a sale marked only in the workbook still ends it here.
+  // eBay-only coins (Website "E" in the workbook) are listed by ebay-only.js (Extras\eBay-Only) and are none of this
+  // sync's business: they're set aside by cert #, so they're never adopted, ended or reported as unmatched here.
+  const ebayOnly = ebayOnlyCerts();
+  const live = liveAll.filter((l) => !(l.cert && ebayOnly.has(certKey(l.cert))));
   const soldInWorkbook = workbookSales();
   for (const c of coins) if (!c.sold && soldInWorkbook(c)) c.soldInWorkbook = c.sold = true;
   const wanted = coins.filter((c) => !c.sold && !c.notOnEbay && c.price > 0);
@@ -474,7 +484,7 @@ async function main() {
   // Report.
   const line = (p) => `${money(p.coin.price).padStart(8)} site → ${money(p.target.price).padStart(8)} eBay${p.target.fixed ? ' (your fixed price)' : ''}, ${p.target.ship.label}${p.target.offers ? ', offers ON' : ''}  ${p.coin.name}`;
   console.log(`eBay sync: ${SEND ? 'SENDING' : 'PREVIEW, nothing is changed'}\n`);
-  console.log(`  Live on eBay now: ${live.length}   Website coins for eBay: ${wanted.length}\n`);
+  console.log(`  Live on eBay now: ${liveAll.length}   Website coins for eBay: ${wanted.length}${liveAll.length > live.length ? `   eBay-only coins (Extras\\eBay-Only, left alone here): ${liveAll.length - live.length}` : ''}\n`);
   console.log(`+ New listings: ${plan.add.length}`);
   for (const p of plan.add) {
     console.log(`  ${line(p)}`);

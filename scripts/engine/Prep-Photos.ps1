@@ -92,7 +92,8 @@ function Get-CoinMM([string]$name) {
     '8 reales'                                       { return 39.0 }
     'trade dollar|\bT\$1'                            { return 38.1 }
     'half dollar|\b50C\b'                            { if ($year -and $year -le 1836) { return 32.5 } return 30.6 }
-    'sacagawea|presidential|susan b|\bSBA\b|native american|innovation' { if ($n -match '\$1\b|dollar') { return 26.5 } }
+    # Small (golden) dollars. The 2026 "President Trump" $1 (NGC July 4 Privy) measured 26.5 mm on the stand, 2026-11-17.
+    'sacagawea|presidential|susan b|\bSBA\b|native american|innovation|\btrump\b' { if ($n -match '\$1\b|dollar') { return 26.5 } }
     'silver dollar|morgan|peace|seated dollar|gobrecht|draped bust dollar|flowing hair dollar|\$1\b|\bS\$1' { if ($year -and $year -le 1803) { return 39.5 } return 38.1 }
     '\b25C\b|quarter'                                { if ($year -and $year -le 1828) { return 27.0 } return 24.3 }
     '\b10C\b|\bdime\b'                               { if ($year -and $year -le 1827) { return 18.8 } if ($year -and $year -le 1837) { return 18.5 } return 17.9 }

@@ -59,7 +59,7 @@ Excel first; the tools read the last saved version.
 | CAC | `Y` adds "CAC" to the grade. A CACG holder counts as CAC too, as on the site. |
 | PCGS Num | `97199/7199` = designation # (shown on the listing, used for DMPL/CAM populations) / catalog # (sorting). A lone 8xxxx/9xxxx on a CAM/PL coin is taken as a designation #, and the preview warns. |
 | listPrice | The website price. |
-| Website | `R` = ready: the import takes Active R coins with no listing. `Y` = live, set by you once published. `N/A` = never. |
+| Website | `R` = ready: the import takes Active R coins with no listing. `Y` = live, set by you once published. `E` = eBay only: `Extras\eBay-Only` lists it; never on the website or CAC, and step 4's eBay part leaves it alone. `N/A` = never. |
 | Status | Active or Sold. |
 
 **Category** isn't in the workbook, so it's worked out:
@@ -254,6 +254,7 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `photo-order.js` | Slab-shots-first ordering for CAC/eBay |
 | `settings.js`, `ask.js` | Shared settings and the y/N question |
 | `connect-ebay.js` | One-time eBay sign-in (`Extras\Connect-eBay`) |
+| `ebay-only.js` | eBay-only coins, Website = E (`Extras\eBay-Only`); remembers what it listed in `.ebay-only-ledger.json` |
 | `connect-zoho.js`, `zoho.js` | One-time Zoho Billing sign-in, READ ONLY (`Extras\Connect-Zoho`), and the Zoho reader |
 | `zoho-pull.js` | Downloads Zoho invoices (INV-), quotes (PO-), payments and line items into `engine\.zoho\` (private, never committed) |
 | `env-file.js` | Saves keys into `engine\.env` for the connect scripts |

@@ -83,7 +83,8 @@ function main() {
     const [block, notes] = compare(typed, w);
     if (block.length) { problems.push(`${folder}\n      left alone: the name says ${block.join('; ')}. Is cert ${w.cert} right? (workbook: ${w.name})`); continue; }
 
-    if (w.website !== 'R') notes.push(`Website is "${w.website || 'blank'}" in the workbook, not R, so 2_Import-Listings won't list it`);
+    if (w.website === 'E') notes.push('eBay only (Website "E"): Extras\\eBay-Only lists it, never the website');
+    else if (w.website !== 'R') notes.push(`Website is "${w.website || 'blank'}" in the workbook, not R, so 2_Import-Listings won't list it`);
     let base = fileBase(w.name);
     // "4oz Engelhard ... #02592" with ID 02592: the number is already at the end, so don't say it twice
     // (findPhotos takes the base as the folder name minus "-<cert>", so the two have to agree).
