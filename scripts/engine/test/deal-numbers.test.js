@@ -272,3 +272,14 @@ test('purchases paid with foreign cash on hand (FX Cash) count as paid; the wire
   assert.equal(outflows[0].deal, purchases[0].deal);
   assert.equal(deals.get(purchases[0].deal).off, 0);
 });
+
+test('a third party paying a customer\'s bill joins that customer\'s deal when the comment says "for <customer>"', () => {
+  const day = toDay('2025-08-22');
+  const sales = [{ sheet: 'sales', row: 2, id: '93000001', day, who: 'Ned Larkin', amount: 4000, collected: 4000, medium: 'Cash & Check' }];
+  const inflows = [{ sheet: 'inflows', row: 2, id: '93000001', day, who: 'Ned Larkin', amount: 1000, category: 'Sale of Inventory' },
+    { sheet: 'inflows', row: 3, id: null, day, who: 'Ora Pell', amount: 3000, category: 'Sale of Inventory', comment: 'Purchase for Ned Larkin' }];
+  const deals = proposeDeals({ sales, purchases: [], inflows, outflows: [], zohoDocs: [] });
+  assert.equal(inflows[1].deal, sales[0].deal);
+  assert.match(inflows[1].how, /on behalf of Ned Larkin/);
+  assert.equal(deals.get(sales[0].deal).off, 0);
+});

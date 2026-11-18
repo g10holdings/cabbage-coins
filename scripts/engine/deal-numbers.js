@@ -303,6 +303,11 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
       return exact ?? sales.find((s) => baseId(s.id) === baseId(id) && near(s.day, r.day, 60));
     }).find((c) => c?.deal);
     if (coin) { assign(r, deals.get(coin.deal), `via coin #${coin.id}`); continue; }
+    // Someone else paying a customer's bill (a third party's check): the comment says "… for <customer>".
+    const forWho = /\bfor\s+([^,;()]+?)\s*$/i.exec(String(r.comment ?? ''))?.[1];
+    const onBehalf = forWho && withSales.filter((x) => people(x).some((p) => samePerson(p, forWho)) && days(x).some((y) => near(y, r.day, 14)))
+      .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
+    if (onBehalf) { assign(r, onBehalf, `paid on behalf of ${forWho} (comment) + date`); continue; }
     const d = withSales.filter((x) => people(x).some((p) => samePerson(p, r.who)) && days(x).some((y) => near(y, r.day, 14)))
       .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
     if (d) assign(r, d, 'by name + date (check)');
@@ -407,7 +412,7 @@ export function readSheets(file) {
       amount: r.purchaseAmount, medium: r.transMedium, transfer: r.Transfer === 'Y', key: String(r.inventoryID ?? '') }))
       .filter((r) => r.id != null),
     inflows: rows('inflows', (r) => ({ id: r.inventoryID, day: toDay(r.inflowDate), who: r.inflowCounterparty,
-      amount: r.inflowAmount, category: r.inflowCategory, key: `${r.inflowCounterparty ?? ''}|${r.inflowAmount ?? ''}` })),
+      amount: r.inflowAmount, category: r.inflowCategory, comment: r.inflowComment, key: `${r.inflowCounterparty ?? ''}|${r.inflowAmount ?? ''}` })),
     outflows: rows('outflows', (r) => ({ day: toDay(r.outflowDate), who: r.outflowCounterparty, amount: r.outflowAmount,
       category: r.majorCategory, minor: r.minorCategory, comment: r.outflowComment,
       key: `${r.outflowCounterparty ?? ''}|${r.outflowAmount ?? ''}` })),
