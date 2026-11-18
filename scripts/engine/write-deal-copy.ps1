@@ -17,7 +17,8 @@
 
 param(
   [Parameter(Mandatory = $true)][string]$Workbook,
-  [string]$Proposal
+  [string]$Proposal,
+  [switch]$Final   # the copy that becomes the real workbook: no dealMatch review column
 )
 # (Windows PowerShell 5.1 has no $PSScriptRoot yet while reading param defaults, so the default is set here.)
 if (-not $Proposal) { $Proposal = Join-Path $PSScriptRoot '.zoho\deal-proposal.json' }
@@ -92,10 +93,11 @@ try {
     # and got no deal numbers). Show every row in the copy first.
     if ($lo.AutoFilter -and $lo.AutoFilter.FilterMode) { $lo.AutoFilter.ShowAllData(); Write-Output "${sheet}: filter cleared in the copy" }
     $dc = Ensure-Column $lo 'dealID'
-    $hc = Ensure-Column $lo 'dealMatch'
+    if ($Final) { foreach ($c in @($lo.ListColumns)) { if ($c.Name -eq 'dealMatch') { $c.Delete() } } }
+    else { $hc = Ensure-Column $lo 'dealMatch' }
     $dc.DataBodyRange.NumberFormat = '@'
     $dc.DataBodyRange.Value2 = $dealArr
-    $hc.DataBodyRange.Value2 = $howArr
+    if (-not $Final) { $hc.DataBodyRange.Value2 = $howArr }
     # Read it all back: every proposed deal number must be in its row.
     $back = $dc.DataBodyRange.Value2
     foreach ($r in $rows) {
