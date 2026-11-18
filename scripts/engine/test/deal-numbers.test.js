@@ -283,3 +283,13 @@ test('a third party paying a customer\'s bill joins that customer\'s deal when t
   assert.match(inflows[1].how, /on behalf of Ned Larkin/);
   assert.equal(deals.get(sales[0].deal).off, 0);
 });
+
+test('cash a customer stole back during a deal (an outflow to them, Theft/Loss) belongs to that deal', () => {
+  const day = toDay('2025-04-26');
+  const sales = [{ sheet: 'sales', row: 2, id: 'ZZK_1001', day, who: 'Rory Vance', amount: 1900, collected: 1900, medium: 'Cash' }];
+  const inflows = [{ sheet: 'inflows', row: 2, id: 'ZZK_1001', day, who: 'Rory Vance', amount: 3300, category: 'Sale of Inventory' }];
+  const outflows = [{ sheet: 'outflows', row: 2, day, who: 'Rory Vance', amount: 1400, category: 'Bus Expense', minor: 'Theft/Loss' }];
+  const deals = proposeDeals({ sales, purchases: [], inflows, outflows, zohoDocs: [] });
+  assert.equal(outflows[0].deal, sales[0].deal);
+  assert.equal(deals.get(sales[0].deal).off, 0);
+});

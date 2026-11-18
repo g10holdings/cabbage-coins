@@ -323,6 +323,9 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   const isInventory = (r) => /^inventory$/i.test(r.category ?? '');
   const byDay = [...outflows].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
   for (const r of byDay) {
+    // Money a customer took back by theft during a deal (Bus Expense / Theft/Loss to that person): part of that day's deal.
+    const theftOf = /theft|loss/i.test(r.minor ?? '') && [...deals.values()].find((d) => d.day === r.day && people(d).some((p) => samePerson(p, r.who)));
+    if (theftOf) { assign(r, theftOf, 'taken back by the customer (Theft/Loss) in that day\'s deal'); continue; }
     if (!isInventory(r)) { r.how = `not a deal (${r.category ?? 'no category'}${r.minor ? ` / ${r.minor}` : ''})`; continue; }
     if (r.deal) continue;                                    // already placed as part of a split payment
     if (isEbay(r.who)) {
