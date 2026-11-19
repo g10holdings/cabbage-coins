@@ -431,6 +431,30 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 .cc26-sell__quote figcaption { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 @media (max-width: 1000px) { .cc26-sell { grid-template-columns: minmax(0, 1fr); } }
 
+/* Sell to Us: photo box (assets/js/sell-photos.js shrinks photos before they go to Formspree) */
+.cc26-upload { display: flex; flex-direction: column; gap: 10px; }
+.cc26-upload__label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.cc26-upload__label span { color: var(--muted); font-weight: 500; }
+.cc26 .cc26-upload__drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 26px 18px; border: 1px dashed var(--line-3); border-radius: 8px; background: var(--ink); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.cc26 .cc26-upload__drop:hover, .cc26 .cc26-upload__drop.is-over, .cc26 .cc26-upload__drop:focus-within { border-color: var(--gold); background: #11100E; }
+.cc26-upload__drop svg { color: var(--gold); }
+.cc26-upload__cta { font-weight: 700; font-size: 15px; color: var(--text); }
+.cc26-upload__cta em { font-style: normal; color: var(--muted-2); font-weight: 500; }
+.cc26-upload__hint { font-size: 13px; font-weight: 500; color: var(--muted); max-width: 420px; }
+.cc26-upload__input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.cc26-upload__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.cc26-upload__grid:empty { display: none; }
+.cc26-upload__item { position: relative; aspect-ratio: 1 / 1; background: #000; border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; }
+.cc26-upload__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cc26-upload__item.is-busy img { opacity: .35; }
+.cc26-upload__size { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 6px; background: rgba(10,10,11,.78); font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.cc26-upload__rm { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; border-radius: 999px; border: 1px solid var(--line-3); background: rgba(10,10,11,.85); color: var(--text); font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.cc26-upload__rm:hover { border-color: var(--gold); color: var(--gold); }
+.cc26-upload__status { margin: 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+.cc26-upload__status.is-warn { color: var(--gold-hi); }
+@media (hover: none) { .cc26-upload__cta em { display: none; } }
+@media (prefers-reduced-motion: reduce) { .cc26 .cc26-upload__drop { transition: none; } }
+
 /* Collector Services: photo beside each program, alternating sides (stacks under 900px) */
 .cc26-service { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); border: 1px solid var(--line-2); background: var(--panel); }
 .cc26-service--flip { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
