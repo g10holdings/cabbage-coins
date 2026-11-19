@@ -1,4 +1,4 @@
-// Consign vs. auction calculator on /collectorservices/.
+// Consign vs. auction calculator on /consignment/.
 // Cabbage Coins tiers are set by the whole sale price (not stepped like tax brackets).
 // Auction side assumes the winner pays the coin's value in total, so hammer = value / (1 + buyer's fee).
 // No auction house is named or prefilled: the buttons are just common percentages.

@@ -8,6 +8,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPlugin(eleventyNavigationPlugin)
   
   eleventyConfig.addPassthroughCopy('assets')
+  eleventyConfig.addPassthroughCopy('_redirects')
 
   // https://www.11ty.io/docs/quicktips/inline-css/
   eleventyConfig.addFilter("cssmin", function(code) {
