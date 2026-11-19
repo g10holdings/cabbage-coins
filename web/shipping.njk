@@ -15,7 +15,7 @@ description: How to pack, insure and ship coins to Cabbage Coins by USPS or FedE
       <li><a href="#s3"><b>3</b> Wrap each coin</a></li>
       <li><a href="#s4"><b>4</b> Box in a box</a></li>
       <li><a href="#s5"><b>5</b> Seal &amp; label</a></li>
-      <li><a href="#s6"><b>6</b> Insure it</a></li>
+      <li><a href="#s6"><b>6</b> Insure &amp; sign</a></li>
       <li><a href="#s7"><b>7</b> Tell Tony</a></li>
     </ul>
   </div>
@@ -94,11 +94,11 @@ description: How to pack, insure and ship coins to Cabbage Coins by USPS or FedE
         <div class="sh-carrier">
           <div class="sh-carrier__name">FedEx</div>
           <div class="sh-carrier__box">Free box: <b>FedEx Small box</b></div>
-          <address class="sh-addr" id="addr-fedex"><small>Ship to</small>Tony Gryckiewicz<br>1851 Colonial Village Lane<br>Lancaster, PA 17601</address>
+          <address class="sh-addr" id="addr-fedex"><small>Ship to</small>Tony Gryckiewicz<br>C/O FedEx<br>1851 Colonial Village Lane<br>Lancaster, PA 17601</address>
           <button type="button" class="sh-copy" data-copy="addr-fedex">Copy address</button>
         </div>
       </div>
-      <p class="sh-carrier__warn">FedEx can't deliver to a PO Box, so FedEx packages go to the street address only.</p>
+      <p class="sh-carrier__warn">FedEx can't deliver to a PO Box, so FedEx packages go to the FedEx location above.</p>
     </div>
   </li>
 
@@ -227,19 +227,23 @@ description: How to pack, insure and ship coins to Cabbage Coins by USPS or FedE
   <!-- 6 INSURE -->
   <li class="sh-step sh-step--flip" id="s6">
     <div class="sh-art">
-      <svg viewBox="0 0 320 200" role="img" aria-label="A shield with a dollar sign: insure for the full value">
+      <svg viewBox="0 0 320 200" role="img" aria-label="A shield with a dollar sign and a signature: insure for the full value and require a signature">
         <path d="M160 18 l70 26 v52 c0 46 -32 74 -70 88 c-38 -14 -70 -42 -70 -88 v-52z" class="f l"/>
         <path d="M160 40 l50 18 v38 c0 32 -22 52 -50 62 c-28 -10 -50 -30 -50 -62 v-38z" class="f2 m"/>
         <text x="160" y="118" text-anchor="middle" class="ts" style="font-size:54px">$</text>
         <text x="34" y="64" class="tm">FULL</text>
         <text x="34" y="78" class="tm">VALUE</text>
-        <text x="250" y="140" class="tm">INSURED</text>
+        <text x="244" y="112" class="tm">INSURED</text>
+        <text x="236" y="152" class="tm">SIGNATURE</text>
+        <path d="M234 176 c8 -12 14 8 22 -4 s12 10 20 -2 s10 8 20 0" class="l"/>
+        <line x1="232" y1="184" x2="300" y2="184" class="m"/>
       </svg>
     </div>
     <div class="sh-body">
       <div class="sh-num">06</div>
-      <h2>Insure it for the full value</h2>
+      <h2>Insure it and require a signature</h2>
       <p><strong>Insure the package for the full value of everything inside</strong>: the agreed price, or your best estimate if Tony hasn't made an offer yet.</p>
+      <p><strong>Require a direct signature on delivery</strong> with either carrier (USPS Signature Confirmation, FedEx Direct Signature Required).</p>
       <p>Ask for a tracking number and keep your receipt until Tony confirms the package arrived.</p>
     </div>
   </li>
@@ -285,7 +289,8 @@ description: How to pack, insure and ship coins to Cabbage Coins by USPS or FedE
       <li>Inner box with the address on it</li>
       <li>Nothing moves when you shake it</li>
       <li>Outer box taped, label secure</li>
-      <li>Insured for full value, tracking sent to Tony</li>
+      <li>Insured for full value, signature required</li>
+      <li>Tracking sent to Tony</li>
     </ul>
   </div>
 </section>

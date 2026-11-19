@@ -542,6 +542,7 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 
 .cc26 .sh-reach a { font-size: 18px; font-weight: 600; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
 .cc26 .sh-reach a:hover { color: var(--gold-hi); }
+.cc26-sell__box--ship { border-color: var(--gold); }
 .cc26-sell__ship { margin: 0; color: var(--muted-2); font-size: 15px; }
 
 /* Collector Services: photo beside each program, alternating sides (stacks under 900px) */
