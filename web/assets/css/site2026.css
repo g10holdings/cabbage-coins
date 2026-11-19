@@ -455,6 +455,95 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 @media (hover: none) { .cc26-upload__cta em { display: none; } }
 @media (prefers-reduced-motion: reduce) { .cc26 .cc26-upload__drop { transition: none; } }
 
+/* How to ship to us (/shipping/) */
+
+.sh-hero { border-bottom: 1px solid var(--line); }
+.sh-hero .cc26-wrap { padding-block: clamp(44px, 6vw, 96px) clamp(32px, 4vw, 56px); }
+.sh-hero h1 { font-size: clamp(42px, 5.4vw, 76px); line-height: 1.02; text-wrap: balance; max-width: 900px; }
+.sh-hero .cc26-lede { margin-top: 18px; }
+.sh-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; padding: 0; list-style: none; }
+.sh-jump a { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 1px solid var(--line-3); border-radius: 999px; color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 600; }
+.sh-jump a:hover { border-color: var(--gold); color: var(--gold-hi); }
+.sh-jump b { color: var(--gold); font-family: var(--serif); font-size: 16px; font-weight: 600; }
+
+.sh-steps { list-style: none; margin: 0; padding: 0; counter-reset: none; }
+.sh-step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(24px, 4vw, 72px); align-items: center; padding-block: clamp(40px, 5vw, 72px); border-top: 1px solid var(--line-2); scroll-margin-top: 16px; }
+.sh-step:first-child { border-top: none; }
+.sh-step--flip .sh-art { order: 2; }
+.sh-art { background: var(--panel); border: 1px solid var(--line-2); border-radius: 4px; padding: clamp(14px, 2vw, 28px); display: grid; gap: 14px; }
+.sh-art--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sh-art--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sh-art figure { margin: 0; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.sh-art figcaption { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.sh-art svg { width: 100%; height: auto; display: block; max-width: 420px; }
+.sh-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sh-num { font-family: var(--serif); color: var(--gold); font-size: 22px; line-height: 1; }
+.sh-body h2 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.06; text-wrap: balance; }
+.sh-body p { margin: 0; color: var(--muted-2); font-size: 17px; max-width: 60ch; }
+.sh-body .cc26-checks { font-size: 16px; }
+.sh-body strong { color: var(--text); }
+.sh-why { font-size: 14px !important; color: var(--muted) !important; border-left: 2px solid var(--gold); padding-left: 12px; }
+
+/* Step 1 is the important one */
+.sh-step--key .sh-art { border-color: var(--gold); }
+.sh-key { display: inline-flex; align-self: flex-start; padding: 4px 12px; border-radius: 999px; background: var(--gold); color: var(--ink); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+
+/* Carrier cards */
+.sh-carriers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.sh-carrier { border: 1px solid var(--line-3); border-radius: 4px; background: var(--ink); padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sh-carrier__name { font-family: var(--serif); font-size: 28px; line-height: 1; color: var(--text); }
+.sh-carrier__box { font-size: 13px; color: var(--muted-2); }
+.sh-carrier__box b { color: var(--gold); font-weight: 700; }
+.sh-addr { margin: 0; padding: 12px 14px; border: 1px dashed var(--line-3); border-radius: 4px; font-style: normal; font-size: 15px; line-height: 1.5; color: var(--text); }
+.sh-addr small { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.sh-copy { align-self: flex-start; background: none; border: 1px solid var(--line-3); border-radius: 999px; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; padding: 6px 14px; cursor: pointer; }
+.sh-copy:hover { border-color: var(--gold); color: var(--gold-hi); }
+.sh-carrier__warn { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* Forms */
+
+/* Email / text Tony */
+.sh-reach { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.sh-reach > div { border: 1px solid var(--line-3); border-radius: 4px; background: var(--panel); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sh-reach small { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.sh-reach span { font-size: 18px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.sh-step--key .sh-reach > div { border-color: var(--gold); }
+.sh-tip { font-size: 14px !important; color: var(--muted-2) !important; background: var(--panel); border: 1px solid var(--line-2); border-radius: 4px; padding: 12px 14px; }
+.sh-tip b { color: var(--gold); letter-spacing: .14em; text-transform: uppercase; font-size: 11px; margin-right: 6px; }
+@media (max-width: 560px) { .sh-reach { grid-template-columns: minmax(0, 1fr); } }
+
+/* Checklist recap */
+.sh-recap { border: 1px solid var(--line-2); background: var(--panel); padding: clamp(22px, 3vw, 40px); display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 40px; }
+.sh-recap h2 { grid-column: 1 / -1; font-size: clamp(30px, 3vw, 40px); }
+
+/* Drawing styles */
+.sh-art .l { fill: none; stroke: var(--gold); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.sh-art .lt { fill: none; stroke: var(--gold); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.sh-art .m { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.sh-art .md { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 5 5; }
+.sh-art .f { fill: #1C1B19; }
+.sh-art .f2 { fill: #26241F; }
+.sh-art .fg { fill: var(--gold); }
+.sh-art .ff { fill: #8E8C88; }
+.sh-art .ff2 { fill: #B9B7B2; }
+.sh-art .no { fill: none; stroke: #C2615A; stroke-width: 3; stroke-linecap: round; }
+.sh-art .t { fill: var(--gold); font-family: var(--sans); font-weight: 700; font-size: 11px; letter-spacing: .12em; }
+.sh-art .tm { fill: var(--muted-2); font-family: var(--sans); font-weight: 600; font-size: 10px; letter-spacing: .08em; }
+.sh-art .ts { fill: var(--gold); font-family: var(--serif); font-size: 26px; font-weight: 600; }
+
+@media (max-width: 900px) {
+  .sh-step, .sh-step--flip { grid-template-columns: minmax(0, 1fr); }
+  .sh-step--flip .sh-art { order: 0; }
+}
+@media (max-width: 560px) {
+  .sh-carriers { grid-template-columns: minmax(0, 1fr); }
+  .sh-art--two, .sh-art--three { grid-template-columns: minmax(0, 1fr); }
+}
+
+.cc26 .sh-reach a { font-size: 18px; font-weight: 600; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.cc26 .sh-reach a:hover { color: var(--gold-hi); }
+.cc26-sell__ship { margin: 0; color: var(--muted-2); font-size: 15px; }
+
 /* Collector Services: photo beside each program, alternating sides (stacks under 900px) */
 .cc26-service { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); border: 1px solid var(--line-2); background: var(--panel); }
 .cc26-service--flip { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
