@@ -15,8 +15,11 @@
  * ticked Sold gets its soldDate filled or corrected the same way. soldDate drives the archive: a sold coin stays on
  * /inventory/ for 10 days after its sale, then moves to /past-sales/ (web/.eleventy.js, ARCHIVE_DAYS).
  *
- * The workbook is only READ (workbook.js). A coin ticked Sold in the Studio that the workbook still calls Active is
- * left alone and named on screen; if it has no sale date yet, it gets today's.
+ * Back in stock: a listing ticked Sold whose coin the workbook has Active again (a "_2" row) with Website R or Y is
+ * put back on sale (Sold unticked, soldDate cleared, price = that row's listPrice), so it leaves Past Sales.
+ *
+ * The workbook is only READ (workbook.js). Any other coin ticked Sold in the Studio that the workbook still calls
+ * Active is left alone and named on screen; if it has no sale date yet, it gets today's.
  *
  * After a change it starts a Netlify build, since Sanity edits don't rebuild the site on their own.
  *
@@ -47,7 +50,8 @@ export function ymd(v) {
 
 /**
  * Works out what to change. Pure (no reads or writes), so the tests can call it.
- * Returns { markSold: [...], fixDate: [...], studioOnly: [...] }, each item { listing, soldDate, note? }.
+ * Returns { markSold, fixDate, studioOnly, relist }: each item { listing, soldDate, note? }; relist items are
+ * { listing, inventoryID, price, note } (a sold listing whose coin is back in stock with Website R or Y).
  */
 export function planSiteSold(listings, rows, today = ymd(new Date())) {
   const isSold = workbookSales(rows);
@@ -59,9 +63,20 @@ export function planSiteSold(listings, rows, today = ymd(new Date())) {
   // The latest Sell Date among the coin's rows (a coin sold, bought back as "_2" and sold again: the last sale).
   const saleDate = (l) => rowsOf(l).map((r) => ymd(r['Sell Date'])).filter(Boolean).sort().pop() ?? null;
 
-  const plan = { markSold: [], fixDate: [], studioOnly: [] };
+  const plan = { markSold: [], fixDate: [], studioOnly: [], relist: [] };
   for (const l of listings) {
     if (hasCert(l.gradenumber) && STAND_INS.has(certKey(l.gradenumber))) continue;
+    // Back in stock (Tony, 2026-11-19): sold on the website, but the workbook has the coin Active again (a "_2" row)
+    // and its Website says R or Y -> put the old listing back on sale at that row's listPrice.
+    if (l.sold && !isSold(l)) {
+      const back = rowsOf(l).filter((r) => isActive(r) && /^[ry]$/i.test(String(r.Website ?? '').trim()));
+      if (back.length) {
+        const r = back[back.length - 1];   // the latest row ("_3" after "_2")
+        const price = Number(r.listPrice) > 0 ? Number(r.listPrice) : null;
+        plan.relist.push({ listing: l, inventoryID: r.inventoryID, price, note: price ? null : 'no listPrice in the workbook, old price kept' });
+        continue;
+      }
+    }
     if (isSold(l)) {
       const date = saleDate(l);
       // Layaway (Tony, 2026-11-11): Sold with a FUTURE Sell Date = sold, waiting on the final payment. The coin is
@@ -227,11 +242,16 @@ async function main() {
     plan.fixDate.forEach((x) => console.log(line(x) + (x.was ? `  (was ${x.was})` : '')));
   }
   const undated = plan.studioOnly.filter((x) => x.needsDate);
+  if (plan.relist.length) {
+    console.log(`\n  BACK IN STOCK: put back on sale on the website (${plan.relist.length}) — leaves Past Sales:`);
+    plan.relist.forEach((x) => console.log(`    ${x.listing.name}  (row ${x.inventoryID}) at ${usd(x.price ?? x.listing.price)}${x.note ? `  ! ${x.note}` : ''}`));
+  }
   if (plan.studioOnly.length) {
-    console.log(`\n  Sold on the website but NOT Sold in the workbook (${plan.studioOnly.length}) — left as they are:`);
+    console.log(`\n  Sold on the website but NOT Sold in the workbook (${plan.studioOnly.length}) — left as they are`);
+    console.log('  (back in stock? set its workbook row\'s Website to R or Y and step 4 puts it back on sale):');
     plan.studioOnly.forEach((x) => console.log(`    ${x.listing.name}  (${x.listing.gradenumber})${x.needsDate ? `  — gets today's date (${x.soldDate}) for the archive` : ''}`));
   }
-  const soldChanges = [...plan.markSold, ...plan.fixDate, ...undated];
+  const soldChanges = [...plan.markSold, ...plan.fixDate, ...undated, ...plan.relist];
   if (!soldChanges.length) console.log('  Every coin sold in the workbook is marked sold on the website, with its sale date.');
   const total = soldChanges.length + check.price.length;
   if (!total) {
@@ -239,7 +259,8 @@ async function main() {
     return;
   }
 
-  const what = [check.price.length && `${check.price.length} price(s)`, soldChanges.length && `${soldChanges.length} sold coin(s)`]
+  const soldOnly = soldChanges.length - plan.relist.length;
+  const what = [check.price.length && `${check.price.length} price(s)`, soldOnly && `${soldOnly} sold coin(s)`, plan.relist.length && `${plan.relist.length} back-in-stock coin(s)`]
     .filter(Boolean).join(' and ');
   if (ASK && !APPLY) APPLY = await askYes(`\nUpdate ${what} on the website and rebuild the site? (y/N) `);
   if (!APPLY) { console.log('  Nothing changed.'); return; }
@@ -251,6 +272,11 @@ async function main() {
   }
   for (const x of plan.markSold) tx.patch(x.listing._id, (p) => p.set({ sold: true, soldDate: x.soldDate }));
   for (const x of [...plan.fixDate, ...undated]) tx.patch(x.listing._id, (p) => p.set({ soldDate: x.soldDate }));
+  for (const x of plan.relist) {
+    const back = (p) => p.set({ sold: false, ...(x.price ? { price: x.price } : {}) }).unset(['soldDate']);
+    tx.patch(x.listing._id, back);
+    if (drafts.has(`drafts.${x.listing._id}`)) tx.patch(`drafts.${x.listing._id}`, back);   // so publishing a draft doesn't re-sell it
+  }
   await tx.commit();
   console.log(`  ✔ Updated ${what}.`);
   await startBuild();

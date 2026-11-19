@@ -108,3 +108,26 @@ test('workbook check: the stand-in takes its price from its identical coins stil
   check = planWorkbookCheck([listing], same.slice(0, 2));                     // none left in stock
   assert.deepEqual([check.price.length, check.standInNone.length], [0, 1]);
 });
+
+test('back in stock: a sold listing whose "_2" row is Active with Website R or Y goes back on sale', () => {
+  const name = '1889-CC $1 Morgan Silver Dollar PCGS XF40';
+  const sold = { _id: 'cc', name, gradenumber: '45673714', sold: true, soldDate: '2026-09-24', price: 4650 };
+  const first = { ...wrow('45673714', name, 'Sold', 'Y', 4650), 'Sell Date': new Date('2026-09-24T00:00:00') };
+  const back = (website, listPrice) => [first, wrow('45673714_2', name, 'Active', website, listPrice)];
+
+  let plan = planSiteSold([sold], back('Y', 5200), '2026-11-19');
+  assert.deepEqual(plan.relist.map((x) => [x.listing._id, x.inventoryID, x.price]), [['cc', '45673714_2', 5200]]);
+  assert.deepEqual([plan.markSold, plan.fixDate, plan.studioOnly].map((x) => x.length), [0, 0, 0]);
+
+  plan = planSiteSold([sold], back('r', null), '2026-11-19');                // R counts too; no price -> old price kept
+  assert.deepEqual(plan.relist.map((x) => [x.price, x.note]), [[null, 'no listPrice in the workbook, old price kept']]);
+
+  plan = planSiteSold([sold], back(null, 5200), '2026-11-19');               // Website blank: not yet, just named
+  assert.deepEqual([plan.relist.length, plan.studioOnly.length], [0, 1]);
+
+  plan = planSiteSold([sold], [first, wrow('45673714_2', name, 'Sold', 'Y', 5200)], '2026-11-19');  // sold again
+  assert.equal(plan.relist.length, 0);
+
+  plan = planSiteSold([{ ...sold, sold: false }], back('Y', 5200), '2026-11-19');   // already back on sale
+  assert.equal(plan.relist.length, 0);
+});

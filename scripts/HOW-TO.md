@@ -155,11 +155,11 @@ In the Studio, paste the Short's link into **YouTube video** on the listing and 
 Step 4 fills it and refreshes anything over 30 days old; `Extras\Fill-CAC-Pop` does the same on its own. Either way the site needs a build to show it. A stickered coin needs its CAC catalog # in `engine\cac-catalog.json` (PCGS # to CAC catalog #, the PCGS # with designation if the coin has one). A coin that isn't there is listed on screen and shows no CAC box. **Don't use the GSID from the marketplace:** it's a different number and gives another coin's population.
 
 ### A coin came back into stock (`51354567_2`)
-The `_2` is dropped, so the row matches its cert, and the scripts treat the coin as back in stock.
-The coin's old listing is still there (marked sold, in Past Sales), so the import will **not** make a new one.
-To put it back on sale, reuse that listing: in the Studio, untick **Sold**, clear the **sale date** and set the
-new price (the `_2` row's listPrice). The old sale drops out of Past Sales. Set the `_2` row's Website to **Y**,
-then run step 4 to list it on eBay and CAC.
+All in the workbook, nothing in the Studio: give the `_2` row its listPrice and set its Website to **Y** (or
+**R**), then run step 4. The `_2` is dropped, so the row matches the coin's old listing (marked sold, in Past
+Sales). Step 4 shows it under **BACK IN STOCK** and, on your yes, puts that listing back on sale: Sold unticked,
+sale date cleared, price = the `_2` row's listPrice. It leaves Past Sales, and the eBay and CAC parts list it again.
+While the `_2` row's Website is still blank, step 4 only names the coin and changes nothing.
 
 ### The 2020-W Palladium Eagle
 A stand-in listing: you have several and show one at a time (`STAND_INS` in `engine\sold.js`).
