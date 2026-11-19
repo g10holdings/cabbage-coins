@@ -98,14 +98,22 @@ export function activeRowsOf(l, rows) {
 
 /**
  * The workbook check. Pure, like planSiteSold. `listings` are the published ones; coins already ticked Sold, or
- * about to be marked sold by this run (`soldNow`, listing ids), aren't live and are skipped, as are STAND_INS.
- * Returns { notY, noRow, several, price, noPrice }.
+ * about to be marked sold by this run (`soldNow`, listing ids), aren't live and are skipped.
+ *
+ * A STAND_IN (one listing shown for several identical coins, e.g. the Palladium Eagles) has a Sold row of its own, so
+ * its price comes from the ACTIVE rows with the same description as its row (Tony, 2026-11-19): when they all have the
+ * same listPrice, that's the website price; when they differ it's listed (`standInMixed`) and left alone; when none
+ * is left in stock it's listed too (`standInNone`). The Website column isn't checked for a stand-in.
+ * Returns { notY, noRow, several, price, noPrice, standInMixed, standInNone }.
  */
 export function planWorkbookCheck(listings, rows, soldNow = new Set()) {
-  const plan = { notY: [], noRow: [], several: [], price: [], noPrice: [] };
+  const plan = { notY: [], noRow: [], several: [], price: [], noPrice: [], standInMixed: [], standInNone: [] };
   for (const l of listings) {
     if (l.sold || soldNow.has(l._id)) continue;
-    if (hasCert(l.gradenumber) && STAND_INS.has(certKey(l.gradenumber))) continue;
+    if (hasCert(l.gradenumber) && STAND_INS.has(certKey(l.gradenumber))) {
+      standInPrice(l, rows, plan);
+      continue;
+    }
     const mine = activeRowsOf(l, rows);
     if (!mine.length) { plan.noRow.push({ listing: l }); continue; }
     if (mine.length > 1) { plan.several.push({ listing: l, ids: mine.map((r) => r.inventoryID) }); continue; }
@@ -120,6 +128,25 @@ export function planWorkbookCheck(listings, rows, soldNow = new Set()) {
     }
   }
   return plan;
+}
+
+/** The stand-in's price from its identical coins still in stock (see planWorkbookCheck). */
+function standInPrice(l, rows, plan) {
+  const cert = certKey(l.gradenumber);
+  const own = rows.find((r) => r.inventoryID != null && hasCert(r.inventoryID) && certKey(r.inventoryID) === cert);
+  const name = nameKey(own ? own.itemDescription : l.name);
+  const twins = rows.filter((r) => r.inventoryID != null && isActive(r) && nameKey(r.itemDescription) === name);
+  if (!twins.length) { plan.standInNone.push({ listing: l }); return; }
+  const prices = [...new Set(twins.map((r) => Number(r.listPrice)).filter((n) => n > 0))];
+  const ids = twins.map((r) => r.inventoryID);
+  if (!prices.length) { plan.noPrice.push({ listing: l, inventoryID: ids.join(', ') }); return; }
+  if (prices.length > 1) {
+    plan.standInMixed.push({ listing: l, rows: twins.map((r) => `${r.inventoryID} $${Number(r.listPrice) || '-'}`) });
+    return;
+  }
+  if (Math.abs(prices[0] - (Number(l.price) || 0)) > 0.005) {
+    plan.price.push({ listing: l, inventoryID: ids.join(', '), from: l.price ?? null, to: prices[0], standIn: true });
+  }
 }
 
 async function startBuild() {
@@ -170,13 +197,21 @@ async function main() {
   if (!check.notY.length && !check.noRow.length && !check.several.length) {
     console.log('  Every coin live on the website says "Y" in the workbook.');
   }
+  if (check.standInMixed.length) {
+    console.log(`  Stand-in listing: its coins in stock have DIFFERENT listPrices (${check.standInMixed.length}) — price not changed:`);
+    check.standInMixed.forEach((x) => console.log(`    ${x.listing.name}  (${x.rows.join(', ')})`));
+  }
+  if (check.standInNone.length) {
+    console.log(`  Stand-in listing with none of its coins left Active in the workbook (${check.standInNone.length}) — take it down?`);
+    check.standInNone.forEach((x) => console.log(`    ${x.listing.name}  (${x.listing.gradenumber})`));
+  }
   if (check.noPrice.length) {
     console.log(`  No listPrice in the workbook (${check.noPrice.length}) — website price left as it is:`);
     check.noPrice.forEach((x) => console.log(`    ${x.listing.name}  (row ${x.inventoryID}; website ${usd(x.listing.price)})`));
   }
   if (check.price.length) {
     console.log(`  PRICE CHANGE from the workbook's listPrice (${check.price.length}):`);
-    check.price.forEach((x) => console.log(`    ${x.listing.name}  ${usd(x.from)} -> ${usd(x.to)}${drafts.has(`drafts.${x.listing._id}`) ? '  (its open Studio draft too)' : ''}`));
+    check.price.forEach((x) => console.log(`    ${x.listing.name}  ${usd(x.from)} -> ${usd(x.to)}${x.standIn ? `  (stand-in; rows ${x.inventoryID})` : ''}${drafts.has(`drafts.${x.listing._id}`) ? '  (its open Studio draft too)' : ''}`));
   } else {
     console.log('  Prices: every live coin\'s website price matches the workbook\'s listPrice.');
   }

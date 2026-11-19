@@ -158,8 +158,10 @@ Step 4 fills it and refreshes anything over 30 days old; `Extras\Fill-CAC-Pop` d
 Nothing special to do: the `_2` is dropped, so it matches its cert. Mark it **R** to list it again.
 
 ### The 2020-W Palladium Eagle
-A stand-in listing: you have several and show one at a time. The workbook check skips it
-on purpose, and so does step 4 (`STAND_INS` in `engine\sold.js`).
+A stand-in listing: you have several and show one at a time (`STAND_INS` in `engine\sold.js`).
+Step 4 never marks it sold, but it does take its **price** from your other Palladium Eagle rows that are
+still Active: change their listPrice in the workbook and step 4 updates the website (then eBay and CAC).
+If those rows have different listPrices, or none is left Active, step 4 lists it and changes nothing.
 
 ---
 

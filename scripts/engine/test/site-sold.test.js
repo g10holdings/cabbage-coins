@@ -88,3 +88,23 @@ test('workbook check skips coins that are sold, being marked sold now, or the st
   ], rows, new Set(['b']));
   assert.deepEqual([check.notY, check.noRow, check.price, check.noPrice].map((x) => x.length), [0, 0, 0, 0]);
 });
+
+test('workbook check: the stand-in takes its price from its identical coins still in stock', () => {
+  const pd = '2020-W Burnished Palladium Eagle Pd$25 High Relief NGC MS70';
+  const listing = { _id: 'p', name: '2020-W Palladium Eagle', gradenumber: '6042153-049', price: 2200 };
+  const same = [wrow('6042153-049', pd, 'Sold', 'Y', 2050), wrow('6042153-032', pd, 'Sold', null, 1900),
+    wrow('6042153-027', pd, 'Active', null, 2000), wrow('6042153-028', pd, 'Active', null, '2000')];
+  let check = planWorkbookCheck([listing], same);
+  assert.deepEqual(check.price.map((x) => [x.listing._id, x.from, x.to, x.inventoryID]), [['p', 2200, 2000, '6042153-027, 6042153-028']]);
+  assert.equal(check.notY.length, 0);
+
+  check = planWorkbookCheck([{ ...listing, price: 2000 }], same);            // already right: nothing to do
+  assert.deepEqual([check.price, check.standInMixed, check.standInNone].map((x) => x.length), [0, 0, 0]);
+
+  check = planWorkbookCheck([listing], [...same, wrow('6042153-031', pd, 'Active', null, 2100)]);
+  assert.equal(check.price.length, 0);                                         // prices differ: listed, not changed
+  assert.equal(check.standInMixed.length, 1);
+
+  check = planWorkbookCheck([listing], same.slice(0, 2));                     // none left in stock
+  assert.deepEqual([check.price.length, check.standInNone.length], [0, 1]);
+});
