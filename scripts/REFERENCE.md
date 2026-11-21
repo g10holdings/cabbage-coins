@@ -138,6 +138,28 @@ Then it puts the 4 photos on every draft that has none, found by cert #; a draft
 photos aren't made yet gets them on a later run. Then PCGS population. The slug, caption
 and description are left for you (caption: step 3).
 
+## YouTube Shorts
+
+`Extras\YouTube-Shorts` (`engine/youtube-shorts.js`) takes every workbook row with **Video = R**:
+
+| Piece | Rule |
+|---|---|
+| File | `<cert>.MP4` in `shorts.ready` (settings.json); `_2` is dropped |
+| Listing | by cert (Grade Number); items without a cert by name |
+| Video | the channel's latest 200 uploads, by title = file name (or the finished title, on a re-run) |
+| Title | itemDescription without the denomination word, then ` - cert`; ingots / no grading company: no serial; at most 100 characters |
+| Description | one of 4 wordings (picked by cert) with the coin's `cabbagecoins.com/listings/<slug>/` link and tony@cabbagecoins.com, then #coins #numismatics #coincollecting |
+| Tags | date + series, series, grading company, mint (CC/S/O/D/W) or CAC, then "coin collecting" and "Cabbage Coins" |
+| Settings | Unlisted, not made for kids, embeddable; the rest of the video's settings are kept |
+| Playlist | added to "Inventory Highlights" (`shorts.playlist` in settings.json) unless already in it |
+| Thumbnail | the file's very first frame, 1080 wide JPEG (under YouTube's 2 MB), cut with ffmpeg (`ffmpeg-static` package), set only after processing; a refusal keeps YouTube's own pick |
+
+It links only videos YouTube reports as finished processing (it waits up to 60 minutes), writes
+`youtubeUrl` (`https://youtube.com/shorts/<id>`) on the published listing and any open draft, starts one
+Netlify build, and moves the files to `shorts.uploaded`. Skipped: no listing; the listing already has a
+video (unless `--replace`); not on YouTube yet. The sign-in (`YOUTUBE_*` in `.env`) comes from
+`Extras\Connect-YouTube`.
+
 ## Captions
 
 `3_Choose-Captions` covers drafts with all 4 photos and no caption. Claude looks at the

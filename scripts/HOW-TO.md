@@ -149,7 +149,17 @@ its top) so every future coin of that series fills in itself.
 Only PCGS coins get it. NGC and CACG have no PCGS grid.
 
 ### Add a YouTube video to a listing
-In the Studio, paste the Short's link into **YouTube video** on the listing and Publish. It shows under "Tony says" after the next site build. Clear the field to remove it.
+**Several at once (the normal way):**
+1. Save each Short in `D:\YouTube\Shorts\DJI_Recordings` named by its cert (`45673714.MP4`; no `_2`; an ingot by its workbook ID, `SF_213.MP4`), and put **R** in the workbook's **Video** column. Save the workbook.
+2. In YouTube Studio, click **Create → Upload videos** and drag in all the files (up to 15 at a time). Don't rename them: the script finds each by its file name (Studio's dashes-to-spaces change is fine). They show as Private drafts until the script runs. You can close the upload window once they're uploaded.
+3. Run `Extras\YouTube-Shorts`. It shows each coin's title, link and tags; answer **y**. It sets the title (the description without the denomination, then " - cert"; ingots without the serial), the description (with the coin's listing link and your email), 5–6 tags, **Unlisted** and **Not made for kids**, and adds it to the **Inventory Highlights** playlist. Then it waits for YouTube to finish processing (a live timer shows it's still working), sets each video's thumbnail to its opening frame, puts the link on each listing, rebuilds the site, and moves the files into `Uploaded`.
+4. Change **R** to **Y** in the Video column for the coins it lists at the end.
+
+A coin whose video is still processing after an hour, or isn't on YouTube yet, is simply done next time. A listing that already has a video is left alone (`node youtube-shorts.js --ask --replace` replaces it).
+
+**Just one, by hand:** in the Studio, paste the Short's link into **YouTube video** on the listing and Publish. It shows under "Tony says" after the next site build. Clear the field to remove it.
+
+**Why you upload in YouTube Studio instead of the script:** Google locks videos uploaded through its API to Private until the app passes an audit. Changing a video's details through the API has no such lock.
 
 ### CAC population is missing or old
 Step 4 fills it and refreshes anything over 30 days old; `Extras\Fill-CAC-Pop` does the same on its own. Either way the site needs a build to show it. A stickered coin needs its CAC catalog # in `engine\cac-catalog.json` (PCGS # to CAC catalog #, the PCGS # with designation if the coin has one). A coin that isn't there is listed on screen and shows no CAC box. **Don't use the GSID from the marketplace:** it's a different number and gives another coin's population.
@@ -180,6 +190,9 @@ and `doneSOLD`.
 1. Install Node.js, copy the `cabbage-coins` folder (or clone it), and run `npm install` in `scripts\engine`.
 2. Recreate **`engine\.env`**, which isn't in git, with: `SANITY_WRITE_TOKEN`, `PCGS_API_TOKEN`, `ANTHROPIC_API_KEY`, `CAC_API_KEY`, `CAC_API_TOKEN`, `EBAY_APP_ID`, `EBAY_CERT_ID`, `EBAY_RUNAME`, `EBAY_REFRESH_TOKEN`.
 3. For eBay, double-click **`Extras\Connect-eBay`**. It walks you through signing in and saves the token.
+
+### Connect (or reconnect) YouTube
+`Extras\Connect-YouTube` opens Google's sign-in. Pick the Cabbage Coins channel. "Google hasn't verified this app" is expected: **Advanced → Go to Cabbage Coins Scripts**. It needs `engine\.youtube-client.json`, the Desktop-app client from Google Cloud (project "Cabbage Coins Scripts" → Google Auth Platform → Clients). Run it again if YouTube-Shorts says the sign-in failed.
 
 ### Sell a coin on eBay only (never on the website)
 1. **Workbook:** set its Website column to `E` (Active, with a listPrice).

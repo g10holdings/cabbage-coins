@@ -51,7 +51,8 @@ eBay** in the Studio. It takes sold coins down from CAC and eBay and files their
 
 **`Extras` folder:** `Redo-Photos`, `Undo-Import`, `Fill-PCGS-Pop`, `Fill-CAC-Pop`, `Check-Rules`,
 `Connect-eBay`, `eBay-Only` (coins marked Website = E go straight to eBay, never the website or CAC),
-`Make-Video-Graphics` (name banners and the thumbnail for YouTube videos), and the old
+`Make-Video-Graphics` (name banners and the thumbnail for YouTube videos), `YouTube-Shorts` (finishes the
+Shorts you dragged into YouTube Studio and puts them on their listings), `Connect-YouTube`, and the old
 hand-photo rename tools. See [`HOW-TO.md`](HOW-TO.md) for
 when to use each.
 

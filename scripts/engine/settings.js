@@ -33,6 +33,11 @@ export const settings = {
     dataset: process.env.SANITY_DATASET || raw.sanity.dataset,
     apiVersion: raw.sanity.apiVersion,
   },
+  shorts: {
+    ready: abs(raw.shorts?.ready),
+    uploaded: abs(raw.shorts?.uploaded),
+    playlist: raw.shorts?.playlist ?? "Inventory Highlights",
+  },
   ebayPromoImage: raw.ebayPromoImage,
 };
 

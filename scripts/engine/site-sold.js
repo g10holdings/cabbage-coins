@@ -164,7 +164,8 @@ function standInPrice(l, rows, plan) {
   }
 }
 
-async function startBuild() {
+/** Starts a Netlify build of the live site (uses the Netlify CLI login on this computer). Also used by youtube-shorts.js. */
+export async function startBuild() {
   const cfgPath = path.join(process.env.APPDATA ?? '', 'netlify', 'Config', 'config.json');
   let token;
   try {

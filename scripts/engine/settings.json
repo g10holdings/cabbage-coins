@@ -18,5 +18,12 @@
     "apiVersion": "2024-01-01"
   },
 
+  "shorts": {
+    "_about": "YouTube Shorts (Extras\\YouTube-Shorts): video files named by cert wait in ready; once linked to their listing they move to uploaded.",
+    "ready": "D:/YouTube/Shorts/DJI_Recordings",
+    "uploaded": "D:/YouTube/Shorts/DJI_Recordings/Uploaded",
+    "playlist": "Inventory Highlights"
+  },
+
   "ebayPromoImage": "https://cabbagecoins.com/assets/img/ebay-promo-card.jpg"
 }
