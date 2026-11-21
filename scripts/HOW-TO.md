@@ -151,9 +151,10 @@ Only PCGS coins get it. NGC and CACG have no PCGS grid.
 ### Add a YouTube video to a listing
 **Several at once (the normal way):**
 1. Save each Short in `D:\YouTube\Shorts\DJI_Recordings` named by its cert (`45673714.MP4`; no `_2`; an ingot by its workbook ID, `SF_213.MP4`), and put **R** in the workbook's **Video** column. Save the workbook.
-2. In YouTube Studio, click **Create → Upload videos** and drag in all the files (up to 15 at a time). Don't rename them: the script finds each by its file name (Studio's dashes-to-spaces change is fine). They show as Private drafts until the script runs. You can close the upload window once they're uploaded.
+2. In YouTube Studio, click **Create → Upload videos** and drag in all the files (up to 15 at a time). Don't rename them: the script finds each by its file name (Studio's dashes-to-spaces change is fine). They show as Private drafts. You can close the upload window once they're uploaded.
 3. Run `Extras\YouTube-Shorts`. It shows each coin's title, link and tags; answer **y**. It sets the title (the description without the denomination, then " - cert"; ingots without the serial), the description (with the coin's listing link and your email), 5–6 tags, **Unlisted** and **Not made for kids**, and adds it to the **Inventory Highlights** playlist. Then it waits for YouTube to finish processing (a live timer shows it's still working), sets each video's thumbnail to its opening frame, puts the link on each listing, rebuilds the site, and moves the files into `Uploaded`.
-4. Change **R** to **Y** in the Video column for the coins it lists at the end.
+4. In YouTube Studio, click **Edit draft → Save** on each of those videos. Studio keeps calling them "Draft" (because the upload window was closed early) until you do, even though they're already Unlisted and playing on the website; the script can't clear that label. Save keeps everything the script set.
+5. Change **R** to **Y** in the Video column for the coins it lists at the end.
 
 A coin whose video is still processing after an hour, or isn't on YouTube yet, is simply done next time. A listing that already has a video is left alone (`node youtube-shorts.js --ask --replace` replaces it).
 

@@ -474,6 +474,9 @@ async function main() {
   if (linked.length) {
     console.log('  In the workbook, change Video from R to Y for:');
     for (const i of linked) console.log(`    ${i.row.inventoryID}`);
+    // The API can't clear Studio's "Draft" label (an upload window closed early); Tony clears it by hand (2026-11-20).
+    console.log('  In YouTube Studio, click "Edit draft" → Save on each of these videos so Studio stops calling them drafts.');
+    console.log('  (They already play on the website; Save keeps the title, tags, thumbnail and Unlisted.)');
   }
   const left = plan.todo.length - linked.length;
   if (left) console.log(`  ${left} not finished: run this again later; it picks up where it left off.`);
