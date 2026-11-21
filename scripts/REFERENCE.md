@@ -287,4 +287,6 @@ script follows. **`engine\.env`**: keys and tokens, not in git.
 | `docs-page.js` | Builds the shareable Playbook page from README, HOW-TO and REFERENCE |
 | `video-graphics.js`, `video-titles.json` | 4K name banners for YouTube videos (`Extras\Make-Video-Graphics`), and your own wording for them |
 | `video-thumbnail.js` | The video's YouTube thumbnails: color themes, layouts, and which looks were used last |
+| `youtube-shorts.js` | Finishes the Shorts you uploaded in YouTube Studio and links them to their listings (`Extras\YouTube-Shorts`) |
+| `connect-youtube.js` | One-time YouTube sign-in (`Extras\Connect-YouTube`); needs `.youtube-client.json` (private, never committed) |
 | `clean-sitesettings.js`, `seed-coinshows.js` | One-off maintenance scripts |
