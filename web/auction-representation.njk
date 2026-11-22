@@ -1,0 +1,79 @@
+---
+layout: layouts/dark.njk
+title: Cabbage Coins | Auction Representation
+permalink: /auction-representation/
+description: Let Tony bid for you at coin auctions. 5% of the price realized on coins you win, 3% over $25,000, nothing if you don't win, and insured shipping at cost.
+---
+<section class="cc26-pagehero">
+    <div class="cc26-wrap cc26-pagehero__in">
+        <div class="cc26-eyebrow">Auction representation</div>
+        <h1>Let Tony bid for you.</h1>
+        <p class="cc26-lede">Found a coin in an upcoming auction? Cabbage Coins can bid on your behalf, take delivery from the auction house, and ship the coin to you fully insured. You only pay a fee on coins you win.</p>
+        <div class="cc26-hero__ctas">
+            <button type="button" class="cc26-btn cc26-btn--gold cc26-btn--lg" data-modal-open="cc26-contact">Ask Tony to bid for you</button>
+            <a class="cc26-textlink" href="/consignment/">Selling instead? See consignment</a>
+        </div>
+    </div>
+</section>
+
+<section class="cc26-wrap cc26-section">
+    <article class="cc26-service">
+        <img class="cc26-service__img" src="/assets/img/services-auction.jpg" alt="Tony inspecting a coin with a loupe at a show table" loading="lazy" width="1400" height="1050" style="object-position: 40% 50%">
+        <div class="cc26-service__body">
+            <h2>How it works</h2>
+            <ul class="cc26-checks">
+                <li>Send Tony the auction, the lot numbers and your maximum bid for each lot.</li>
+                <li>Tony places the bids in Cabbage Coins' name and never goes over your maximum.</li>
+                <li>If you win, you pay the auction's invoice amount plus our fee. Cabbage Coins pays the auction house and takes delivery.</li>
+                <li>Your coin ships to you insured, with a signature required.</li>
+            </ul>
+
+            <div class="cc26-tiers">
+                <div class="cc26-tier">
+                    <div class="cc26-tier__copy">
+                        <h3>Coins you win</h3>
+                        <p>A percentage of the price realized: the hammer price plus the auction's buyer's fee.</p>
+                        <p class="cc26-tier__note">3% on any coin whose price realized is over $25,000.</p>
+                    </div>
+                    <div class="cc26-tier__price">5%<span> of price realized</span><small>$50 minimum per lot</small></div>
+                </div>
+                <div class="cc26-tier">
+                    <div class="cc26-tier__copy">
+                        <h3>Coins you don't win</h3>
+                        <p>No charge.</p>
+                    </div>
+                    <div class="cc26-tier__price">$0</div>
+                </div>
+                <div class="cc26-tier">
+                    <div class="cc26-tier__copy">
+                        <h3>Shipping to you</h3>
+                        <p>Insured shipping with a signature required, billed at our actual cost.</p>
+                    </div>
+                    <div class="cc26-tier__price">At cost</div>
+                </div>
+            </div>
+            <p class="cc26-tier__note">The auction's buyer's fee is charged by the auction house, not by Cabbage Coins. Example: a coin that hammers at $10,000 with a 20% buyer's fee has a price realized of $12,000, so our fee is $600.</p>
+        </div>
+    </article>
+</section>
+
+<section class="cc26-wrap cc26-section cc26-section--last">
+    <div class="cc26-cta">
+        <div class="cc26-cta__copy">
+            <div class="cc26-eyebrow">Have a lot in mind?</div>
+            <h2>Tell Tony the auction, the lots and your maximum bids.</h2>
+            <p>Please reach out a few days before the sale so there's time to talk it through.</p>
+        </div>
+        <div class="cc26-cta__actions">
+            <button type="button" class="cc26-btn cc26-btn--gold cc26-btn--lg" data-modal-open="cc26-contact">Contact Tony</button>
+            <a class="cc26-textlink" href="tel:17177239505">(717) 723-9505</a>
+        </div>
+    </div>
+</section>
+
+{% set contactTitle = "Contact Tony" %}
+{% set contactSub = "Auction Representation" %}
+{% set contactSubject = "Auction Representation - Cabbage Coins" %}
+{% set contactType = "Auction Representation" %}
+{% set contactPlaceholder = "Hello Tony, I'd like you to bid for me. Auction: ... Lots and maximum bids: ... My phone number is ..." %}
+{% include "contactmodal.njk" %}
