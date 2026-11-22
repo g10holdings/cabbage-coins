@@ -580,7 +580,7 @@ iframe.cc26-video--playing { border: 1px solid var(--line); cursor: auto; }
 
 /* Collector Services: commission table + consign-vs-auction calculator */
 .cs-linkbtn { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
-.cs-buyside { margin: 18px 0 0; font-size: 15px; }
+.cs-buyside { margin: 28px 0 0; text-align: center; font-size: 15px; }
 .cs-rates { width: 100%; max-width: 420px; border-collapse: collapse; margin: 16px 0 4px; font-size: 15px; }
 .cs-rates th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 0 0 8px; border-bottom: 1px solid var(--line-3); }
 .cs-rates td { padding: 9px 0; border-bottom: 1px solid var(--line-2); color: var(--text-2); }
