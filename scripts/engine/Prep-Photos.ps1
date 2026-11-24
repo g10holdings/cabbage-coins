@@ -170,13 +170,23 @@ foreach ($coin in $coins) {
     # No slab, no circle and no check window: each photo framed with a margin all round, with the logo.
     # -1 front and -2 back from each side's best exposure; when each side has a second shot (e.g. held in the hand),
     # those become -3 (front) and -4 (back), so the site and eBay get 4 photos (Tony, 2026-11-24; was 2 since 11-11).
-    # A re-run (-Redo) reuses the shots chosen last time (originals\photo-prep.txt: obv, rev, obv2, rev2).
+    # A re-run (-Redo) reuses the shots chosen last time (originals\photo-prep.txt: obv, rev, obv2, rev2), and the
+    # ingot's edges when they were measured by hand ("L,T,R,B" in the 4th column: the scan gets fooled by fingers or
+    # a lighter floor under the backdrop) so it stays dead centre. The 2nd shots (-3/-4) are usually held in the hand,
+    # so their logo goes bottom RIGHT, off the fingers (Tony, 2026-11-24); a 5th column "left"/"right" overrides.
     Write-Host ''
     Write-Host "== $($folder.Name)" -ForegroundColor Cyan
     $byName = @{}; foreach ($s in $sources) { $byName[$s.Name] = $s }
-    $chosen = [ordered]@{}
+    $chosen = [ordered]@{}; $edges = @{}; $logoSide = @{}
     if (Test-Path -LiteralPath $stateFile) {
-      foreach ($l in Get-Content -LiteralPath $stateFile) { $p = $l -split "`t"; if ($p.Count -ge 3 -and $p[2] -eq 'ingot' -and $byName[$p[1]]) { $chosen[$p[0]] = $byName[$p[1]] } }
+      foreach ($l in Get-Content -LiteralPath $stateFile) {
+        $p = $l -split "`t"
+        if ($p.Count -ge 3 -and $p[2] -eq 'ingot' -and $byName[$p[1]]) {
+          $chosen[$p[0]] = $byName[$p[1]]
+          if ($p.Count -ge 4 -and $p[3] -match '^\d+,\d+,\d+,\d+$') { $edges[$p[0]] = $p[3] }
+          if ($p.Count -ge 5 -and $p[4] -in 'left', 'right') { $logoSide[$p[0]] = $p[4] }
+        }
+      }
     }
     if (-not ($chosen['obv'] -and $chosen['rev'])) {
       $chosen = [ordered]@{}
@@ -197,9 +207,16 @@ foreach ($coin in $coins) {
     foreach ($k in $slots.Keys) {
       $out = Join-Path $folder.FullName "$($coin.base)-$($slots[$k]).jpg"
       if (-not $chosen[$k]) { if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out }; continue }   # an older extra
-      Write-Host "   -$($slots[$k]) $($label[$k]): $($chosen[$k].Name)"
-      [CoinPhoto]::Ingot($chosen[$k].FullName, $out, 1044, 0.86, $Emblem, (New-Object System.Drawing.Rectangle(75, 869, 124, 124)), 0.8, 95)
-      $lines += ($k, $chosen[$k].Name, 'ingot') -join "`t"
+      $side = if ($logoSide[$k]) { $logoSide[$k] } elseif ($k -like '*2') { 'right' } else { 'left' }
+      $logoBox = New-Object System.Drawing.Rectangle($(if ($side -eq 'right') { 845 } else { 75 }), 869, 124, 124)
+      Write-Host "   -$($slots[$k]) $($label[$k]): $($chosen[$k].Name)$(if ($edges[$k]) { ' (measured edges)' })"
+      if ($edges[$k]) {
+        $e = [int[]]($edges[$k] -split ',')
+        [CoinPhoto]::IngotAt($chosen[$k].FullName, $out, 1044, 0.86, $Emblem, $logoBox, 0.8, 95, $e[0], $e[1], $e[2], $e[3])
+      } else {
+        [CoinPhoto]::Ingot($chosen[$k].FullName, $out, 1044, 0.86, $Emblem, $logoBox, 0.8, 95)
+      }
+      $lines += ($k, $chosen[$k].Name, 'ingot', "$($edges[$k])", $(if ($logoSide[$k]) { $logoSide[$k] } else { '' })) -join "`t"
     }
     New-Item -ItemType Directory -Force $origDir | Out-Null
     foreach ($f in $shotsHere) { Move-Item -LiteralPath $f.FullName -Destination $origDir }

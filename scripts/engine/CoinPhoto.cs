@@ -492,14 +492,25 @@ public static class CoinPhoto
     // face; the darker sides are added back with a 3% pad. No turning: ingots are shot lying the right way up.
     public static void Ingot(string src, string dst, int size, double fill, string emblem, Rectangle emblemBox, float emblemOpacity, long q)
     {
+        SlabBox box;
+        using (var s = Load(src)) box = FindSlab(s);
+        double pad = 0.03 * (box.Right - box.Left);
+        IngotAt(src, dst, size, fill, emblem, emblemBox, emblemOpacity, q, box.Left - pad, box.Top - pad, box.Right + pad, box.Bottom + pad);
+    }
+
+    // The same, with the ingot's edges given (measured by hand when the scan is fooled: fingers holding it, a lighter
+    // floor under a backdrop). The ingot is always dead centre: if the photo hasn't room for the full margin on every
+    // side, the margin shrinks rather than the ingot moving off centre.
+    public static void IngotAt(string src, string dst, int size, double fill, string emblem, Rectangle emblemBox, float emblemOpacity, long q,
+        double left, double top, double right, double bottom)
+    {
         using (var s = Load(src))
         {
-            var box = FindSlab(s);
-            double pad = 0.03 * (box.Right - box.Left);
-            double w = box.Right - box.Left + 2 * pad, h = box.Bottom - box.Top + 2 * pad;
-            double cx = (box.Left + box.Right) / 2.0, cy = (box.Top + box.Bottom) / 2.0;
-            double side = Math.Min(Math.Max(w, h) / fill, Math.Min(s.Width, s.Height));
-            double x0 = Math.Max(0, Math.Min(s.Width - side, cx - side / 2)), y0 = Math.Max(0, Math.Min(s.Height - side, cy - side / 2));
+            double w = right - left, h = bottom - top;
+            double cx = (left + right) / 2.0, cy = (top + bottom) / 2.0;
+            double room = 2 * Math.Min(Math.Min(cx, s.Width - cx), Math.Min(cy, s.Height - cy));
+            double side = Math.Max(Math.Min(Math.Max(w, h) / fill, room), Math.Max(w, h));
+            double x0 = cx - side / 2, y0 = cy - side / 2;
             using (var o = new Bitmap(size, size, PixelFormat.Format24bppRgb))
             {
                 using (var g = Graphics.FromImage(o))
