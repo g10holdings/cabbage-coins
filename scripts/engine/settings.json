@@ -3,6 +3,8 @@
 
   "workbook": "D:/OneDrive/G10 Holdings LLC/g10HoldingsLLC.xlsx",
 
+  "analytics": "D:/OneDrive/G10 Holdings LLC/Analytics",
+
   "photos": {
     "_about": "A coin's folder starts in inProgress, moves to listed (4 photos only) once its listing is published, and to sold once it's marked Sold.",
     "inProgress": "D:/OneDrive/Cabbage Coins/Inventory Photos/waiting_website",

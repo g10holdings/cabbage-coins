@@ -21,6 +21,10 @@ const abs = (p) => (p ? path.resolve(ENGINE, p) : p);
 
 export const settings = {
   workbook: process.env.WORKBOOK_PATH || abs(raw.workbook),
+  /** Private analysis output (CDN snapshots): outside the repo, never committed. */
+  analytics: abs(raw.analytics),
+  /** Dated copies of the workbook (read only, e.g. for values Tony has since removed): "Backups" beside it. */
+  get backups() { return path.join(path.dirname(this.workbook), 'Backups'); },
   photos: {
     inProgress: process.env.PHOTO_ROOT || abs(raw.photos.inProgress),
     listed: process.env.PHOTO_LISTED || abs(raw.photos.listed),
