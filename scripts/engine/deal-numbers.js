@@ -10,8 +10,8 @@
  * Deal numbers, in order of trust:
  *   1. Zoho: INV-000123 (sales) / PO-000045 (purchases, made on the Quotes screen). Each Zoho coin line is matched to
  *      its workbook row by the cert # in the line ("… / #12345678"); lines without one by person + amount.
- *   2. Rows with the same person on the same day as a Zoho deal join it (trades: within 3 days) — flagged, since
- *      they weren't on the Zoho record.
+ *      A trade written as an invoice + a PO is one deal under the invoice # (tradePairs).
+ *   2. A row NOT on a Zoho record never takes its number, even with the same person on the same day; it is flagged.
  *   3. Everything else (paper slips at shows, pre-Zoho deals): D-YYMMDD-NN, one per person per day, sales and
  *      purchases together (that's a trade).
  *   Money in (inflows) follows the coin in its inventoryID; otherwise person + date. Money out (outflows, "Inventory")
@@ -140,6 +140,44 @@ export function subsetSum(rows, target) {
 }
 
 /**
+ * Trade pairs: an invoice (coins Tony sold) and a PO (coins he took in) that are ONE trade. Tony's practice: the
+ * trade-in rows carry the INVOICE number, so a PO whose coins sit on rows tagged with an invoice # is that invoice's
+ * other half (and the same the other way round). Pairs the workbook can't show (no certs on the PO) go in
+ * .zoho/deal-links.json as [["INV-000123", "PO-000045"], …]. Returns [{ inv, po, from: 'workbook' | 'links', coins }].
+ * Used to join the two records into one deal, and later for deal analysis (profit on the sale AND on the trade-ins).
+ */
+export function tradePairs({ sales, purchases, zohoDocs }) {
+  const live = new Map(zohoDocs.filter((z) => !/^(void|declined)$/i.test(z.status ?? '')).map((z) => [z.number, z]));
+  const found = new Map();
+  const add = (inv, po, from, n = 0) => {
+    const k = `${inv}|${po}`;
+    const p = found.get(k) ?? { inv, po, from, coins: 0 };
+    p.coins += n;
+    found.set(k, p);
+  };
+  for (const doc of live.values()) {
+    const otherKind = doc.kind === 'invoice' ? /^PO-/ : /^INV-/;
+    // Each coin in the sheet its line says (invoice plus line / PO minus line = sold; the rest = taken in), so a coin
+    // that passed through the same person twice (sold to them, bought back) doesn't make two separate deals a pair.
+    const certs = new Map();
+    for (const li of doc.line_items) {
+      const plus = (Number(li.price ?? li.rate ?? li.item_total) || 0) >= 0;
+      const sheet = (doc.kind === 'invoice') === plus ? 'sales' : 'purchases';
+      for (const c of certsIn(`${li.description ?? ''} ${li.name ?? ''}`)) certs.set(baseId(c), sheet);
+    }
+    const counts = new Map();
+    for (const r of [...sales, ...purchases]) {
+      if (!r.fixed || !otherKind.test(r.fixed) || !live.has(r.fixed) || certs.get(baseId(r.id)) !== r.sheet) continue;
+      if (!near(r.day, toDay(doc.date), 60) || !samePerson(r.who, doc.customer_name)) continue;
+      counts.set(r.fixed, (counts.get(r.fixed) ?? 0) + 1);
+    }
+    for (const [other, n] of counts) doc.kind === 'invoice' ? add(doc.number, other, 'workbook', n) : add(other, doc.number, 'workbook', n);
+  }
+  for (const g of DEAL_LINKS) for (const n of g.slice(1)) if (!found.has(`${g[0]}|${n}`)) add(g[0], n, 'links');
+  return [...found.values()].sort((a, b) => a.inv.localeCompare(b.inv));
+}
+
+/**
  * The proposal. Inputs are plain rows: { row (Excel row), id, day, who, amount, medium, … } per sheet, plus the Zoho
  * records (details.json values with kind/number/date/customer_name/line_items, and list status).
  */
@@ -154,28 +192,52 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   const people = (d) => [d.who, ...d.sales.map((r) => r.who), ...d.purchases.map((r) => r.who)];
   const days = (d) => [d.day, ...d.sales.map((r) => r.day), ...d.purchases.map((r) => r.day)].filter((x) => x != null);
 
-  // 1. Zoho invoices → sales, Zoho quotes (POs) → purchases, coin by coin.
-  for (const doc of [...zohoDocs].sort((a, b) => toDay(a.date) - toDay(b.date))) {
-    if (doc.status === 'void') continue;
-    const pool = doc.kind === 'invoice' ? sales : purchases;
+  // 1. Zoho invoices → sales, Zoho quotes (POs) → purchases, coin by coin. Void invoices and declined POs don't count.
+  //    A negative line is the other side of a trade: on a PO, a coin Tony gave (a sale); on an invoice, a coin he took
+  //    in (a purchase). Looking in the wrong sheet once tied a coin to whoever had sold it to Tony weeks earlier.
+  //    A coin often appears on SEVERAL records (Tony takes it in on one, sells it on the next), so cert matches are
+  //    settled across all records at once, best first: the record's own person before anyone else, then the nearest
+  //    date. Another person's record only counts within 3 days (a sale invoiced under a spouse's name); otherwise a
+  //    later resale could take an older record's number. A record written the wrong way round (coins Tony BOUGHT as
+  //    plus lines) still finds its coins in the other sheet, but only for that record's own person, within 3 days.
+  const live = [...zohoDocs].filter((doc) => !/^(void|declined)$/i.test(doc.status ?? ''))
+    .sort((a, b) => toDay(a.date) - toDay(b.date));
+  const lineInfo = [];
+  for (const doc of live) {
     const d = newDeal(doc.number, 'Zoho', doc.customer_name, toDay(doc.date));
+    const pool = doc.kind === 'invoice' ? sales : purchases;
     for (const li of doc.line_items) {
-      // A negative line is the other side of a trade: on a PO, a coin Tony gave (a sale); on an invoice, a coin he took
-      // in (a purchase). Looking in the wrong sheet once tied a coin to whoever had sold it to Tony weeks earlier.
       const price = Number(li.price ?? li.rate ?? li.item_total) || 0;
       const lpool = price >= 0 ? pool : (doc.kind === 'invoice' ? purchases : sales);
-      let hit = null;
-      for (const cert of certsIn(`${li.description ?? ''} ${li.name ?? ''}`)) {
-        const c = lpool.filter((r) => !r.deal && baseId(r.id) === baseId(cert) && near(r.day, d.day, 60));
-        hit = c.sort((a, b) => Math.abs(a.day - d.day) - Math.abs(b.day - d.day))[0];
-        if (hit) { assign(hit, d, `Zoho ${doc.number}: cert #`); break; }
-      }
-      if (hit) continue;
-      hit = lpool.filter((r) => !r.deal && samePerson(r.who, doc.customer_name) && near(r.day, d.day, 21)
-        && sameMoney(r.amount, Math.abs(price))).sort((a, b) => Math.abs(a.day - d.day) - Math.abs(b.day - d.day))[0];
-      if (hit) assign(hit, d, `Zoho ${doc.number}: name + amount`);
-      else d.unmatchedLines.push(`${li.name ?? ''} ${li.description ?? ''}`.trim());
+      const other = lpool === sales ? purchases : sales;
+      lineInfo.push({ doc, d, li, price, lpool, other, certs: certsIn(`${li.description ?? ''} ${li.name ?? ''}`).map(baseId), hit: null });
     }
+  }
+  const pairs = [];
+  for (const L of lineInfo) {
+    for (const cert of L.certs) {
+      const own = (r) => samePerson(r.who, L.doc.customer_name);
+      for (const r of L.lpool) {
+        if (baseId(r.id) !== cert) continue;
+        const gap = Math.abs(r.day - L.d.day);
+        if (own(r) ? gap <= 60 : gap <= 3) pairs.push({ L, r, score: (own(r) ? 0 : 1000) + gap });
+      }
+      for (const r of L.other) {
+        if (baseId(r.id) === cert && own(r) && Math.abs(r.day - L.d.day) <= 3) pairs.push({ L, r, score: 2000 + Math.abs(r.day - L.d.day) });
+      }
+    }
+  }
+  for (const { L, r } of pairs.sort((a, b) => a.score - b.score || a.L.d.day - b.L.d.day)) {
+    if (L.hit || r.deal) continue;
+    L.hit = r;
+    assign(r, L.d, `Zoho ${L.doc.number}: cert #`);
+  }
+  for (const L of lineInfo) {
+    if (L.hit) continue;
+    const hit = L.lpool.filter((r) => !r.deal && samePerson(r.who, L.doc.customer_name) && near(r.day, L.d.day, 21)
+      && sameMoney(r.amount, Math.abs(L.price))).sort((a, b) => Math.abs(a.day - L.d.day) - Math.abs(b.day - L.d.day))[0];
+    if (hit) assign(hit, L.d, `Zoho ${L.doc.number}: name + amount`);
+    else L.d.unmatchedLines.push(`${L.li.name ?? ''} ${L.li.description ?? ''}`.trim());
   }
 
   // 1b. Invoices that aren't coin sales: grading reimbursements (CAC/PCGS fees) and services (consulting, access,
@@ -191,20 +253,14 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   }
   const nonCoin = [...deals.values()].filter((d) => d.type !== 'Coin');
 
-  // 1c. A trade sometimes got TWO Zoho records: an invoice for the coins Tony sold and a PO for the coins he took in,
-  //     same person, within 3 days, the invoice paid by Trade (an invoice paid by wire
-  //     next to a trade PO is a separate deal). That's one deal: it keeps the invoice number.
-  const docOf = new Map(zohoDocs.map((z) => [z.number, z]));
-  //     Tony's links list (.zoho/deal-links.json, [["INV-000123", "PO-000045"], …]) joins records the rule can't see
-  //     (coins handed over a week after the sale).
+  // 1c. A big trade gets TWO Zoho records: an invoice for the coins Tony sold and a PO for the coins he took in. That's
+  //     one deal and keeps the invoice number. Only KNOWN pairs are joined (tradePairs: from the workbook, where the
+  //     trade-in rows carry the invoice #, plus .zoho/deal-links.json). Guessing pairs by person + date once joined a
+  //     separate buyback PO to an older trade invoice.
   const linkedTo = new Map();
-  for (const g of DEAL_LINKS) for (const n of g.slice(1)) linkedTo.set(n, g[0]);
-  for (const po of [...deals.values()].filter((d) => d.source === 'Zoho' && (linkedTo.has(d.id) || docOf.get(d.id)?.kind !== 'invoice'))) {
-    const inv = linkedTo.has(po.id) ? deals.get(linkedTo.get(po.id))
-      : [...deals.values()].filter((d) => d.source === 'Zoho' && d.type === 'Coin' && docOf.get(d.id)?.kind === 'invoice'
-        && samePerson(d.who, po.who) && near(d.day, po.day, 3)
-        && isTrade(docOf.get(d.id).reference_number))   // the INVOICE says it was paid (partly) by trade
-        .sort((a, b) => Math.abs(a.day - po.day) - Math.abs(b.day - po.day))[0];
+  for (const p of tradePairs({ sales, purchases, zohoDocs })) if (!linkedTo.has(p.po)) linkedTo.set(p.po, p.inv);
+  for (const po of [...deals.values()].filter((d) => d.source === 'Zoho' && linkedTo.has(d.id))) {
+    const inv = deals.get(linkedTo.get(po.id));
     if (!inv || inv === po) continue;
     for (const s of ['sales', 'purchases', 'inflows', 'outflows']) {
       for (const r of po[s]) { r.deal = inv.id; r.how = `${r.how} (trade: ${po.id} is part of ${inv.id})`; inv[s].push(r); }
@@ -242,13 +298,15 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     i += hit ? k - 1 : 1;
   }
 
-  // 2. Same person, same day (trades: 3 days) as a Zoho deal → that deal.
+  // 2. A row that is NOT on a Zoho record never gets that record's number, even with the same person on the same day
+  //    (that put Zoho numbers on separate deals). It gets its own made-up number below, with a note to check whether
+  //    it really belongs to the Zoho deal next to it.
   const zohoDeals = [...deals.values()].filter((d) => d.type === 'Coin');
   for (const r of [...sales, ...purchases].filter((x) => !x.deal && !x.transfer)) {
     const win = isTrade(r.medium) ? 3 : 0;
     const d = zohoDeals.filter((z) => people(z).some((p) => samePerson(p, r.who)) && days(z).some((x) => near(x, r.day, win)))
       .sort((a, b) => Math.abs(a.day - r.day) - Math.abs(b.day - r.day))[0];
-    if (d) assign(r, d, `same person & day as ${d.id} (not on the Zoho record)`);
+    if (d) r.near = d.id;
   }
 
   // 3. The rest: one made-up deal per person per day (a sale and a purchase together = a trade).
@@ -274,7 +332,10 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
     perDay.set(day, n);
     const id = `D-${day != null ? ymd(day).slice(2).replace(/-/g, '') : 'NODATE'}-${String(n).padStart(2, '0')}`;
     const d = newDeal(id, 'made up', rows[0].who, day);
-    for (const r of rows) assign(r, d, rows.some((x) => x.sheet !== r.sheet) ? 'made-up deal (trade: sale + purchase same day)' : 'made-up deal (no Zoho record)');
+    for (const r of rows) {
+      assign(r, d, rows.some((x) => x.sheet !== r.sheet) ? 'made-up deal (trade: sale + purchase same day)' : 'made-up deal (no Zoho record)');
+      if (r.near) r.how += `; not on ${r.near} but same person & day: check`;
+    }
   }
 
   // 4. Money in: the coin it names → that coin's deal; otherwise person + date.

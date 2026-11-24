@@ -3,7 +3,9 @@
  *   1. rows that belong to a deal but have no deal # yet, with the number to type (from the deal's other rows, the
  *      Zoho record, the eBay payout, or the next free D-YYMMDD-NN for that day);
  *   2. deal #s that look mistyped (not INV-000123 / PO-000045 / EB-YYMMDD / D-YYMMDD-NN, or dated far from the row);
- *   3. deals that don't balance: (sales collected + other invoiced − purchases) − (money in − money out) ≠ 0.
+ *   3. deals that don't balance: (sales collected + other invoiced − purchases) − (money in − money out) ≠ 0;
+ *   4. trade pairs: an invoice + a PO that are one trade (the trade-in rows carry the invoice #), kept for deal analysis;
+ *   5. Zoho records no row uses (a duplicate or a deal not entered yet): enter it, or mark it Declined/Void in Zoho.
  * The deal #s in the workbook are never changed or renumbered; deal-numbers.js only supplies the guesses for blanks.
  *
  *   node check-deals.js [--workbook "path\to\copy.xlsx"]
@@ -11,7 +13,7 @@
 
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { loadInputs, proposeDeals, personKey, ymd } from './deal-numbers.js';
+import { loadInputs, proposeDeals, tradePairs, personKey, ymd } from './deal-numbers.js';
 
 const SHEETS = ['sales', 'purchases', 'inflows', 'outflows'];
 const FORMAT = /^(INV-\d{6}|PO-\d{5,6}|EB-\d{6}(-\d+)?|D-\d{6}-\d{2})$/;   // (Zoho's very first PO is PO-00001)
@@ -65,6 +67,8 @@ export function checkDeals({ sheets, zohoDocs, today }) {
       newFor.set(r.deal, zohoOrEbay ? r.deal : nextFree(d.day ?? r.day ?? today));
     }
     const number = newFor.get(r.deal);
+    const near = /not on (S+) but same person/.exec(r.how ?? '')?.[1];
+    if (near) { missing.push({ r, number, why: `new deal; same person & day as ${near}: if it belongs to that deal, use ${near} and add it to the Zoho record` }); continue; }
     missing.push({ r, number, why: /^INV-/.test(number) ? 'new deal (Zoho invoice)' : /^PO-/.test(number) ? 'new deal (Zoho PO)'
       : /^EB-/.test(number) ? 'new deal (eBay payout)' : 'new deal' });
   }
@@ -95,7 +99,14 @@ export function checkDeals({ sheets, zohoDocs, today }) {
   const off = [...deals.values()].filter((d) => Math.abs(d.off) >= 0.5);
   const open = off.filter((d) => Math.abs(personOff.get(personKey(d.who))) >= 0.5).sort((a, b) => (b.day ?? 0) - (a.day ?? 0));
 
-  return { deals, missing, odd, open, settledAcross: off.length - open.length, nextToday: today != null ? nextFree(today) : null };
+  // 4–5. Trade pairs, and Zoho records nothing in the workbook uses.
+  const pairs = tradePairs({ sales: sheets.sales, purchases: sheets.purchases, zohoDocs });
+  const pairedPO = new Set(pairs.filter((p) => deals.has(p.inv)).map((p) => p.po));
+  const unused = zohoDocs.filter((z) => !/^(void|declined)$/i.test(z.status ?? '') && !/sample/i.test(z.customer_name ?? '')
+    && !deals.has(z.number) && !pairedPO.has(z.number) && (proposed.get(z.number)?.type ?? 'Coin') === 'Coin')
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+  return { deals, missing, odd, open, pairs, unused, settledAcross: off.length - open.length, nextToday: today != null ? nextFree(today) : null };
 }
 
 function main() {
@@ -125,6 +136,16 @@ function main() {
   console.log(`\nOPEN DEALS (${res.open.length})  + = you're owed it (or a payment isn't entered); - = you owe it (or a sale/purchase isn't entered)`);
   if (!res.open.length) console.log('  none');
   for (const d of res.open) console.log(`  ${d.id.padEnd(12)} ${when(d.day)}  ${String(d.who).padEnd(28).slice(0, 28)} ${(d.off > 0 ? '+' : '') + $(d.off)}${d.type !== 'Coin' ? `  (${d.type})` : ''}`);
+
+  console.log(`
+TRADE PAIRS (${res.pairs.length})  one trade written as an invoice (sold) + a PO (taken in); the trade-in rows carry the invoice #`);
+  if (!res.pairs.length) console.log('  none');
+  for (const p of res.pairs) console.log(`  ${p.inv} + ${p.po.padEnd(10)} ${p.from === 'links' ? '(from deal-links.json)' : `(${p.coins} coin${p.coins === 1 ? '' : 's'} on both)`}`);
+
+  console.log(`
+ZOHO RECORDS NO ROW USES (${res.unused.length})  enter the deal, or mark the record Declined (PO) / Void (invoice) in Zoho`);
+  if (!res.unused.length) console.log('  none');
+  for (const z of res.unused) console.log(`  ${z.number.padEnd(11)} ${z.date}  ${String(z.customer_name).padEnd(28).slice(0, 28)} ${$(money(z.total)).padStart(11)}  ${z.status ?? ''}`);
 
   if (res.nextToday) console.log(`\nNext free number for a new deal today: ${res.nextToday}`);
 }
