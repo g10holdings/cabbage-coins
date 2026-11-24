@@ -4,7 +4,8 @@
  *      Zoho record, the eBay payout, or the next free D-YYMMDD-NN for that day);
  *   2. deal #s that look mistyped (not INV-000123 / PO-000045 / EB-YYMMDD / D-YYMMDD-NN, or dated far from the row);
  *   3. deals that don't balance: (sales collected + other invoiced − purchases) − (money in − money out) ≠ 0;
- *   4. trade pairs: an invoice + a PO that are one trade (the trade-in rows carry the invoice #), kept for deal analysis;
+ *   4. trade pairs: an invoice + a PO that are one trade (see tradePairs), kept for deal analysis; two halves that
+ *      balance each other count as balanced;
  *   5. Zoho records no row uses (a duplicate or a deal not entered yet): enter it, or mark it Declined/Void in Zoho.
  * The deal #s in the workbook are never changed or renumbered; deal-numbers.js only supplies the guesses for blanks.
  *
@@ -67,7 +68,7 @@ export function checkDeals({ sheets, zohoDocs, today }) {
       newFor.set(r.deal, zohoOrEbay ? r.deal : nextFree(d.day ?? r.day ?? today));
     }
     const number = newFor.get(r.deal);
-    const near = /not on (S+) but same person/.exec(r.how ?? '')?.[1];
+    const near = /not on (\S+) but same person/.exec(r.how ?? '')?.[1];
     if (near) { missing.push({ r, number, why: `new deal; same person & day as ${near}: if it belongs to that deal, use ${near} and add it to the Zoho record` }); continue; }
     missing.push({ r, number, why: /^INV-/.test(number) ? 'new deal (Zoho invoice)' : /^PO-/.test(number) ? 'new deal (Zoho PO)'
       : /^EB-/.test(number) ? 'new deal (eBay payout)' : 'new deal' });
@@ -94,19 +95,25 @@ export function checkDeals({ sheets, zohoDocs, today }) {
     d.day = Math.min(...rows.map((r) => r.day).filter((x) => x != null), p?.day ?? Infinity);
     if (!Number.isFinite(d.day)) d.day = null;
   }
+  // A trade written as an invoice + a PO: each half is off by the trade value; together they balance.
+  const pairs = tradePairs({ ...sheets, zohoDocs });
+  const pairBalanced = new Set();
+  for (const p of pairs) {
+    const a = deals.get(p.inv), b = deals.get(p.po);
+    if (a && b && Math.abs(a.off) >= 0.5 && Math.abs(round(a.off + b.off)) < 0.5) { pairBalanced.add(a.id); pairBalanced.add(b.id); }
+  }
   const personOff = new Map();
   for (const d of deals.values()) personOff.set(personKey(d.who), round((personOff.get(personKey(d.who)) ?? 0) + d.off));
-  const off = [...deals.values()].filter((d) => Math.abs(d.off) >= 0.5);
+  const off = [...deals.values()].filter((d) => Math.abs(d.off) >= 0.5 && !pairBalanced.has(d.id));
   const open = off.filter((d) => Math.abs(personOff.get(personKey(d.who))) >= 0.5).sort((a, b) => (b.day ?? 0) - (a.day ?? 0));
 
-  // 4–5. Trade pairs, and Zoho records nothing in the workbook uses.
-  const pairs = tradePairs({ sales: sheets.sales, purchases: sheets.purchases, zohoDocs });
+  // 5. Zoho records nothing in the workbook uses.
   const pairedPO = new Set(pairs.filter((p) => deals.has(p.inv)).map((p) => p.po));
   const unused = zohoDocs.filter((z) => !/^(void|declined)$/i.test(z.status ?? '') && !/sample/i.test(z.customer_name ?? '')
     && !deals.has(z.number) && !pairedPO.has(z.number) && (proposed.get(z.number)?.type ?? 'Coin') === 'Coin')
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
-  return { deals, missing, odd, open, pairs, unused, settledAcross: off.length - open.length, nextToday: today != null ? nextFree(today) : null };
+  return { deals, missing, odd, open, pairs, unused, pairBalanced: pairBalanced.size, settledAcross: off.length - open.length, nextToday: today != null ? nextFree(today) : null };
 }
 
 function main() {
@@ -121,7 +128,7 @@ function main() {
 
   const n = res.deals.size;
   console.log(`DEAL CHECK  (reads the workbook; changes nothing)\n`);
-  console.log(`${n} deals: ${n - res.open.length - res.settledAcross} balanced, ${res.settledAcross} settled across the person's other deals, ${res.open.length} open\n`);
+  console.log(`${n} deals: ${n - res.open.length - res.settledAcross} balanced${res.pairBalanced ? ` (${res.pairBalanced} of them as halves of a trade pair)` : ''}, ${res.settledAcross} settled across the person's other deals, ${res.open.length} open\n`);
 
   console.log(`ROWS WITHOUT A DEAL # (${res.missing.length})`);
   if (!res.missing.length) console.log('  none');
@@ -138,9 +145,10 @@ function main() {
   for (const d of res.open) console.log(`  ${d.id.padEnd(12)} ${when(d.day)}  ${String(d.who).padEnd(28).slice(0, 28)} ${(d.off > 0 ? '+' : '') + $(d.off)}${d.type !== 'Coin' ? `  (${d.type})` : ''}`);
 
   console.log(`
-TRADE PAIRS (${res.pairs.length})  one trade written as an invoice (sold) + a PO (taken in); the trade-in rows carry the invoice #`);
+TRADE PAIRS (${res.pairs.length})  one trade written as an invoice (coins sold) + a PO (coins taken in)`);
   if (!res.pairs.length) console.log('  none');
-  for (const p of res.pairs) console.log(`  ${p.inv} + ${p.po.padEnd(10)} ${p.from === 'links' ? '(from deal-links.json)' : `(${p.coins} coin${p.coins === 1 ? '' : 's'} on both)`}`);
+  const how = { zoho: 'named in Zoho', balances: 'they balance each other', workbook: 'trade-ins carry the invoice # (older trades)', links: 'pair list kept by Claude' };
+  for (const p of res.pairs) console.log(`  ${p.inv} + ${p.po.padEnd(10)} ${how[p.from]}`);
 
   console.log(`
 ZOHO RECORDS NO ROW USES (${res.unused.length})  enter the deal, or mark the record Declined (PO) / Void (invoice) in Zoho`);

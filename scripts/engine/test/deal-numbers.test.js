@@ -152,54 +152,63 @@ test('money back from a seller Tony overpaid joins that purchase', () => {
   assert.equal(deals.get(purchases[0].deal).off, 0);
 });
 
-test('an invoice AND a PO are one trade only when known; a PO minus-line coin is looked up in sales', () => {
+test('a trade = an invoice + a PO, two deals; a PO minus-line coin is looked up in sales; the pair is found 4 ways', () => {
   const day = toDay('2026-01-23');
-  const sales = [
-    { sheet: 'sales', row: 2, id: '4400101-001', day: day + 1, who: 'Lou Carver', amount: 4790, collected: 4790, medium: 'Trade' },
-    { sheet: 'sales', row: 3, id: '4400102-002', day: day + 1, who: 'Lou Carver', amount: 6500, collected: 6500, medium: 'Trade' },
-  ];
-  const purchases = [
-    // Tony bought this coin from someone else two weeks earlier: the PO's minus line must NOT land here
-    { sheet: 'purchases', row: 2, id: '4400102-002', day: day - 15, who: 'Ann Reed', amount: 5100, medium: 'Check' },
-    { sheet: 'purchases', row: 3, id: 'LIB_1001', day: day + 3, who: 'Lou Carver', amount: 11290, medium: 'Trade' },
-  ];
-  const zohoDocs = [
-    { kind: 'estimate', number: 'PO-000901', date: '2026-01-23', customer_name: 'Lou Carver', reference_number: 'Trade and Check',
-      line_items: [{ name: 'Silver Libertad Collection', price: 11290 }, { name: '1907 $20 #4400101-001', price: -4790 },
-        { name: '1877-CC $20 #4400102-002', price: -6500 }] },
-    { kind: 'invoice', number: 'INV-000901', date: '2026-01-24', customer_name: 'Lou Carver', reference_number: 'Trade',
-      line_items: [{ name: '1907 $20 #4400101-001', price: 4790 }, { name: '1877-CC $20 #4400102-002', price: 6500 }] },
-  ];
-  // Not known as a pair (no workbook row says so, not in the links list): two separate deals, no guessing.
-  const apart = proposeDeals({ sales: sales.map((r) => ({ ...r })), purchases: purchases.map((r) => ({ ...r })), inflows: [], outflows: [], zohoDocs });
-  assert.equal(apart.has('PO-000901'), true);
-  // Tony's practice: the trade-in row carries the invoice #. That makes the pair known.
-  purchases[1].fixed = 'INV-000901';
-  zohoDocs[0].line_items[0].name = 'Silver Libertad Collection #LIB_1001';
-  assert.deepEqual(tradePairs({ sales, purchases, zohoDocs }), [{ inv: 'INV-000901', po: 'PO-000901', from: 'workbook', coins: 1 }]);
-  const deals = proposeDeals({ sales, purchases, inflows: [], outflows: [], zohoDocs });
-  assert.equal(deals.has('PO-000901'), false);
-  assert.deepEqual(deals.get('INV-000901').linked, ['PO-000901']);
-  assert.deepEqual([...sales, purchases[1]].map((r) => r.deal), ['INV-000901', 'INV-000901', 'INV-000901']);
-  assert.notEqual(purchases[0].deal, 'INV-000901');
-  assert.equal(deals.get('INV-000901').off, 0);
+  const mk = () => ({
+    sales: [
+      { sheet: 'sales', row: 2, id: '4400101-001', day: day + 1, who: 'Lou Carver', amount: 4790, collected: 4790, medium: 'Trade' },
+      { sheet: 'sales', row: 3, id: '4400102-002', day: day + 1, who: 'Lou Carver', amount: 6500, collected: 6500, medium: 'Trade' },
+    ],
+    purchases: [
+      // Tony bought this coin from someone else two weeks earlier: the PO's minus line must NOT land here
+      { sheet: 'purchases', row: 2, id: '4400102-002', day: day - 15, who: 'Ann Reed', amount: 5100, medium: 'Check' },
+      { sheet: 'purchases', row: 3, id: 'LIB_1001', day: day + 3, who: 'Lou Carver', amount: 11290, medium: 'Trade' },
+    ],
+    zohoDocs: [
+      { kind: 'estimate', number: 'PO-000901', date: '2026-01-23', customer_name: 'Lou Carver', reference_number: 'Trade and Check',
+        line_items: [{ name: 'Silver Libertad Collection #LIB_1001', price: 11290 }, { name: '1907 $20 #4400101-001', price: -4790 },
+          { name: '1877-CC $20 #4400102-002', price: -6500 }] },
+      { kind: 'invoice', number: 'INV-000901', date: '2026-01-24', customer_name: 'Lou Carver', reference_number: 'Trade',
+        line_items: [{ name: '1907 $20 #4400101-001', price: 4790 }, { name: '1877-CC $20 #4400102-002', price: 6500 }] },
+    ],
+  });
+  const one = mk();
+  const deals = proposeDeals({ ...one, inflows: [], outflows: [] });
+  assert.deepEqual([one.sales[0].deal, one.sales[1].deal, one.purchases[1].deal], ['INV-000901', 'INV-000901', 'PO-000901']);
+  assert.notEqual(one.purchases[0].deal, 'PO-000901');
+  assert.deepEqual(tradePairs({ ...one, zohoDocs: one.zohoDocs }), []);       // nothing says they belong together yet
+
+  // 1. From 2026-11-24 on: sales carry the INV #, trade-ins the PO #; each half is off by the trade, together 0.
+  const two = mk();
+  two.sales.forEach((r) => { r.fixed = 'INV-000901'; });
+  two.purchases[1].fixed = 'PO-000901';
+  two.zohoDocs[0].line_items = two.zohoDocs[0].line_items.slice(0, 1);   // each record lists only its own side
+  assert.deepEqual(tradePairs({ ...two, inflows: [], outflows: [{ sheet: 'outflows', row: 2, day: day + 3, who: 'Lou Carver', amount: 0, fixed: 'PO-000901' }] }),
+    [{ inv: 'INV-000901', po: 'PO-000901', from: 'balances', coins: 0 }]);
+  // 2. The PO's Reference in Zoho names the invoice.
+  const three = mk();
+  three.zohoDocs[0].reference_number = 'Trade INV-901';
+  assert.equal(tradePairs(three)[0].from, 'zoho');
+  // 3. Older trades: the trade-in row carries the INVOICE #.
+  const four = mk();
+  four.purchases[1].fixed = 'INV-000901';
+  assert.deepEqual(tradePairs(four), [{ inv: 'INV-000901', po: 'PO-000901', from: 'workbook', coins: 1 }]);
+  assert.ok(deals.get('INV-000901'));
 });
 
-test("Tony's links list joins an invoice and a PO a week apart", () => {
+test("the pair list kept by Claude pairs an invoice and a PO a week apart", () => {
   const sales = [{ sheet: 'sales', row: 2, id: '90000011', day: toDay('2026-08-15'), who: 'Hal Moss', amount: 13000, collected: 13000, medium: 'Trade' }];
   const purchases = [{ sheet: 'purchases', row: 2, id: '4400103-003', day: toDay('2026-08-22'), who: 'Hal Moss', amount: 13450, medium: 'Cash & Trade' }];
-  const outflows = [{ sheet: 'outflows', row: 2, day: toDay('2026-08-24'), who: 'Hal Moss', amount: 450, category: 'Inventory' }];
   const zohoDocs = [
     { kind: 'invoice', number: 'INV-000902', date: '2026-08-15', customer_name: 'Hal Moss', reference_number: 'Trade Credit', line_items: [{ name: 'coin #90000011', price: 13000 }] },
     { kind: 'estimate', number: 'PO-000902', date: '2026-08-22', customer_name: 'Hal Moss', reference_number: 'Trade & Zelle', line_items: [{ name: 'coin #4400103-003', price: 13450 }] },
   ];
   setDealLinks([['INV-000902', 'PO-000902']]);
   try {
-    const deals = proposeDeals({ sales, purchases, inflows: [], outflows, zohoDocs });
-    assert.equal(deals.has('PO-000902'), false);
-    assert.equal(purchases[0].deal, 'INV-000902');
-    assert.equal(outflows[0].deal, 'INV-000902');
-    assert.equal(deals.get('INV-000902').off, 0);
+    const deals = proposeDeals({ sales, purchases, inflows: [], outflows: [], zohoDocs });
+    assert.equal(purchases[0].deal, 'PO-000902');                       // its own number
+    assert.deepEqual(deals.get('INV-000902').linked, ['PO-000902']);
+    assert.equal(tradePairs({ sales, purchases, zohoDocs })[0].from, 'links');
   } finally { setDealLinks([]); }
 });
 

@@ -45,9 +45,10 @@ the cert #**, e.g. `1895-O-10-Dollar-MS62-59080489`. The rest of the name can be
 an invoice or PO (`INV-000123`, `PO-000045`); `EB-YYMMDD` for an eBay payout and the sales it covers; otherwise
 `D-YYMMDD-NN`, the deal's date plus 01, 02… for that day. Every row of one deal (coins sold, coins taken in, money in,
 money out) gets the same number. Expenses and transfers stay blank.
-A row only takes a Zoho number when its coin is on that invoice or PO. **A big trade** = an invoice for the coins sold +
-a PO for the coins taken in: every row (the trade-ins too) gets the INVOICE number, and the checker pairs the two
-records by itself. A pair it can't see (a PO without cert numbers) goes in `engine.zohodeal-links.json`.
+A row only takes a Zoho number when its coin is on that invoice or PO. **A trade** (since 2026-11-24) = an invoice
+for the coins sold (sales rows get the INV #) + a PO for the coins taken in (purchases rows get the PO #). The checker
+pairs the two by itself: they balance each other, or one names the other in Zoho's Reference or Notes ("Trade
+INV-000180"; the surest way). Older trades have the INV # on the trade-in rows too; those are paired as well.
 
 **Also run step 4** whenever you mark a coin **Sold**, change a price, or tick **Keep off
 eBay** in the Studio. It takes sold coins down from CAC and eBay and files their photos.

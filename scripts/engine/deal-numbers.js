@@ -10,7 +10,8 @@
  * Deal numbers, in order of trust:
  *   1. Zoho: INV-000123 (sales) / PO-000045 (purchases, made on the Quotes screen). Each Zoho coin line is matched to
  *      its workbook row by the cert # in the line ("… / #12345678"); lines without one by person + amount.
- *      A trade written as an invoice + a PO is one deal under the invoice # (tradePairs).
+ *      Each Zoho record is its own deal. A trade written as an invoice + a PO is two deals that belong together:
+ *      tradePairs() lists those pairs (for the checker and for deal analysis).
  *   2. A row NOT on a Zoho record never takes its number, even with the same person on the same day; it is flagged.
  *   3. Everything else (paper slips at shows, pre-Zoho deals): D-YYMMDD-NN, one per person per day, sales and
  *      purchases together (that's a trade).
@@ -140,13 +141,16 @@ export function subsetSum(rows, target) {
 }
 
 /**
- * Trade pairs: an invoice (coins Tony sold) and a PO (coins he took in) that are ONE trade. Tony's practice: the
- * trade-in rows carry the INVOICE number, so a PO whose coins sit on rows tagged with an invoice # is that invoice's
- * other half (and the same the other way round). Pairs the workbook can't show (no certs on the PO) go in
- * .zoho/deal-links.json as [["INV-000123", "PO-000045"], …]. Returns [{ inv, po, from: 'workbook' | 'links', coins }].
- * Used to join the two records into one deal, and later for deal analysis (profit on the sale AND on the trade-ins).
+ * Trade pairs: an invoice (coins Tony sold) and a PO (coins he took in) that are ONE trade, kept so deal analysis can
+ * follow both sides (profit on the sale AND, later, on the trade-ins). Found from Tony's own records, best first:
+ *   'zoho'      the PO's (or invoice's) Reference or Notes in Zoho names the other record ("Trade INV-000180");
+ *   'balances'  from 2026-11-24 the sale rows carry the INV # and the trade-in rows the PO #, so each half is off by
+ *               the trade value on its own: same person, within 7 days, and the two add up to exactly zero;
+ *   'workbook'  older trades: the trade-in rows carry the INVOICE # and the coins are on the PO;
+ *   'links'     .zoho/deal-links.json, kept by Claude for pairs none of the above can see.
+ * Returns [{ inv, po, from, coins }] (coins: for 'workbook', how many coins show it).
  */
-export function tradePairs({ sales, purchases, zohoDocs }) {
+export function tradePairs({ sales, purchases, inflows = [], outflows = [], zohoDocs }) {
   const live = new Map(zohoDocs.filter((z) => !/^(void|declined)$/i.test(z.status ?? '')).map((z) => [z.number, z]));
   const found = new Map();
   const add = (inv, po, from, n = 0) => {
@@ -172,6 +176,37 @@ export function tradePairs({ sales, purchases, zohoDocs }) {
       counts.set(r.fixed, (counts.get(r.fixed) ?? 0) + 1);
     }
     for (const [other, n] of counts) doc.kind === 'invoice' ? add(doc.number, other, 'workbook', n) : add(other, doc.number, 'workbook', n);
+  }
+  // Zoho: one record names the other in its Reference or Notes.
+  const docNo = (kind, n) => `${kind}-${String(n).padStart(6, '0')}`;
+  for (const doc of live.values()) {
+    for (const m of `${doc.reference_number ?? ''} ${doc.notes ?? ''}`.toUpperCase().matchAll(/\b(INV|PO)\s*-?\s*0*(\d{1,6})\b/g)) {
+      const other = live.get(docNo(m[1], m[2]));
+      if (!other || other.kind === doc.kind || other === doc) continue;
+      const [inv, po] = doc.kind === 'invoice' ? [doc.number, other.number] : [other.number, doc.number];
+      if (!found.has(`${inv}|${po}`)) add(inv, po, 'zoho');
+    }
+  }
+  // Balances: an INV deal and a PO deal of the same person, a week apart at most, that only balance together.
+  if (inflows.length || outflows.length) {
+    const deals = new Map();
+    for (const r of [...sales, ...purchases, ...inflows, ...outflows]) {
+      if (!/^(INV|PO)-/.test(r.fixed ?? '') || !live.has(r.fixed)) continue;
+      const d = deals.get(r.fixed) ?? { id: r.fixed, who: null, day: null, off: 0 };
+      const v = money(r.sheet === 'sales' ? (r.collected ?? r.amount) : r.amount);
+      d.off += r.sheet === 'sales' || r.sheet === 'outflows' ? v : -v;
+      if (r.sheet === 'purchases' && /^fx\b/i.test(r.medium ?? '')) d.off += v;       // paid from foreign cash on hand
+      if ((r.sheet === 'sales' || r.sheet === 'purchases') && d.who == null) d.who = r.who;
+      if (r.day != null && (d.day == null || r.day < d.day)) d.day = r.day;
+      deals.set(r.fixed, d);
+    }
+    const all = [...deals.values()].filter((d) => Math.abs(d.off) >= 0.5 && d.who != null);
+    const paired = new Set([...found.values()].flatMap((p) => [p.inv, p.po]));
+    for (const inv of all.filter((d) => /^INV-/.test(d.id) && !paired.has(d.id))) {
+      const po = all.filter((d) => /^PO-/.test(d.id) && !paired.has(d.id) && samePerson(d.who, inv.who) && near(d.day, inv.day, 7)
+        && cents(d.off) === -cents(inv.off)).sort((a, b) => Math.abs(a.day - inv.day) - Math.abs(b.day - inv.day))[0];
+      if (po) { add(inv.id, po.id, 'balances'); paired.add(inv.id); paired.add(po.id); }
+    }
   }
   for (const g of DEAL_LINKS) for (const n of g.slice(1)) if (!found.has(`${g[0]}|${n}`)) add(g[0], n, 'links');
   return [...found.values()].sort((a, b) => a.inv.localeCompare(b.inv));
@@ -253,21 +288,12 @@ export function proposeDeals({ sales, purchases, inflows, outflows, zohoDocs }) 
   }
   const nonCoin = [...deals.values()].filter((d) => d.type !== 'Coin');
 
-  // 1c. A big trade gets TWO Zoho records: an invoice for the coins Tony sold and a PO for the coins he took in. That's
-  //     one deal and keeps the invoice number. Only KNOWN pairs are joined (tradePairs: from the workbook, where the
-  //     trade-in rows carry the invoice #, plus .zoho/deal-links.json). Guessing pairs by person + date once joined a
-  //     separate buyback PO to an older trade invoice.
-  const linkedTo = new Map();
-  for (const p of tradePairs({ sales, purchases, zohoDocs })) if (!linkedTo.has(p.po)) linkedTo.set(p.po, p.inv);
-  for (const po of [...deals.values()].filter((d) => d.source === 'Zoho' && linkedTo.has(d.id))) {
-    const inv = deals.get(linkedTo.get(po.id));
-    if (!inv || inv === po) continue;
-    for (const s of ['sales', 'purchases', 'inflows', 'outflows']) {
-      for (const r of po[s]) { r.deal = inv.id; r.how = `${r.how} (trade: ${po.id} is part of ${inv.id})`; inv[s].push(r); }
-    }
-    inv.unmatchedLines.push(...po.unmatchedLines.map((l) => `${po.id}: ${l}`));
-    inv.linked = [...(inv.linked ?? []), po.id];
-    deals.delete(po.id);
+  // 1c. A trade written as an invoice + a PO stays TWO deals, each under its own number (Tony's practice from
+  //     2026-11-24: sale rows get the INV #, trade-in rows the PO #). Which records belong together is tradePairs()'s
+  //     job; it is only noted here. (Joining them by person + date once tied a separate buyback PO to an older trade.)
+  for (const p of tradePairs({ sales, purchases, inflows, outflows, zohoDocs })) {
+    const inv = deals.get(p.inv);
+    if (inv) inv.linked = [...(inv.linked ?? []), p.po];
   }
 
   // 1d. eBay. Buyers pay eBay, and eBay pays Tony later in lumps ("eBay" inflows) that cover whatever sold in between,
