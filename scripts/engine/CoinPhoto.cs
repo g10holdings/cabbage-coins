@@ -18,6 +18,22 @@ public class PrepResult { public string Path; public CoinFit Fit; public int Tur
 
 public static class CoinPhoto
 {
+    // A photo the way it's meant to be seen. Phones save the picture on its side plus an EXIF "orientation" tag that
+    // says how to turn it; Windows' Bitmap ignores the tag, so a phone shot would come out sideways. Tony's camera rig
+    // writes no tag, so its shots load exactly as before.
+    public static Bitmap Load(string path)
+    {
+        var b = new Bitmap(path);
+        if (Array.IndexOf(b.PropertyIdList, 0x0112) < 0) return b;
+        int o = b.GetPropertyItem(0x0112).Value[0];
+        var t = o == 2 ? RotateFlipType.RotateNoneFlipX : o == 3 ? RotateFlipType.Rotate180FlipNone : o == 4 ? RotateFlipType.Rotate180FlipX
+            : o == 5 ? RotateFlipType.Rotate90FlipX : o == 6 ? RotateFlipType.Rotate90FlipNone : o == 7 ? RotateFlipType.Rotate270FlipX
+            : o == 8 ? RotateFlipType.Rotate270FlipNone : RotateFlipType.RotateNoneFlipNone;
+        if (t != RotateFlipType.RotateNoneFlipNone) b.RotateFlip(t);
+        b.RemovePropertyItem(0x0112);
+        return b;
+    }
+
     // ---------- step 0: turn the raw frame upright and crop to the slab ----------
 
     // turn: -1 = decide from where the coin is, 0 = as found, 1 = 180 degrees from that.
@@ -44,7 +60,7 @@ public static class CoinPhoto
     public static PrepResult Prepare(string src, string dst, int margin, double expectedDia, bool coinLow, int turn, bool capsule, bool landscape)
     {
         if (capsule) return PrepareCapsule(src, dst, margin, turn);
-        using (var raw = new Bitmap(src))
+        using (var raw = Load(src))
         {
             bool isRaw = raw.Width > raw.Height;
             Bitmap b = raw; bool own = false;
@@ -79,7 +95,7 @@ public static class CoinPhoto
     {
         if (turn < 0) turn = 0;
         turn &= 3;
-        using (var raw = new Bitmap(src))
+        using (var raw = Load(src))
         {
             // The capsule's box: the slab scan works the same on a round capsule. Cropped square around its centre.
             var box = FindSlab(raw);
@@ -266,7 +282,7 @@ public static class CoinPhoto
 
     public static CoinFit FindCircle(string path, double expectedDia)
     {
-        using (var src = new Bitmap(path)) return FindCircle(src, expectedDia);
+        using (var src = Load(path)) return FindCircle(src, expectedDia);
     }
 
     // The coin's best guess circle, its size known from the denomination (expectedDia, source px). Coarse search,
@@ -444,7 +460,7 @@ public static class CoinPhoto
     // Slab shot: the whole (cropped) photo, fit to the canvas height, centred on black.
     public static void Slab(string src, string dst, int size, long q)
     {
-        using (var s = new Bitmap(src))
+        using (var s = Load(src))
         using (var o = new Bitmap(size, size, PixelFormat.Format24bppRgb))
         using (var g = Graphics.FromImage(o))
         {
@@ -462,7 +478,7 @@ public static class CoinPhoto
     // Exposure check for an ingot shot (blown-out share and brightness inside its face), to pick the best frame.
     public static CoinFit IngotStats(string src)
     {
-        using (var b = new Bitmap(src))
+        using (var b = Load(src))
         {
             var box = FindSlab(b);
             var fit = new CoinFit { Cx = (box.Left + box.Right) / 2.0, Cy = (box.Top + box.Bottom) / 2.0, R = Math.Min(box.Right - box.Left, box.Bottom - box.Top) / 2.0, Note = "ingot" };
@@ -476,7 +492,7 @@ public static class CoinPhoto
     // face; the darker sides are added back with a 3% pad. No turning: ingots are shot lying the right way up.
     public static void Ingot(string src, string dst, int size, double fill, string emblem, Rectangle emblemBox, float emblemOpacity, long q)
     {
-        using (var s = new Bitmap(src))
+        using (var s = Load(src))
         {
             var box = FindSlab(s);
             double pad = 0.03 * (box.Right - box.Left);
@@ -506,7 +522,7 @@ public static class CoinPhoto
     // coins so the edge shows; more on small coins so they aren't over-magnified), black outside, logos on top.
     public static void Close(string src, string dst, CoinFit fit, int size, int dia, int gap, string emblem, Rectangle emblemBox, float emblemOpacity, string cac, Rectangle cacBox, long q)
     {
-        using (var s = new Bitmap(src))
+        using (var s = Load(src))
         using (var o = new Bitmap(size, size, PixelFormat.Format24bppRgb))
         {
             using (var g = Graphics.FromImage(o))

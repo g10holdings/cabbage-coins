@@ -1,5 +1,6 @@
 ﻿<#
-  Makes the 4 website photos for every coin folder in waiting_website, from the camera shots (DSC*.jpg).
+  Makes the 4 website photos for every coin folder in waiting_website, from the camera shots (DSC*.jpg) or phone
+  shots (IMG_*.jpg; phones save them sideways with an orientation tag, which CoinPhoto.Load applies).
   Tony ends each folder name with the cert number. photo-folders.js (run first) renames the folder from the
   workbook, as "<item description>-<cert number>", and the photos are named from the description alone:
 
@@ -109,9 +110,12 @@ function Test-MedalTurn([string]$name) {
   $name -match '\b(reales|escudos?|pesos?|thaler|taler|crowns?|pounds?|shillings?|sovereigns?|guineas?|francs?|marks?|ducats?|florins?|gulden|kronen?|kopeks?|r[o]?ubles?|lira|lire|rupees?|yen|medal|bolivia|mexico|peru|potosi|PTS)\b'
 }
 
-# Obverse shots come first, then the reverse: two runs of DSC numbers. Split at the biggest jump.
+# The photos a folder starts from: camera shots (DSC*.jpg) or phone shots (IMG_*.jpg).
+function Get-Shots([string]$dir) { @(Get-ChildItem -LiteralPath $dir -File | Where-Object { $_.Name -match '^(DSC|IMG_)\d+.*\.jpe?g$' }) }
+
+# Obverse shots come first, then the reverse: two runs of shot numbers. Split at the biggest jump.
 function Split-Sides($files) {
-  $num = { [int]([regex]::Match($_.Name, 'DSC0*(\d+)').Groups[1].Value) }
+  $num = { [int]([regex]::Match($_.Name, '(?:DSC|IMG_)0*(\d+)').Groups[1].Value) }
   $sorted = @($files | Sort-Object $num)
   $nums = @($sorted | ForEach-Object $num)
   $cut = 1; $gap = -1
@@ -138,9 +142,14 @@ foreach ($coin in $coins) {
   # an ingot gets 2 photos, front (-1) and back (-2); everything else gets 4
   $outs = (1..$(if ($ingot) { 2 } else { 4 })) | ForEach-Object { Join-Path $folder.FullName "$($coin.base)-$_.jpg" }
   $finished = -not ($outs | Where-Object { -not (Test-Path -LiteralPath $_) })
-  $shotsHere = @(Get-ChildItem -LiteralPath $folder.FullName -File -Filter 'DSC*.jpg')
+  $shotsHere = Get-Shots $folder.FullName
   if ($finished -and -not $Redo) { Write-Host "  (done already: $($folder.Name) - use -Redo to check it again)" -ForegroundColor DarkGray; continue }
-  $sources = if ($shotsHere) { $shotsHere } elseif (Test-Path -LiteralPath $origDir) { @(Get-ChildItem -LiteralPath $origDir -File -Filter 'DSC*.jpg') } else { @() }
+  $sources = if ($shotsHere) { $shotsHere } elseif (Test-Path -LiteralPath $origDir) { Get-Shots $origDir } else { @() }
+  if ($sources.Count -eq 0) {
+    # say why instead of skipping silently (photos named something other than DSC*/IMG_*, or saved as HEIC)
+    $other = @(Get-ChildItem -LiteralPath $folder.FullName -File | Where-Object { $_.Extension -match '^\.(jpe?g|png|heic)$' -and $_.Name -notlike "$($coin.base)-*" })
+    if ($other) { Write-Host "  ! $($folder.Name): $($other.Count) photo(s), but none named DSC*.jpg or IMG_*.jpg - rename them, or save HEIC photos as JPG" -ForegroundColor Yellow }
+  }
   if ($sources.Count -lt 2) { if ($sources.Count -eq 1) { Write-Host "  ! $($folder.Name): only one camera shot - needs an obverse and a reverse" -ForegroundColor Yellow }; continue }
 
   if ($outs[0].Length -gt 240) { Write-Host "   ! $($folder.Name): the photo paths are over 240 characters - Windows Explorer has trouble past 260" -ForegroundColor Yellow }
