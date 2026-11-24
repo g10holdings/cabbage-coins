@@ -139,7 +139,7 @@ foreach ($coin in $coins) {
   $origDir = Join-Path $folder.FullName 'originals'
   $stateFile = Join-Path $origDir 'photo-prep.txt'
   $ingot = "$($coin.kind)" -eq 'ingot'   # the workbook's Type says Bar/Ingot (photo-folders.js)
-  # an ingot gets 2 photos, front (-1) and back (-2); everything else gets 4
+  # an ingot is done once it has front (-1) and back (-2) (-3/-4 are optional extra shots); everything else gets 4
   $outs = (1..$(if ($ingot) { 2 } else { 4 })) | ForEach-Object { Join-Path $folder.FullName "$($coin.base)-$_.jpg" }
   $finished = -not ($outs | Where-Object { -not (Test-Path -LiteralPath $_) })
   $shotsHere = Get-Shots $folder.FullName
@@ -167,29 +167,44 @@ foreach ($coin in $coins) {
   $capsule = -not $ingot -and -not $slabbed
 
   if ($ingot) {
-    # No slab, no circle and no check window: each side's best exposure, framed with a margin all round, with the
-    # logo. Just 2 photos, front (-1) and back (-2) (Tony, 2026-11-11).
+    # No slab, no circle and no check window: each photo framed with a margin all round, with the logo.
+    # -1 front and -2 back from each side's best exposure; when each side has a second shot (e.g. held in the hand),
+    # those become -3 (front) and -4 (back), so the site and eBay get 4 photos (Tony, 2026-11-24; was 2 since 11-11).
+    # A re-run (-Redo) reuses the shots chosen last time (originals\photo-prep.txt: obv, rev, obv2, rev2).
     Write-Host ''
     Write-Host "== $($folder.Name)" -ForegroundColor Cyan
-    Write-Host '   ingot: front and back, framed with a margin on every side (no check window - look at the 2 photos afterwards)'
-    $sides = Split-Sides $sources
-    $n = 0; $lines = @()
-    foreach ($side in 'obv', 'rev') {
-      $shots = $sides[$side]
-      $stats = @($shots | ForEach-Object { [CoinPhoto]::IngotStats($_.FullName) })
-      $pick = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($stats[$_].ClipPct) }, { - $stats[$_].MeanLum })[0]
-      $src = $shots[$pick].FullName
-      Write-Host "   $(if ($side -eq 'obv') { 'front' } else { 'back' }): using $($shots[$pick].Name)"
-      [CoinPhoto]::Ingot($src, $outs[$n], 1044, 0.86, $Emblem, (New-Object System.Drawing.Rectangle(75, 869, 124, 124)), 0.8, 95)
-      $lines += ($side, $shots[$pick].Name, 'ingot') -join "`t"
-      $n++
+    $byName = @{}; foreach ($s in $sources) { $byName[$s.Name] = $s }
+    $chosen = [ordered]@{}
+    if (Test-Path -LiteralPath $stateFile) {
+      foreach ($l in Get-Content -LiteralPath $stateFile) { $p = $l -split "`t"; if ($p.Count -ge 3 -and $p[2] -eq 'ingot' -and $byName[$p[1]]) { $chosen[$p[0]] = $byName[$p[1]] } }
     }
-    # -3/-4 from the earlier 4-photo ingot layout would make it look like a coin's set: they go
-    foreach ($k in 3, 4) { $old = Join-Path $folder.FullName "$($coin.base)-$k.jpg"; if (Test-Path -LiteralPath $old) { Remove-Item -LiteralPath $old } }
+    if (-not ($chosen['obv'] -and $chosen['rev'])) {
+      $chosen = [ordered]@{}
+      $sides = Split-Sides $sources
+      foreach ($side in 'obv', 'rev') {
+        $shots = @($sides[$side])
+        $stats = @($shots | ForEach-Object { [CoinPhoto]::IngotStats($_.FullName) })
+        $rank = @(0..($shots.Count - 1) | Sort-Object { [math]::Round($stats[$_].ClipPct) }, { - $stats[$_].MeanLum })
+        $chosen[$side] = $shots[$rank[0]]
+        if ($rank.Count -ge 2) { $chosen["${side}2"] = $shots[$rank[1]] }
+      }
+      if (-not ($chosen['obv2'] -and $chosen['rev2'])) { $chosen.Remove('obv2'); $chosen.Remove('rev2') }   # extras only in pairs
+    }
+    $slots = [ordered]@{ obv = 1; rev = 2; obv2 = 3; rev2 = 4 }
+    $label = @{ obv = 'front'; rev = 'back'; obv2 = 'front, 2nd shot'; rev2 = 'back, 2nd shot' }
+    Write-Host "   ingot: $($chosen.Count) photos, framed with a margin on every side (no check window - look at them afterwards)"
+    $lines = @()
+    foreach ($k in $slots.Keys) {
+      $out = Join-Path $folder.FullName "$($coin.base)-$($slots[$k]).jpg"
+      if (-not $chosen[$k]) { if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out }; continue }   # an older extra
+      Write-Host "   -$($slots[$k]) $($label[$k]): $($chosen[$k].Name)"
+      [CoinPhoto]::Ingot($chosen[$k].FullName, $out, 1044, 0.86, $Emblem, (New-Object System.Drawing.Rectangle(75, 869, 124, 124)), 0.8, 95)
+      $lines += ($k, $chosen[$k].Name, 'ingot') -join "`t"
+    }
     New-Item -ItemType Directory -Force $origDir | Out-Null
     foreach ($f in $shotsHere) { Move-Item -LiteralPath $f.FullName -Destination $origDir }
     Set-Content -LiteralPath $stateFile $lines
-    Write-Host "   saved $($coin.base)-1.jpg and -2.jpg (camera shots moved to originals\)" -ForegroundColor Green
+    Write-Host "   saved $($chosen.Count) photos (camera shots moved to originals\)" -ForegroundColor Green
     $done += $folder.Name
     continue
   }

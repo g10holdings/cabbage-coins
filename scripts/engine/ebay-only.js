@@ -87,7 +87,7 @@ export function photosOf(cert, roots = [settings.photos.inProgress, settings.pho
     const dir = path.join(root, folder);
     const base = splitCert(folder, cert);
     const has = (n) => fs.existsSync(path.join(dir, `${base}-${n}.jpg`));
-    // -1 obverse slab, -3 reverse slab, -2 / -4 close-ups; an ingot has only -1 (front) and -2 (back)
+    // -1 obverse slab, -3 reverse slab, -2 / -4 close-ups; an ingot: -1 front, -2 back (+ -3/-4, 2nd front/back)
     const order = has(1) && has(2) && !has(3) && !has(4) ? [1, 2] : [1, 3, 2, 4];
     const files = order.map((n) => path.join(dir, `${base}-${n}.jpg`));
     return { root, folder, dir, files, ready: files.every((f) => fs.existsSync(f)) };

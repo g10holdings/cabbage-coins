@@ -57,8 +57,8 @@ export function splitCert(folder, cert) {
 }
 
 /**
- * The file numbers that make up a folder's photo set, in slot order. Usually the 4 above. An ingot gets just 2,
- * front (-1) and back (-2), with no -3/-4 (Tony, 2026-11-11), so its main image is the front.
+ * The file numbers that make up a folder's photo set, in slot order. Usually the 4 above. An ingot has 2 or 4:
+ * front (-1) and back (-2), plus a 2nd front (-3) and back (-4) when shot (Tony, 2026-11-24); main image = front.
  */
 export function photoSet(dir, base) {
   const has = (n) => fs.existsSync(path.join(dir, `${base}-${n}.jpg`));
